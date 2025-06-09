@@ -23,32 +23,38 @@
 		{ href: '/history', label: 'History', description: 'Our club history.' },
 		{ href: '/links', label: 'Links', description: 'Beer resources and friends.' },
 		{ href: '/rules', label: 'Rules', description: 'Club rules and guidelines.' },
-		{ href: '/movie', label: 'IBC Movie', description: 'Watch the IBC movie.' }
+		{ href: '/movie', label: 'IBC Movie', description: 'Watch the IBC movie.' },
+		{ href: '/foodog', label: 'Foo Dogs', description: 'Learn about Foo Dogs.' }
 	];
 
 	const mainLinks = navLinks.filter((l) => !dropdownLinks.some((d) => d.href === l.href));
 </script>
 
-<NavigationMenu.Root>
-	<NavigationMenu.List>
-		{#each mainLinks as link}
+<div class="flex">
+	<NavigationMenu.Root>
+		<NavigationMenu.List>
+			{#each mainLinks as link}
+				<NavigationMenu.Item>
+					<NavigationMenu.Link href={link.href}>{link.label}</NavigationMenu.Link>
+				</NavigationMenu.Item>
+			{/each}
+		</NavigationMenu.List>
+	</NavigationMenu.Root>
+	<NavigationMenu.Root>
+		<NavigationMenu.List>
 			<NavigationMenu.Item>
-				<NavigationMenu.Link href={link.href}>{link.label}</NavigationMenu.Link>
+				<NavigationMenu.Trigger>More</NavigationMenu.Trigger>
+				<NavigationMenu.Content class="bg-transparent">
+					<ul>
+						{#each dropdownLinks as link}
+							<li>
+								<NavigationMenu.Link href={link.href}>{link.label}</NavigationMenu.Link>
+							</li>
+						{/each}
+					</ul>
+				</NavigationMenu.Content>
 			</NavigationMenu.Item>
-		{/each}
-		<NavigationMenu.Item>
-			<NavigationMenu.Trigger>More</NavigationMenu.Trigger>
-			<NavigationMenu.Content>
-				<ul>
-					{#each dropdownLinks as link}
-						<li>
-							<NavigationMenu.Link href={link.href}>{link.label}</NavigationMenu.Link>
-						</li>
-					{/each}
-				</ul>
-			</NavigationMenu.Content>
-		</NavigationMenu.Item>
-	</NavigationMenu.List>
-</NavigationMenu.Root>
-
+		</NavigationMenu.List>
+	</NavigationMenu.Root>
+</div>
 {@render children()}
