@@ -319,7 +319,7 @@
 					>
 				</li>
 				<li>
-					<a href="foodog.htm" class="text-blue-600 underline hover:text-blue-800"
+					<a href="/foodog" class="text-blue-600 underline hover:text-blue-800"
 						>Do you know anything about Foo Dogs?</a
 					>
 				</li>
