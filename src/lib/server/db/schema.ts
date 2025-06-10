@@ -34,6 +34,20 @@ export const users = pgTable('users', {
 	updatedAt: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
 });
 
+export const invitationTokens = pgTable('invitation_tokens', {
+	id: text('id').primaryKey(),
+	token: text('token').notNull().unique(),
+	createdById: text('created_by_id')
+		.notNull()
+		.references(() => users.id),
+	createdAt: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	expiresAt: timestamp('expires_at', { withTimezone: true, mode: 'date' }).notNull(),
+	usedAt: timestamp('used_at', { withTimezone: true, mode: 'date' }),
+	usedById: text('used_by_id').references(() => users.id)
+});
+
 export type Session = typeof session.$inferSelect;
 
 export type User = typeof users.$inferSelect;
+
+export type InvitationToken = typeof invitationTokens.$inferSelect;

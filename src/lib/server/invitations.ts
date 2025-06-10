@@ -1,0 +1,74 @@
+import { db } from '$lib/server/db';
+import * as table from '$lib/server/db/schema';
+import { eq } from 'drizzle-orm';
+import { encodeBase64url } from '@oslojs/encoding';
+
+const DAY_IN_MS = 1000 * 60 * 60 * 24;
+
+export function generateInvitationToken(): string {
+	const bytes = crypto.getRandomValues(new Uint8Array(32));
+	return encodeBase64url(bytes);
+}
+
+export async function createInvitationToken(
+	createdById: string,
+	expirationDays = 7
+): Promise<table.InvitationToken> {
+	const token = generateInvitationToken();
+	const id = crypto.randomUUID();
+
+	const invitationToken: table.InvitationToken = {
+		id,
+		token,
+		createdById,
+		createdAt: new Date(),
+		expiresAt: new Date(Date.now() + DAY_IN_MS * expirationDays),
+		usedAt: null,
+		usedById: null
+	};
+
+	await db.insert(table.invitationTokens).values(invitationToken);
+	return invitationToken;
+}
+
+export async function validateInvitationToken(
+	token: string
+): Promise<{ valid: boolean; invitation?: table.InvitationToken }> {
+	const [invitation] = await db
+		.select()
+		.from(table.invitationTokens)
+		.where(eq(table.invitationTokens.token, token));
+
+	if (!invitation) {
+		return { valid: false };
+	}
+
+	// Check if token is expired
+	if (Date.now() >= invitation.expiresAt.getTime()) {
+		return { valid: false };
+	}
+
+	// Check if token has already been used
+	if (invitation.usedAt) {
+		return { valid: false };
+	}
+
+	return { valid: true, invitation };
+}
+
+export async function markInvitationTokenAsUsed(token: string, usedById: string): Promise<void> {
+	await db
+		.update(table.invitationTokens)
+		.set({
+			usedAt: new Date(),
+			usedById
+		})
+		.where(eq(table.invitationTokens.token, token));
+}
+
+export async function getInvitationsByUser(userId: string): Promise<table.InvitationToken[]> {
+	return await db
+		.select()
+		.from(table.invitationTokens)
+		.where(eq(table.invitationTokens.createdById, userId));
+}
