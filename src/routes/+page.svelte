@@ -71,7 +71,25 @@
 		if (db) return 1;
 		return 0;
 	});
+
+	const meta = {
+		title: 'Island Beer Club',
+		description:
+			'The official site of Island Beer Club. Learn about our members, events, and the spirit of craft beer on Coronado Island.',
+		image: '/groupGarage.jpg',
+		url: 'https://islandbeerclub.com/'
+	};
 </script>
+
+<svelte:head>
+	<title>{meta.title}</title>
+	<meta name="description" content={meta.description} />
+	<meta property="og:title" content={meta.title} />
+	<meta property="og:description" content={meta.description} />
+	<meta property="og:image" content={meta.image} />
+	<meta property="og:url" content={meta.url} />
+	<meta name="twitter:card" content="summary_large_image" />
+</svelte:head>
 
 <section class="relative flex h-[60vh] min-h-[340px] items-center justify-center">
 	<img

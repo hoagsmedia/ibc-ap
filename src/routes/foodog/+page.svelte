@@ -1,6 +1,22 @@
 <script lang="ts">
-	// No dynamic logic needed for this static page
+	const meta = {
+		title: 'Foo Dogs | Island Beer Club',
+		description:
+			'Learn about Foo Dogs (Chinese guardian lions) and their meaning for Island Beer Club. See photos and history of Foo Dogs in our club.',
+		image: '/FoDog1.jpg',
+		url: 'https://islandbeerclub.com/foodog'
+	};
 </script>
+
+<svelte:head>
+	<title>{meta.title}</title>
+	<meta name="description" content={meta.description} />
+	<meta property="og:title" content={meta.title} />
+	<meta property="og:description" content={meta.description} />
+	<meta property="og:image" content={meta.image} />
+	<meta property="og:url" content={meta.url} />
+	<meta name="twitter:card" content="summary_large_image" />
+</svelte:head>
 
 <section class="mx-auto max-w-4xl px-4 py-12 text-black">
 	<h1 class="mb-6 text-center text-3xl font-bold">Foo Dogs</h1>
