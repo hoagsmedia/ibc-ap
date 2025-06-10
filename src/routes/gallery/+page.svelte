@@ -58,8 +58,8 @@
 	</div>
 
 	<Dialog.Root bind:open>
-		<Dialog.Content class="flex  flex-col items-center  ">
-			<Dialog.Header class="w-full">
+		<Dialog.Content class="flex flex-col items-center  ">
+			<Dialog.Header class=" w-5/6">
 				<Dialog.Title>IBC Travel Gallery</Dialog.Title>
 				<Dialog.Description class="items-center ">
 					<GalleryCarousel {images} selected={activeIndex} />

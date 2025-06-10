@@ -21,3 +21,18 @@ Thumbs.db
 # Vite
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Database
+/drizzle/
+
+# User uploads (contains potentially sensitive user data)
+/static/uploads/
+/public/uploads/
+
+# Scripts with sensitive data
+/scripts/create-test-user.ts
+/scripts/seed-users.ts
+
+# Local development files
+*.log
+*.tmp

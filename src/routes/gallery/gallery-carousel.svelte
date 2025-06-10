@@ -24,14 +24,12 @@
 	<Carousel.Root setApi={(emblaApi) => (api = emblaApi)} class="">
 		<Carousel.Content>
 			{#each images as img, i (i)}
-				<Carousel.Item>
-					<div class="p-1">
-						<Card.Root>
-							<Card.Content>
-								<img src={img} class="" alt="IBC Travel Full Size" />
-							</Card.Content>
-						</Card.Root>
-					</div>
+				<Carousel.Item class="flex justify-center ">
+					<Card.Root class="flex justify-center ">
+						<Card.Content>
+							<img src={img} alt="IBC Travel Full Size" />
+						</Card.Content>
+					</Card.Root>
 				</Carousel.Item>
 			{/each}
 		</Carousel.Content>
