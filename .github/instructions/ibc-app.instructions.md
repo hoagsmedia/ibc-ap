@@ -94,6 +94,10 @@ Match standard SvelteKit 2 conventions:
 ## 🎨 Theming
 
 - Use CSS Variables to customize the look and feel of your application.
+- Do not modify the default css variables in the :root and .dark selectors.
+- Use the provided CSS variables for background and foreground colors to ensure consistency across components.
+- Use the `bg-` and `text-` prefixes for background and text colors, respectively.
+- The new `size-*` utility (added in Tailwind v3.4), is now fully supported by tailwind-merge. You can replace `w-* h-*` with the new `size-*` utility:
 
 - We use CSS variables for styling. This allows you to easily change the colors of components without having to update class names.
 

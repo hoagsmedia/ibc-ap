@@ -74,7 +74,7 @@
 	<div class="flex items-center gap-2">
 		{#if data.user}
 			<!-- User is logged in -->
-			<span class="text-sm text-gray-600">Hello, {data.user.name}!</span>
+			<span class="text-muted-foreground text-sm">Hello, {data.user.name}!</span>
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger
 					><Avatar>
@@ -85,7 +85,7 @@
 									: `/${data.user.img}`
 								: ''}
 							alt={data.user.name}
-							class="h-8 w-8 rounded-full border border-gray-300 object-cover"
+							class="border-border size-8 rounded-full border object-cover"
 						/>
 						<AvatarFallback>IBC</AvatarFallback>
 					</Avatar></DropdownMenu.Trigger
@@ -112,10 +112,10 @@
 
 		<Button onclick={toggleMode} variant="outline" size="icon">
 			<SunIcon
-				class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
+				class="size-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
 			/>
 			<MoonIcon
-				class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
+				class="absolute size-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
 			/>
 			<span class="sr-only">Toggle theme</span>
 		</Button>

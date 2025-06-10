@@ -10,21 +10,21 @@
 	<meta name="description" content="Sign in to your Island Beer Club account" />
 </svelte:head>
 
-<div class="flex min-h-screen flex-col justify-center bg-gray-50 py-12 sm:px-6 lg:px-8">
+<div class="bg-background flex min-h-screen flex-col justify-center py-12 sm:px-6 lg:px-8">
 	<div class="sm:mx-auto sm:w-full sm:max-w-md">
-		<h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Island Beer Club</h2>
-		<p class="mt-2 text-center text-sm text-gray-600">
+		<h2 class="text-foreground mt-6 text-center text-3xl font-extrabold">Island Beer Club</h2>
+		<p class="text-muted-foreground mt-2 text-center text-sm">
 			Sign in to your account or create a new one
 		</p>
 
 		<!-- Login instructions -->
-		<div class="mt-4 rounded-md bg-blue-50 p-4">
+		<div class="bg-accent mt-4 rounded-md p-4">
 			<div class="text-center">
-				<p class="text-sm text-blue-700">
+				<p class="text-accent-foreground text-sm">
 					<strong>Members:</strong> Use your email and the password:
-					<code class="rounded bg-blue-100 px-1">CHANGE_ME_DEV_ONLY</code>
+					<code class="bg-secondary rounded px-1">CHANGE_ME_DEV_ONLY</code>
 				</p>
-				<p class="mt-1 text-xs text-blue-600">
+				<p class="text-muted-foreground mt-1 text-xs">
 					You can change your password after logging in via Settings.
 				</p>
 			</div>
@@ -32,10 +32,12 @@
 	</div>
 
 	<div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-		<div class="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10">
+		<div class="bg-card px-4 py-8 shadow sm:rounded-lg sm:px-10">
 			<form method="post" action="?/login" use:enhance class="space-y-6">
 				<div>
-					<label for="email" class="block text-sm font-medium text-gray-700"> Email address </label>
+					<label for="email" class="text-card-foreground block text-sm font-medium">
+						Email address
+					</label>
 					<div class="mt-1">
 						<input
 							id="email"
@@ -43,13 +45,15 @@
 							type="email"
 							autocomplete="email"
 							required
-							class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm"
+							class="border-input bg-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full appearance-none rounded-md border px-3 py-2 focus:outline-none sm:text-sm"
 						/>
 					</div>
 				</div>
 
 				<div>
-					<label for="password" class="block text-sm font-medium text-gray-700"> Password </label>
+					<label for="password" class="text-card-foreground block text-sm font-medium">
+						Password
+					</label>
 					<div class="mt-1">
 						<input
 							id="password"
@@ -57,7 +61,7 @@
 							type="password"
 							autocomplete="current-password"
 							required
-							class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm"
+							class="border-input bg-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full appearance-none rounded-md border px-3 py-2 focus:outline-none sm:text-sm"
 						/>
 					</div>
 				</div>
@@ -65,7 +69,7 @@
 				<div>
 					<button
 						type="submit"
-						class="flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:outline-none"
+						class="bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-ring flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
 					>
 						Sign in
 					</button>
@@ -75,17 +79,17 @@
 			<div class="mt-6">
 				<div class="relative">
 					<div class="absolute inset-0 flex items-center">
-						<div class="w-full border-t border-gray-300"></div>
+						<div class="border-border w-full border-t"></div>
 					</div>
 					<div class="relative flex justify-center text-sm">
-						<span class="bg-white px-2 text-gray-500">Or</span>
+						<span class="bg-card text-muted-foreground px-2">Or</span>
 					</div>
 				</div>
 
 				<div class="mt-6">
 					<form method="post" action="?/register" use:enhance class="space-y-6">
 						<div>
-							<label for="register-name" class="block text-sm font-medium text-gray-700">
+							<label for="register-name" class="text-card-foreground block text-sm font-medium">
 								Full Name
 							</label>
 							<div class="mt-1">
@@ -95,13 +99,13 @@
 									type="text"
 									autocomplete="name"
 									required
-									class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm"
+									class="border-input bg-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full appearance-none rounded-md border px-3 py-2 focus:outline-none sm:text-sm"
 								/>
 							</div>
 						</div>
 
 						<div>
-							<label for="register-email" class="block text-sm font-medium text-gray-700">
+							<label for="register-email" class="text-card-foreground block text-sm font-medium">
 								Email address
 							</label>
 							<div class="mt-1">
@@ -111,13 +115,13 @@
 									type="email"
 									autocomplete="email"
 									required
-									class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm"
+									class="border-input bg-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full appearance-none rounded-md border px-3 py-2 focus:outline-none sm:text-sm"
 								/>
 							</div>
 						</div>
 
 						<div>
-							<label for="register-password" class="block text-sm font-medium text-gray-700">
+							<label for="register-password" class="text-card-foreground block text-sm font-medium">
 								Password
 							</label>
 							<div class="mt-1">
@@ -127,7 +131,7 @@
 									type="password"
 									autocomplete="new-password"
 									required
-									class="block w-full appearance-none rounded-md border border-gray-300 px-3 py-2 text-black placeholder-gray-400 focus:border-blue-500 focus:ring-blue-500 focus:outline-none sm:text-sm"
+									class="border-input bg-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full appearance-none rounded-md border px-3 py-2 focus:outline-none sm:text-sm"
 								/>
 							</div>
 						</div>
@@ -135,7 +139,7 @@
 						<div>
 							<button
 								type="submit"
-								class="flex w-full justify-center rounded-md border border-transparent bg-green-600 px-4 py-2 text-sm font-medium text-white shadow-sm hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 focus:outline-none"
+								class="bg-secondary text-secondary-foreground hover:bg-secondary/90 focus:ring-ring flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
 							>
 								Create account
 							</button>
@@ -145,13 +149,15 @@
 			</div>
 
 			{#if form?.message}
-				<div class="relative mt-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+				<div
+					class="border-destructive/20 bg-destructive/10 text-destructive relative mt-4 rounded border px-4 py-3"
+				>
 					{form.message}
 				</div>
 			{/if}
 
 			<div class="mt-6 text-center">
-				<a href="/" class="text-blue-600 hover:text-blue-500"> ← Back to Home </a>
+				<a href="/" class="text-primary hover:text-primary/80"> ← Back to Home </a>
 			</div>
 		</div>
 	</div>
