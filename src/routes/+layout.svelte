@@ -4,7 +4,8 @@
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import { enhance } from '$app/forms';
-
+	import { Avatar, AvatarFallback, AvatarImage } from '$lib/components/ui/avatar/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { toggleMode, ModeWatcher } from 'mode-watcher';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { LayoutServerData } from './$types';
@@ -74,6 +75,31 @@
 		{#if data.user}
 			<!-- User is logged in -->
 			<span class="text-sm text-gray-600">Hello, {data.user.name}!</span>
+			<DropdownMenu.Root>
+				<DropdownMenu.Trigger
+					><Avatar>
+						<AvatarImage
+							src={data.user.img
+								? data.user.img.startsWith('/')
+									? data.user.img
+									: `/${data.user.img}`
+								: ''}
+							alt={data.user.name}
+							class="h-8 w-8 rounded-full border border-gray-300 object-cover"
+						/>
+						<AvatarFallback>IBC</AvatarFallback>
+					</Avatar></DropdownMenu.Trigger
+				>
+				<DropdownMenu.Content>
+					<DropdownMenu.Group>
+						<DropdownMenu.Label>My Account</DropdownMenu.Label>
+						<DropdownMenu.Separator />
+						<DropdownMenu.Item><a href="/dashboard">Profile</a></DropdownMenu.Item>
+						<DropdownMenu.Item><a href="/settings">Settings</a></DropdownMenu.Item>
+					</DropdownMenu.Group>
+				</DropdownMenu.Content>
+			</DropdownMenu.Root>
+
 			<form method="post" action="/logout" use:enhance>
 				<Button type="submit" variant="outline" size="sm">Logout</Button>
 			</form>

@@ -5,7 +5,7 @@ import postgres from 'postgres';
 import * as schema from './schema';
 
 // Use local Postgres for development, Neon for production
-const isDev = process.env.NODE_ENV === 'development';
+const isDev = process.env.NODE_ENV === 'development' || !process.env.NODE_ENV;
 const connectionString = isDev
 	? process.env.DATABASE_URL_LOCAL // e.g. 'postgres://user:pass@localhost:5432/ibc'
 	: process.env.DATABASE_URL;

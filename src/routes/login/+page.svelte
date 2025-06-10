@@ -16,6 +16,19 @@
 		<p class="mt-2 text-center text-sm text-gray-600">
 			Sign in to your account or create a new one
 		</p>
+
+		<!-- Login instructions -->
+		<div class="mt-4 rounded-md bg-blue-50 p-4">
+			<div class="text-center">
+				<p class="text-sm text-blue-700">
+					<strong>Members:</strong> Use your email and the password:
+					<code class="rounded bg-blue-100 px-1">CHANGE_ME_DEV_ONLY</code>
+				</p>
+				<p class="mt-1 text-xs text-blue-600">
+					You can change your password after logging in via Settings.
+				</p>
+			</div>
+		</div>
 	</div>
 
 	<div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">

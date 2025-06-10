@@ -73,7 +73,7 @@
 							/>
 						{:else if data.user.img}
 							<img
-								src={data.user.img.startsWith('/') ? data.user.img : `/resources/${data.user.img}`}
+								src={data.user.img.startsWith('/') ? data.user.img : `/${data.user.img}`}
 								alt={data.user.name}
 								class="h-24 w-24 rounded-full object-cover ring-4 ring-gray-300"
 							/>

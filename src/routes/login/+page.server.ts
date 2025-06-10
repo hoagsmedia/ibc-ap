@@ -36,6 +36,30 @@ export const actions: Actions = {
 			return fail(400, { message: 'Incorrect email or password' });
 		}
 
+		// Handle users with dev-hash (first-time login)
+		if (existingUser.passwordHash === 'dev-hash') {
+			// For users with dev-hash, accept any password and update their hash
+			const newPasswordHash = await hash(password, {
+				memoryCost: 19456,
+				timeCost: 2,
+				outputLen: 32,
+				parallelism: 1
+			});
+
+			// Update the user's password hash
+			await db
+				.update(table.users)
+				.set({ passwordHash: newPasswordHash })
+				.where(eq(table.users.id, existingUser.id));
+
+			const sessionToken = auth.generateSessionToken();
+			const session = await auth.createSession(sessionToken, existingUser.id);
+			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+
+			return redirect(302, '/dashboard');
+		}
+
+		// Normal password verification for users with proper hashes
 		const validPassword = await verify(existingUser.passwordHash, password, {
 			memoryCost: 19456,
 			timeCost: 2,
