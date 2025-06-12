@@ -242,17 +242,16 @@ async function migrateProfileImages(): Promise<void> {
 	}
 }
 
-// Run the migration
-if (require.main === module) {
-	migrateProfileImages()
-		.then(() => {
-			console.log('✨ Migration script completed successfully');
-			process.exit(0);
-		})
-		.catch((error) => {
-			console.error('💥 Migration script failed:', error);
-			process.exit(1);
-		});
-}
+// Run the migration when script is executed directly
+console.log('🚀 Starting Island Beer Club profile image migration...');
+migrateProfileImages()
+	.then(() => {
+		console.log('✨ Migration script completed successfully');
+		process.exit(0);
+	})
+	.catch((error) => {
+		console.error('💥 Migration script failed:', error);
+		process.exit(1);
+	});
 
 export { migrateProfileImages };

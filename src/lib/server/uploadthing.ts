@@ -71,6 +71,30 @@ export const ourFileRouter = {
 			return { uploadedBy: metadata.userId, imageUrl: file.ufsUrl };
 		}),
 
+	// Profile image migration route - server-only uploads for migrating existing profile images
+	'profile-images': f({
+		image: {
+			maxFileSize: '4MB',
+			maxFileCount: 1
+		}
+	})
+		.middleware(async ({ req }) => {
+			// Check for migration token or allow server-side requests
+			const userAgent = req.headers.get('user-agent');
+			if (userAgent?.includes('Node.js') || userAgent?.includes('tsx')) {
+				return {
+					uploadType: 'profile-migration' as const,
+					source: 'server-migration'
+				};
+			}
+			throw new Error('Migration route only accessible from server');
+		})
+		.onUploadComplete(async ({ metadata, file }) => {
+			console.log('Profile migration upload complete:', file.name);
+			console.log('Profile migration URL:', file.ufsUrl);
+			return { source: metadata.source, imageUrl: file.ufsUrl };
+		}),
+
 	// Gallery image uploader - multiple images for events, galleries, etc.
 	galleryImageUploader: f({
 		image: {
