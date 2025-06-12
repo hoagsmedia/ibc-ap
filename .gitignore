@@ -29,14 +29,6 @@ vite.config.ts.timestamp-*
 /static/uploads/
 /public/uploads/
 
-# Scripts with sensitive data
-/scripts/create-test-user.ts
-/scripts/seed-users.ts
-/scripts/fix-password-hashes.ts
-/scripts/check-users.ts
-/scripts/test-login.ts
-/scripts/check-images.ts
-/scripts/test-image-urls.ts
 
 # Local development files
 *.log
