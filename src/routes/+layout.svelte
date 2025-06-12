@@ -86,7 +86,15 @@
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger>
 					<Avatar.Root>
-						<Avatar.Image src={`/resources/${data.user.img}`} alt={data.user.img} />
+						{#if data.user.img}
+							{#if data.user.img.startsWith('http')}
+								<!-- UploadThing URL -->
+								<Avatar.Image src={data.user.img} alt={data.user.name} />
+							{:else}
+								<!-- Legacy local file path -->
+								<Avatar.Image src={`/resources/${data.user.img}`} alt={data.user.name} />
+							{/if}
+						{/if}
 						<Avatar.Fallback>{generateUsername(data.user.name)}</Avatar.Fallback>
 					</Avatar.Root>
 				</DropdownMenu.Trigger>
