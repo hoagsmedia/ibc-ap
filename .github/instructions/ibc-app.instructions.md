@@ -36,6 +36,9 @@ Please write code using the following technologies and tools:
 - **Zod** — schema-based validation for form inputs and backend logic
 - **TypeScript** — strict and clean
 - **Vitest** — for unit testing
+- **Environments**:
+  - `development`: local Postgres via `DATABASE_URL_LOCAL`
+  - `production`: Neon DB via `DATABASE_URL`
 
 ---
 
@@ -49,6 +52,14 @@ Please write code using the following technologies and tools:
 - Component libraries: use `shadcn-svelte` for inputs, dialogs, modals, etc.
 - Avoid deprecated or unstable APIs.
 - Always generate **valid**, **typed**, and **runnable** code.
+
+## Environment-Specific Setup
+
+In `drizzle.config.ts`, we use conditional logic:
+
+````ts
+const isProd = process.env.NODE_ENV === "production";
+const connectionString = isProd ? process.env.DATABASE_URL : process.env.DATABASE_URL_LOCAL;
 
 ---
 
@@ -112,7 +123,7 @@ Match standard SvelteKit 2 conventions:
 ```css
 --primary: oklch(0.205 0 0);
 --primary-foreground: oklch(0.985 0 0);
-```
+````
 
 - The background color of the following component will be var(--primary) and the foreground color will be var(--primary-foreground).
 

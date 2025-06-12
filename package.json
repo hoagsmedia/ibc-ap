@@ -14,10 +14,15 @@
 		"lint": "prettier --check . && eslint .",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
-		"db:push": "drizzle-kit push",
-		"db:migrate": "drizzle-kit migrate",
-		"db:studio": "drizzle-kit studio",
-		"db:dev": "NODE_ENV=development pnpm drizzle-kit studio"
+		"db:migrate": "drizzle-kit migrate --config=drizzle-prod.config.ts ",
+		"db:migrate:dev": "drizzle-kit migrate --config=drizzle-dev.config.ts",
+		"db:push": "drizzle-kit push --config=drizzle-prod.config.ts",
+		"db:push:dev": "drizzle-kit push --config=drizzle-dev.config.ts",
+		"db:generate": "drizzle-kit generate --config=drizzle-prod.config.ts",
+		"db:generate:dev": "drizzle-kit generate --config=drizzle-dev.config.ts",
+		"db:seed:dev": "NODE_ENV=development tsx scripts/seed.ts",
+		"db:seed": "NODE_ENV=production tsx scripts/seed.ts",
+		"db:studio": "NODE_ENV=development pnpm drizzle-kit studio"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^1.2.5",
@@ -67,11 +72,16 @@
 		"@node-rs/argon2": "^2.0.2",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
+		"@types/pg": "^8.15.4",
+		"@uploadthing/svelte": "^7.3.1",
 		"drizzle-orm": "^0.40.0",
+		"drizzle-seed": "^0.3.1",
 		"formsnap": "^2.0.1",
 		"paneforge": "1.0.0-next.5",
+		"pg": "^8.16.0",
 		"postgres": "^3.4.7",
-		"svelte-sonner": "^1.0.4"
+		"svelte-sonner": "^1.0.4",
+		"uploadthing": "^7.7.2"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [

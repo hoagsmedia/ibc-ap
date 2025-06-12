@@ -13,9 +13,7 @@
 <div class="bg-background flex min-h-screen flex-col justify-center py-12 sm:px-6 lg:px-8">
 	<div class="sm:mx-auto sm:w-full sm:max-w-md">
 		<h2 class="text-foreground mt-6 text-center text-3xl font-extrabold">Island Beer Club</h2>
-		<p class="text-muted-foreground mt-2 text-center text-sm">
-			Sign in to your account or create a new one
-		</p>
+		<p class="text-muted-foreground mt-2 text-center text-sm">Sign in to your account</p>
 
 		<!-- Login instructions -->
 		<div class="bg-accent mt-4 rounded-md p-4">
@@ -75,78 +73,6 @@
 					</button>
 				</div>
 			</form>
-
-			<div class="mt-6">
-				<div class="relative">
-					<div class="absolute inset-0 flex items-center">
-						<div class="border-border w-full border-t"></div>
-					</div>
-					<div class="relative flex justify-center text-sm">
-						<span class="bg-card text-muted-foreground px-2">Or</span>
-					</div>
-				</div>
-
-				<div class="mt-6">
-					<form method="post" action="?/register" use:enhance class="space-y-6">
-						<div>
-							<label for="register-name" class="text-card-foreground block text-sm font-medium">
-								Full Name
-							</label>
-							<div class="mt-1">
-								<input
-									id="register-name"
-									name="name"
-									type="text"
-									autocomplete="name"
-									required
-									class="border-input bg-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full appearance-none rounded-md border px-3 py-2 focus:outline-none sm:text-sm"
-								/>
-							</div>
-						</div>
-
-						<div>
-							<label for="register-email" class="text-card-foreground block text-sm font-medium">
-								Email address
-							</label>
-							<div class="mt-1">
-								<input
-									id="register-email"
-									name="email"
-									type="email"
-									autocomplete="email"
-									required
-									class="border-input bg-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full appearance-none rounded-md border px-3 py-2 focus:outline-none sm:text-sm"
-								/>
-							</div>
-						</div>
-
-						<div>
-							<label for="register-password" class="text-card-foreground block text-sm font-medium">
-								Password
-							</label>
-							<div class="mt-1">
-								<input
-									id="register-password"
-									name="password"
-									type="password"
-									autocomplete="new-password"
-									required
-									class="border-input bg-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full appearance-none rounded-md border px-3 py-2 focus:outline-none sm:text-sm"
-								/>
-							</div>
-						</div>
-
-						<div>
-							<button
-								type="submit"
-								class="bg-secondary text-secondary-foreground hover:bg-secondary/90 focus:ring-ring flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
-							>
-								Create account
-							</button>
-						</div>
-					</form>
-				</div>
-			</div>
 
 			{#if form?.message}
 				<div
