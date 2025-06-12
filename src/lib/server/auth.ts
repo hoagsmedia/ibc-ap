@@ -20,7 +20,7 @@ export async function createSession(token: string, userId: string) {
 	const session: table.Session = {
 		id: sessionId,
 		userId,
-		expiresAt: new Date(Date.now() + DAY_IN_MS * 30)
+		expires_at: new Date(Date.now() + DAY_IN_MS * 30)
 	};
 	await db.insert(table.session).values(session);
 	return session;
@@ -36,7 +36,8 @@ export async function validateSessionToken(token: string) {
 				name: table.users.name,
 				email: table.users.email,
 				role: table.users.role,
-				img: table.users.img
+				img: table.users.img,
+				test_passed: table.users.test_passed
 			},
 			session: table.session
 		})
@@ -49,18 +50,18 @@ export async function validateSessionToken(token: string) {
 	}
 	const { session, user } = result;
 
-	const sessionExpired = Date.now() >= session.expiresAt.getTime();
+	const sessionExpired = Date.now() >= session.expires_at.getTime();
 	if (sessionExpired) {
 		await db.delete(table.session).where(eq(table.session.id, session.id));
 		return { session: null, user: null };
 	}
 
-	const renewSession = Date.now() >= session.expiresAt.getTime() - DAY_IN_MS * 15;
+	const renewSession = Date.now() >= session.expires_at.getTime() - DAY_IN_MS * 15;
 	if (renewSession) {
-		session.expiresAt = new Date(Date.now() + DAY_IN_MS * 30);
+		session.expires_at = new Date(Date.now() + DAY_IN_MS * 30);
 		await db
 			.update(table.session)
-			.set({ expiresAt: session.expiresAt })
+			.set({ expires_at: session.expires_at })
 			.where(eq(table.session.id, session.id));
 	}
 
@@ -73,9 +74,9 @@ export async function invalidateSession(sessionId: string) {
 	await db.delete(table.session).where(eq(table.session.id, sessionId));
 }
 
-export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
+export function setSessionTokenCookie(event: RequestEvent, token: string, expires_at: Date) {
 	event.cookies.set(sessionCookieName, token, {
-		expires: expiresAt,
+		expires: expires_at,
 		path: '/'
 	});
 }

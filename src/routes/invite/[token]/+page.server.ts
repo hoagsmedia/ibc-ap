@@ -16,13 +16,20 @@ export const load: PageServerLoad = async ({ params }) => {
 
 	const { valid, invitation } = await validateInvitationToken(token);
 
-	if (!valid) {
+	if (!valid || !invitation) {
 		error(404, 'Invalid or expired invitation link');
 	}
 
+	// Fetch the sponsor's name (user who created the invitation)
+	const [sponsor] = await db
+		.select({ name: table.users.name })
+		.from(table.users)
+		.where(eq(table.users.id, invitation.created_by_id));
+
 	return {
 		token,
-		invitation
+		invitation,
+		sponsorName: sponsor?.name || 'Unknown'
 	};
 };
 
@@ -68,23 +75,6 @@ export const actions: Actions = {
 			return fail(400, { message: 'Passwords do not match' });
 		}
 
-		// Validate optional fields
-		if (bio && bio.length > 500) {
-			return fail(400, { message: 'Bio must be 500 characters or less' });
-		}
-
-		if (hobbies && hobbies.length > 200) {
-			return fail(400, { message: 'Hobbies must be 200 characters or less' });
-		}
-
-		if (likes && likes.length > 200) {
-			return fail(400, { message: 'Beer preferences must be 200 characters or less' });
-		}
-
-		if (sponsor && sponsor.length > 100) {
-			return fail(400, { message: 'Sponsor name must be 100 characters or less' });
-		}
-
 		try {
 			// Check if email already exists
 			const [existingUser] = await db
@@ -106,19 +96,22 @@ export const actions: Actions = {
 
 			// Create user
 			const userId = crypto.randomUUID();
-			const newUser = {
+			const newUser: table.User = {
 				id: userId,
 				name,
 				email,
-				passwordHash,
+				password_hash: passwordHash,
 				bio: bio || null,
 				hobbies: hobbies || null,
 				img: null,
-				role: 'member' as const, // Users invited get member role by default
+				role: 'member', // Users invited get member role by default
 				likes: likes || null,
 				mbr: null,
 				msd: null,
-				sponsor: sponsor || null
+				sponsor: sponsor || null,
+				test_passed: null,
+				created_at: new Date(),
+				updated_at: new Date()
 			};
 
 			await db.insert(table.users).values(newUser);
@@ -129,25 +122,13 @@ export const actions: Actions = {
 			// Create session and log user in
 			const sessionToken = generateSessionToken();
 			const session = await createSession(sessionToken, userId);
-			setSessionTokenCookie(event, sessionToken, session.expiresAt);
-
-			redirect(302, '/dashboard');
+			setSessionTokenCookie(event, sessionToken, session.expires_at);
 		} catch (error) {
-			// Check if this is a redirect (which is expected behavior)
-			if (error && typeof error === 'object' && 'status' in error && error.status === 302) {
-				// This is a redirect, re-throw it to let SvelteKit handle it
-				throw error;
-			}
-
 			console.error('Registration error:', error);
-			console.error('Error details:', {
-				message: error instanceof Error ? error.message : 'Unknown error',
-				stack: error instanceof Error ? error.stack : undefined,
-				formData: { name, email, bio, hobbies, likes, sponsor }
-			});
-			return fail(500, {
-				message: `Failed to create account: ${error instanceof Error ? error.message : 'Unknown error'}`
-			});
+			return fail(500, { message: 'Failed to create account. Please try again.' });
 		}
+
+		// Redirect after successful registration (outside try-catch)
+		redirect(302, '/dashboard');
 	}
 };

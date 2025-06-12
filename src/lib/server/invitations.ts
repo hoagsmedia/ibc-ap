@@ -20,11 +20,11 @@ export async function createInvitationToken(
 	const invitationToken: table.InvitationToken = {
 		id,
 		token,
-		createdById,
-		createdAt: new Date(),
-		expiresAt: new Date(Date.now() + DAY_IN_MS * expirationDays),
-		usedAt: null,
-		usedById: null
+		created_by_id: createdById,
+		created_at: new Date(),
+		expires_at: new Date(Date.now() + DAY_IN_MS * expirationDays),
+		used_at: null,
+		used_by_id: null
 	};
 
 	await db.insert(table.invitationTokens).values(invitationToken);
@@ -44,12 +44,12 @@ export async function validateInvitationToken(
 	}
 
 	// Check if token is expired
-	if (Date.now() >= invitation.expiresAt.getTime()) {
+	if (Date.now() >= invitation.expires_at.getTime()) {
 		return { valid: false };
 	}
 
 	// Check if token has already been used
-	if (invitation.usedAt) {
+	if (invitation.used_at) {
 		return { valid: false };
 	}
 
@@ -60,8 +60,8 @@ export async function markInvitationTokenAsUsed(token: string, usedById: string)
 	await db
 		.update(table.invitationTokens)
 		.set({
-			usedAt: new Date(),
-			usedById
+			used_at: new Date(),
+			used_by_id: usedById
 		})
 		.where(eq(table.invitationTokens.token, token));
 }
@@ -70,5 +70,5 @@ export async function getInvitationsByUser(userId: string): Promise<table.Invita
 	return await db
 		.select()
 		.from(table.invitationTokens)
-		.where(eq(table.invitationTokens.createdById, userId));
+		.where(eq(table.invitationTokens.created_by_id, userId));
 }

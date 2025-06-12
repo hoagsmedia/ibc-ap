@@ -10,7 +10,6 @@
 
 	let { data }: { data: PageData } = $props();
 
-	// Get form result using $derived from page store
 	let form = $derived($page.form as ActionData | null);
 	let creating = $state(false);
 
@@ -168,76 +167,96 @@
 						{/if}
 
 						<div class="space-y-4">
-							<div class="flex items-center justify-between">
-								<p class="text-muted-foreground text-sm">
-									Create secure, one-time signup links to invite new members.
-								</p>
-								<form
-									method="post"
-									action="?/createInvitation"
-									use:enhance={() => {
-										creating = true;
-										return async ({ update }) => {
-											await update();
-											creating = false;
-										};
-									}}
-								>
-									<Button type="submit" disabled={creating}>
-										{creating ? 'Creating...' : 'Create Invite Link'}
+							{#if !data.user?.test_passed}
+								<!-- User hasn't passed the test -->
+								<Alert.Root class="mb-4" variant="destructive">
+									<ClockIcon class="size-4" />
+									<Alert.Title>Test Required</Alert.Title>
+									<Alert.Description>
+										You must pass the official IBC test before you can create invitation links.
+									</Alert.Description>
+								</Alert.Root>
+								<div class="flex items-center justify-between">
+									<p class="text-muted-foreground text-sm">
+										Complete the IBC test to unlock the ability to invite new members.
+									</p>
+									<Button>
+										<a href="/test">Take Test</a>
 									</Button>
-								</form>
-							</div>
+								</div>
+							{:else}
+								<!-- User has passed the test -->
+								<div class="flex items-center justify-between">
+									<p class="text-muted-foreground text-sm">
+										Create secure, one-time signup links to invite new members.
+									</p>
+									<form
+										method="post"
+										action="?/createInvitation"
+										use:enhance={() => {
+											creating = true;
+											return async ({ update }) => {
+												await update();
+												creating = false;
+											};
+										}}
+									>
+										<Button type="submit" disabled={creating}>
+											{creating ? 'Creating...' : 'Create Invite Link'}
+										</Button>
+									</form>
+								</div>
 
-							<!-- Existing Invitations -->
-							{#if data.invitations && data.invitations.length > 0}
-								<div class="space-y-2">
-									<h4 class="text-sm font-medium">Recent Invitations</h4>
+								<!-- Existing Invitations -->
+								{#if data.invitations && data.invitations.length > 0}
 									<div class="space-y-2">
-										{#each data.invitations.slice(0, 5) as invitation}
-											<div class="flex items-center justify-between rounded-md border p-3">
-												<div class="flex items-center gap-3">
-													<div class="flex flex-col">
-														<span class="text-muted-foreground font-mono text-xs">
-															{invitation.token.slice(0, 8)}...
-														</span>
-														<span class="text-muted-foreground text-xs">
-															Created {formatDate(invitation.createdAt)}
-														</span>
+										<h4 class="text-sm font-medium">Recent Invitations</h4>
+										<div class="space-y-2">
+											{#each data.invitations.slice(0, 5) as invitation}
+												<div class="flex items-center justify-between rounded-md border p-3">
+													<div class="flex items-center gap-3">
+														<div class="flex flex-col">
+															<span class="text-muted-foreground font-mono text-xs">
+																{invitation.token.slice(0, 8)}...
+															</span>
+															<span class="text-muted-foreground text-xs">
+																Created {formatDate(invitation.created_at)}
+															</span>
+														</div>
+													</div>
+													<div class="flex items-center gap-2">
+														{#if invitation.used_at}
+															<Badge variant="secondary">
+																<CheckIcon class="mr-1 size-3" />
+																Used
+															</Badge>
+														{:else if Date.now() >= new Date(invitation.expires_at).getTime()}
+															<Badge variant="destructive">
+																<ClockIcon class="mr-1 size-3" />
+																Expired
+															</Badge>
+														{:else}
+															<Badge variant="default">
+																<ClockIcon class="mr-1 size-3" />
+																Active
+															</Badge>
+														{/if}
+														{#if !invitation.used_at && Date.now() < new Date(invitation.expires_at).getTime()}
+															<Button
+																size="sm"
+																variant="outline"
+																onclick={() =>
+																	copyToClipboard(`${data.baseUrl}/invite/${invitation.token}`)}
+															>
+																<Copy class="size-3" />
+															</Button>
+														{/if}
 													</div>
 												</div>
-												<div class="flex items-center gap-2">
-													{#if invitation.usedAt}
-														<Badge variant="secondary">
-															<CheckIcon class="mr-1 size-3" />
-															Used
-														</Badge>
-													{:else if Date.now() >= new Date(invitation.expiresAt).getTime()}
-														<Badge variant="destructive">
-															<ClockIcon class="mr-1 size-3" />
-															Expired
-														</Badge>
-													{:else}
-														<Badge variant="default">
-															<ClockIcon class="mr-1 size-3" />
-															Active
-														</Badge>
-													{/if}
-													{#if !invitation.usedAt && Date.now() < new Date(invitation.expiresAt).getTime()}
-														<Button
-															size="sm"
-															variant="outline"
-															onclick={() =>
-																copyToClipboard(`${data.baseUrl}/invite/${invitation.token}`)}
-														>
-															<Copy class="size-3" />
-														</Button>
-													{/if}
-												</div>
-											</div>
-										{/each}
+											{/each}
+										</div>
 									</div>
-								</div>
+								{/if}
 							{/if}
 						</div>
 					</CardContent>

@@ -1,5 +1,5 @@
 import dotenv from 'dotenv';
-dotenv.config({ path: '.env' });
+dotenv.config({ path: '.env.local' });
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from './schema';
@@ -13,8 +13,8 @@ const connectionString = isDev
 if (!connectionString) {
 	throw new Error(
 		isDev
-			? 'DATABASE_URL_LOCAL is not set (check your .env file)'
-			: 'DATABASE_URL is not set (check your .env file)'
+			? 'DATABASE_URL_LOCAL is not set (check your .env.local)'
+			: 'DATABASE_URL is not set (check your environment variables)'
 	);
 }
 

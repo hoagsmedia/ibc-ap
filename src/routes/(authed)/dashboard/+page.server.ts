@@ -23,6 +23,14 @@ export const actions: Actions = {
 			return fail(401, { message: 'Must be logged in to create invitations' });
 		}
 
+		// Check if user has passed the test
+		if (!locals.user.test_passed) {
+			return fail(403, {
+				message:
+					'You must pass the official IBC test before creating invitation links. Please visit the test page to complete it.'
+			});
+		}
+
 		try {
 			const invitation = await createInvitationToken(locals.user.id);
 			const inviteUrl = `${url.origin}/invite/${invitation.token}`;

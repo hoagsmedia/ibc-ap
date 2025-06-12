@@ -1,14 +1,22 @@
 <script lang="ts">
 	import '../app.css';
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import { enhance } from '$app/forms';
-	import { Avatar, AvatarFallback, AvatarImage } from '$lib/components/ui/avatar/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import { toggleMode, ModeWatcher } from 'mode-watcher';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { LayoutServerData } from './$types';
+	import * as Avatar from '$lib/components/ui/avatar/index.js';
+
+	// generate user itials from name
+	function generateUsername(name: string): string {
+		const parts = name.split(' ');
+		if (parts.length === 0) return '';
+		if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+		return `${parts[0].charAt(0).toUpperCase()}${parts[1].charAt(0).toUpperCase()}`;
+	}
 
 	let { children, data }: { children: any; data: LayoutServerData } = $props();
 
@@ -76,20 +84,12 @@
 			<!-- User is logged in -->
 			<span class="text-muted-foreground text-sm">Hello, {data.user.name}!</span>
 			<DropdownMenu.Root>
-				<DropdownMenu.Trigger
-					><Avatar>
-						<AvatarImage
-							src={data.user.img
-								? data.user.img.startsWith('/')
-									? data.user.img
-									: `/${data.user.img}`
-								: ''}
-							alt={data.user.name}
-							class="border-border size-8 rounded-full border object-cover"
-						/>
-						<AvatarFallback>IBC</AvatarFallback>
-					</Avatar></DropdownMenu.Trigger
-				>
+				<DropdownMenu.Trigger>
+					<Avatar.Root>
+						<Avatar.Image src={`/resources/${data.user.img}`} alt={data.user.img} />
+						<Avatar.Fallback>{generateUsername(data.user.name)}</Avatar.Fallback>
+					</Avatar.Root>
+				</DropdownMenu.Trigger>
 				<DropdownMenu.Content>
 					<DropdownMenu.Group>
 						<DropdownMenu.Label>My Account</DropdownMenu.Label>

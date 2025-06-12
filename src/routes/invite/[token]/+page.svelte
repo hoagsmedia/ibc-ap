@@ -3,6 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import { Input } from '$lib/components/ui/input';
 	import { Label } from '$lib/components/ui/label';
+	import { Textarea } from '$lib/components/ui/textarea';
 	import {
 		Card,
 		CardContent,
@@ -23,23 +24,27 @@
 	<title>Join IBC - Sign Up</title>
 </svelte:head>
 
-<div class="bg-background flex min-h-screen items-center justify-center p-4">
-	<div class="w-full max-w-md">
-		<Card class="border-border shadow-lg">
+<div
+	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4"
+>
+	<div class="w-full max-w-2xl">
+		<Card class="shadow-lg">
 			<CardHeader class="space-y-2 text-center">
-				<div class="bg-primary mx-auto mb-4 flex size-12 items-center justify-center rounded-full">
-					<UserPlus class="text-primary-foreground size-6" />
+				<div
+					class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600"
+				>
+					<UserPlus class="h-6 w-6 text-white" />
 				</div>
-				<CardTitle class="text-foreground text-2xl font-bold">Join IBC</CardTitle>
-				<CardDescription class="text-muted-foreground">
+				<CardTitle class="text-2xl font-bold">Join IBC</CardTitle>
+				<CardDescription>
 					You've been invited to join our community! Create your account below.
 				</CardDescription>
 			</CardHeader>
 
 			<CardContent>
 				{#if form?.message}
-					<div class="border-destructive/50 bg-destructive/10 mb-6 rounded-md border p-4">
-						<p class="text-destructive text-sm">{form.message}</p>
+					<div class="mb-6 rounded-md border border-red-200 bg-red-50 p-4">
+						<p class="text-sm text-red-800">{form.message}</p>
 					</div>
 				{/if}
 
@@ -48,16 +53,15 @@
 					action="?/register"
 					use:enhance={() => {
 						loading = true;
-						return async ({ update }) => {
+						return async ({ result, update }) => {
 							loading = false;
 							await update();
 						};
 					}}
 					class="space-y-4"
 				>
-					<!-- Basic Required Information -->
 					<div class="space-y-2">
-						<Label for="name">Full Name *</Label>
+						<Label for="name">Full Name</Label>
 						<Input
 							id="name"
 							name="name"
@@ -70,7 +74,7 @@
 					</div>
 
 					<div class="space-y-2">
-						<Label for="email">Email Address *</Label>
+						<Label for="email">Email Address</Label>
 						<Input
 							id="email"
 							name="email"
@@ -83,7 +87,7 @@
 					</div>
 
 					<div class="space-y-2">
-						<Label for="password">Password *</Label>
+						<Label for="password">Password</Label>
 						<div class="relative">
 							<Input
 								id="password"
@@ -97,21 +101,21 @@
 							<button
 								type="button"
 								onclick={() => (showPassword = !showPassword)}
-								class="text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center pr-3"
+								class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
 								disabled={loading}
 							>
 								{#if showPassword}
-									<EyeOff class="size-4" />
+									<EyeOff class="h-4 w-4" />
 								{:else}
-									<Eye class="size-4" />
+									<Eye class="h-4 w-4" />
 								{/if}
 							</button>
 						</div>
-						<p class="text-muted-foreground text-xs">Must be at least 8 characters long</p>
+						<p class="text-xs text-gray-500">Must be at least 8 characters long</p>
 					</div>
 
 					<div class="space-y-2">
-						<Label for="confirmPassword">Confirm Password *</Label>
+						<Label for="confirmPassword">Confirm Password</Label>
 						<div class="relative">
 							<Input
 								id="confirmPassword"
@@ -125,73 +129,74 @@
 							<button
 								type="button"
 								onclick={() => (showConfirmPassword = !showConfirmPassword)}
-								class="text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center pr-3"
+								class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
 								disabled={loading}
 							>
 								{#if showConfirmPassword}
-									<EyeOff class="size-4" />
+									<EyeOff class="h-4 w-4" />
 								{:else}
-									<Eye class="size-4" />
+									<Eye class="h-4 w-4" />
 								{/if}
 							</button>
 						</div>
 					</div>
 
-					<!-- Personal Information -->
 					<div class="space-y-2">
-						<Label for="bio">About Me</Label>
-						<Input
+						<Label for="bio">Bio</Label>
+						<Textarea
 							id="bio"
 							name="bio"
-							type="text"
-							placeholder="Tell us a bit about yourself"
+							placeholder="Tell us about yourself..."
+							rows={3}
 							disabled={loading}
 							class="transition-colors"
 						/>
+						<p class="text-xs text-gray-500">Optional</p>
 					</div>
 
 					<div class="space-y-2">
-						<Label for="hobbies">Hobbies & Interests</Label>
+						<Label for="hobbies">Hobbies</Label>
 						<Input
 							id="hobbies"
 							name="hobbies"
 							type="text"
-							placeholder="What do you enjoy doing?"
+							placeholder="Your hobbies and interests"
 							disabled={loading}
 							class="transition-colors"
 						/>
+						<p class="text-xs text-gray-500">Optional</p>
 					</div>
 
-					<!-- Beer Preferences -->
 					<div class="space-y-2">
-						<Label for="likes">Beer Preferences</Label>
+						<Label for="likes">Likes</Label>
 						<Input
 							id="likes"
 							name="likes"
 							type="text"
-							placeholder="Favorite beer styles, breweries, etc."
+							placeholder="Things you enjoy"
 							disabled={loading}
 							class="transition-colors"
 						/>
+						<p class="text-xs text-gray-500">Optional</p>
 					</div>
 
-					<!-- Sponsor Information -->
 					<div class="space-y-2">
-						<Label for="sponsor">Sponsor (if applicable)</Label>
+						<Label for="sponsor" class="text-muted-foreground">Sponsor</Label>
 						<Input
 							id="sponsor"
 							name="sponsor"
 							type="text"
-							placeholder="Who referred you to the club?"
-							disabled={loading}
-							class="transition-colors"
+							value={data.sponsorName}
+							readonly
+							class="bg-muted text-muted-foreground cursor-not-allowed"
 						/>
+						<p class="text-muted-foreground text-xs">Invited by {data.sponsorName}</p>
 					</div>
 
 					<Button type="submit" disabled={loading} class="mt-6 w-full">
 						{#if loading}
 							<div
-								class="border-primary-foreground mr-2 size-4 animate-spin rounded-full border-2 border-t-transparent"
+								class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
 							></div>
 						{/if}
 						Create Account
@@ -199,9 +204,9 @@
 				</form>
 
 				<div class="mt-6 text-center">
-					<p class="text-muted-foreground text-sm">
+					<p class="text-sm text-gray-500">
 						Already have an account?
-						<a href="/login" class="text-primary hover:text-primary/80 font-medium">
+						<a href="/login" class="font-medium text-blue-600 hover:text-blue-800">
 							Sign in here
 						</a>
 					</p>

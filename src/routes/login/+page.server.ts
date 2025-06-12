@@ -37,9 +37,9 @@ export const actions: Actions = {
 		}
 
 		// Handle users with dev-hash (first-time login)
-		if (existingUser.passwordHash === 'dev-hash') {
+		if (existingUser.password_hash === 'dev-hash') {
 			// For users with dev-hash, accept any password and update their hash
-			const newPasswordHash = await hash(password, {
+			const newpassword_hash = await hash(password, {
 				memoryCost: 19456,
 				timeCost: 2,
 				outputLen: 32,
@@ -49,18 +49,18 @@ export const actions: Actions = {
 			// Update the user's password hash
 			await db
 				.update(table.users)
-				.set({ passwordHash: newPasswordHash })
+				.set({ password_hash: newpassword_hash })
 				.where(eq(table.users.id, existingUser.id));
 
 			const sessionToken = auth.generateSessionToken();
 			const session = await auth.createSession(sessionToken, existingUser.id);
-			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+			auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
 
 			return redirect(302, '/dashboard');
 		}
 
 		// Normal password verification for users with proper hashes
-		const validPassword = await verify(existingUser.passwordHash, password, {
+		const validPassword = await verify(existingUser.password_hash, password, {
 			memoryCost: 19456,
 			timeCost: 2,
 			outputLen: 32,
@@ -72,7 +72,7 @@ export const actions: Actions = {
 
 		const sessionToken = auth.generateSessionToken();
 		const session = await auth.createSession(sessionToken, existingUser.id);
-		auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+		auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
 
 		return redirect(302, '/dashboard');
 	},
@@ -93,7 +93,7 @@ export const actions: Actions = {
 		}
 
 		const userId = generateUserId();
-		const passwordHash = await hash(password, {
+		const password_hash = await hash(password, {
 			// recommended minimum parameters
 			memoryCost: 19456,
 			timeCost: 2,
@@ -106,13 +106,13 @@ export const actions: Actions = {
 				id: userId,
 				name: name as string,
 				email: email as string,
-				passwordHash,
+				password_hash,
 				role: 'guest'
 			});
 
 			const sessionToken = auth.generateSessionToken();
 			const session = await auth.createSession(sessionToken, userId);
-			auth.setSessionTokenCookie(event, sessionToken, session.expiresAt);
+			auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
 		} catch {
 			return fail(500, { message: 'An error has occurred' });
 		}
