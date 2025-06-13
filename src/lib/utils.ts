@@ -7,6 +7,14 @@ export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
 }
 
+// generate user itials from name
+export function generateUsername(name: string): string {
+	const parts = name.split(' ');
+	if (parts.length === 0) return '';
+	if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+	return `${parts[0].charAt(0).toUpperCase()}${parts[1].charAt(0).toUpperCase()}`;
+}
+
 export const { createUploader, createUploadThing } = generateSvelteHelpers<OurFileRouter>();
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type WithoutChild<T> = T extends { child?: any } ? Omit<T, 'child'> : T;

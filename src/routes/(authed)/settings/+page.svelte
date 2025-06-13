@@ -3,6 +3,8 @@
 	import { page } from '$app/stores';
 	import { createUploadThing } from '$lib/utils';
 	import type { PageData } from './$types';
+	import * as Avatar from '$lib/components/ui/avatar';
+	import { generateUsername } from '$lib/utils';
 
 	let { data }: { data: PageData } = $props();
 	let uploading = $state(false);
@@ -91,33 +93,13 @@
 				<h2 class="text-card-foreground mb-4 text-lg font-medium">Profile Image</h2>
 
 				<div class="flex items-center space-x-6">
-					<div class="flex-shrink-0">
+					<!-- UploadThing URL -->
+					<Avatar.Root class="size-24">
 						{#if data.user.img}
-							{#if data.user.img.startsWith('http')}
-								<!-- UploadThing URL -->
-								<img
-									src={data.user.img}
-									alt={data.user.name}
-									class="ring-border size-24 rounded-full object-cover ring-4"
-								/>
-							{:else}
-								<!-- Legacy local file path -->
-								<img
-									src={`/resources/${data.user.img}`}
-									alt={data.user.name}
-									class="ring-border size-24 rounded-full object-cover ring-4"
-								/>
-							{/if}
-						{:else}
-							<div
-								class="bg-muted ring-border flex size-24 items-center justify-center rounded-full ring-4"
-							>
-								<span class="text-muted-foreground text-xl font-medium">
-									{data.user.name.charAt(0).toUpperCase()}
-								</span>
-							</div>
+							<Avatar.Image class="size-24" src={data.user.img} alt={data.user.name} />
 						{/if}
-					</div>
+						<Avatar.Fallback>{generateUsername(data.user.name)}</Avatar.Fallback>
+					</Avatar.Root>
 
 					<div class="flex-1">
 						<div class="space-y-4">

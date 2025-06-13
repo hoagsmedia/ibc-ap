@@ -9,14 +9,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { LayoutServerData } from './$types';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
-
-	// generate user itials from name
-	function generateUsername(name: string): string {
-		const parts = name.split(' ');
-		if (parts.length === 0) return '';
-		if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-		return `${parts[0].charAt(0).toUpperCase()}${parts[1].charAt(0).toUpperCase()}`;
-	}
+	import { generateUsername } from '$lib/utils.js';
 
 	let { children, data }: { children: any; data: LayoutServerData } = $props();
 
