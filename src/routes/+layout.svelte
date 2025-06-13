@@ -52,25 +52,24 @@
 				{/each}
 			</NavigationMenu.List>
 		</NavigationMenu.Root>
+
+		<NavigationMenu.Root>
+			<NavigationMenu.List>
+				<NavigationMenu.Item>
+					<NavigationMenu.Trigger>More</NavigationMenu.Trigger>
+					<NavigationMenu.Content>
+						<ul class="min-w-[150px] p-2">
+							{#each dropdownLinks as link}
+								<li>
+									<NavigationMenu.Link href={link.href}>{link.label}</NavigationMenu.Link>
+								</li>
+							{/each}
+						</ul>
+					</NavigationMenu.Content>
+				</NavigationMenu.Item>
+			</NavigationMenu.List>
+		</NavigationMenu.Root>
 	</div>
-
-	<NavigationMenu.Root>
-		<NavigationMenu.List>
-			<NavigationMenu.Item>
-				<NavigationMenu.Trigger>More</NavigationMenu.Trigger>
-				<NavigationMenu.Content>
-					<ul class="min-w-[150px] p-2">
-						{#each dropdownLinks as link}
-							<li>
-								<NavigationMenu.Link href={link.href}>{link.label}</NavigationMenu.Link>
-							</li>
-						{/each}
-					</ul>
-				</NavigationMenu.Content>
-			</NavigationMenu.Item>
-		</NavigationMenu.List>
-	</NavigationMenu.Root>
-
 	<!-- User Authentication Section -->
 	<div class="flex items-center gap-2">
 		{#if data.user}
@@ -95,7 +94,7 @@
 					<DropdownMenu.Group>
 						<DropdownMenu.Label>My Account</DropdownMenu.Label>
 						<DropdownMenu.Separator />
-						<DropdownMenu.Item><a href="/dashboard">Profile</a></DropdownMenu.Item>
+						<DropdownMenu.Item><a href="/dashboard">Dashboard</a></DropdownMenu.Item>
 						<DropdownMenu.Item><a href="/settings">Settings</a></DropdownMenu.Item>
 					</DropdownMenu.Group>
 				</DropdownMenu.Content>

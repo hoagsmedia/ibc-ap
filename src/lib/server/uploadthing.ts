@@ -7,7 +7,7 @@ import { sessionCookieName, validateSessionToken } from './auth';
 
 const f = createUploadthing();
 
-// Helper function to get user from session using our custom auth
+// // Helper function to get user from session using our custom auth
 const getUserFromRequest = async (req: Request): Promise<{ id: string } | null> => {
 	try {
 		const cookies = req.headers.get('cookie');
@@ -43,32 +43,52 @@ export const ourFileRouter = {
 		.middleware(async ({ req }) => {
 			const user = await getUserFromRequest(req);
 			if (!user) throw new Error('Unauthorized');
-
+			console.log('User authenticated for profile image upload:', user.id);
 			return {
 				userId: user.id,
 				uploadType: 'profile' as const
 			};
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
-			console.log('Profile image upload complete for userId:', metadata.userId);
-			console.log('Profile image URL:', file.ufsUrl);
+			console.log('🎯 UploadComplete callback triggered!');
+			console.log('📊 Metadata:', JSON.stringify(metadata, null, 2));
+			console.log(
+				'📁 File info:',
+				JSON.stringify(
+					{
+						key: file.key,
+						name: file.name,
+						size: file.size,
+						type: file.type,
+						ufsUrl: file.ufsUrl
+					},
+					null,
+					2
+				)
+			);
 
 			// Update user's profile image in database
 			try {
-				await db
+				console.log('💾 Attempting database update for user:', metadata.userId);
+				const updateResult = await db
 					.update(users)
 					.set({
 						img: file.ufsUrl,
 						updated_at: new Date()
 					})
-					.where(eq(users.id, metadata.userId));
+					.where(eq(users.id, metadata.userId))
+					.returning({ id: users.id, img: users.img });
 
-				console.log('Updated user profile image in database');
+				console.log('✅ Database update successful:', updateResult);
+				console.log('✅ Updated user profile image in database');
 			} catch (error) {
-				console.error('Failed to update user profile image:', error);
+				console.error('❌ Failed to update user profile image:', error);
+				throw error; // Re-throw to ensure UploadThing knows the callback failed
 			}
 
-			return { uploadedBy: metadata.userId, imageUrl: file.ufsUrl };
+			const response = { uploadedBy: metadata.userId, imageUrl: file.ufsUrl };
+			console.log('📤 Returning callback response:', response);
+			return response;
 		}),
 
 	// Profile image migration route - server-only uploads for migrating existing profile images
