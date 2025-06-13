@@ -1,26 +1,55 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
+	import { createUploadThing } from '$lib/utils';
 	import type { PageData } from './$types';
+	import * as Avatar from '$lib/components/ui/avatar';
+	import { generateUsername } from '$lib/utils';
 
 	let { data }: { data: PageData } = $props();
-	let imagePreview = $state<string | null>(null);
 	let uploading = $state(false);
 	let updating = $state(false);
 
 	// Get form data from page store using $derived
 	let form = $derived($page.form as { success?: boolean; message?: string } | null);
 
-	function handleImagePreview(event: Event) {
-		const input = event.target as HTMLInputElement;
-		const file = input.files?.[0];
+	// Create UploadThing helper
+	const { startUpload, isUploading } = createUploadThing('profileImageUploader', {
+		onClientUploadComplete: (res) => {
+			console.log('Upload Completed', res);
+			uploading = false;
+			// Refresh the page to show the new image
+			window.location.reload();
+		},
+		onUploadError: (error: Error) => {
+			console.error('Upload error:', error);
+			uploading = false;
+			alert(`Upload failed: ${error.message}`);
+		},
+		onUploadBegin: (name) => {
+			console.log('Upload has begun for', name);
+			uploading = true;
+		}
+	});
 
-		if (file) {
-			const reader = new FileReader();
-			reader.onload = (e) => {
-				imagePreview = e.target?.result as string;
-			};
-			reader.readAsDataURL(file);
+	let fileInput = $state<HTMLInputElement | null>(null);
+
+	function handleUploadClick() {
+		if (fileInput) {
+			fileInput.click();
+		}
+	}
+
+	async function handleFileChange(event: Event) {
+		const target = event.target as HTMLInputElement;
+		const files = target.files;
+		if (files && files.length > 0) {
+			try {
+				await startUpload(Array.from(files));
+			} catch (error) {
+				console.error('Upload failed:', error);
+				uploading = false;
+			}
 		}
 	}
 </script>
@@ -64,73 +93,55 @@
 				<h2 class="text-card-foreground mb-4 text-lg font-medium">Profile Image</h2>
 
 				<div class="flex items-center space-x-6">
-					<div class="flex-shrink-0">
-						{#if imagePreview}
-							<img
-								src={imagePreview}
-								alt="Preview"
-								class="ring-border size-24 rounded-full object-cover ring-4"
-							/>
-						{:else if data.user.img}
-							<img
-								src={`/resources/${data.user.img}`}
-								alt={data.user.name}
-								class="ring-border size-24 rounded-full object-cover ring-4"
-							/>
-						{:else}
-							<div
-								class="bg-muted ring-border flex size-24 items-center justify-center rounded-full ring-4"
-							>
-								<span class="text-muted-foreground text-xl font-medium">
-									{data.user.name.charAt(0).toUpperCase()}
-								</span>
-							</div>
+					<!-- UploadThing URL -->
+					<Avatar.Root class="size-24">
+						{#if data.user.img}
+							<Avatar.Image class="size-24" src={data.user.img} alt={data.user.name} />
 						{/if}
-					</div>
+						<Avatar.Fallback>{generateUsername(data.user.name)}</Avatar.Fallback>
+					</Avatar.Root>
 
-					<form
-						method="POST"
-						action="?/uploadImage"
-						enctype="multipart/form-data"
-						use:enhance={() => {
-							uploading = true;
-							return async ({ update }) => {
-								await update();
-								uploading = false;
-								imagePreview = null;
-								// Reset file input
-								const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement;
-								if (fileInput) fileInput.value = '';
-							};
-						}}
-						class="flex-1"
-					>
+					<div class="flex-1">
 						<div class="space-y-4">
 							<div>
-								<label for="image" class="text-card-foreground block text-sm font-medium">
-									Choose new image
+								<label
+									for="profile-image-upload"
+									class="text-card-foreground mb-2 block text-sm font-medium"
+								>
+									Upload new profile image
 								</label>
-								<input
-									type="file"
-									id="image"
-									name="image"
-									accept="image/*"
-									onchange={handleImagePreview}
-									class="text-muted-foreground file:bg-accent file:text-accent-foreground hover:file:bg-accent/80 mt-1 block w-full text-sm file:mr-4 file:rounded-md file:border-0 file:px-4 file:py-2 file:text-sm file:font-medium"
-									disabled={uploading}
-								/>
-								<p class="text-muted-foreground mt-1 text-xs">PNG, JPG, GIF up to 5MB</p>
+								<div
+									class="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-gray-400"
+								>
+									{#if uploading}
+										<div class="flex items-center justify-center">
+											<div
+												class="border-primary h-8 w-8 animate-spin rounded-full border-b-2"
+											></div>
+											<span class="text-muted-foreground ml-3 text-sm">Uploading...</span>
+										</div>
+									{:else}
+										<input
+											bind:this={fileInput}
+											id="profile-image-upload"
+											type="file"
+											accept="image/*"
+											onchange={handleFileChange}
+											class="hidden"
+										/>
+										<button
+											onclick={handleUploadClick}
+											type="button"
+											class="bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-ring inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
+										>
+											Choose Image
+										</button>
+									{/if}
+								</div>
+								<p class="text-muted-foreground mt-1 text-xs">PNG, JPG, GIF up to 4MB</p>
 							</div>
-
-							<button
-								type="submit"
-								disabled={uploading}
-								class="bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-ring inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
-							>
-								{uploading ? 'Uploading...' : 'Upload Image'}
-							</button>
 						</div>
-					</form>
+					</div>
 				</div>
 			</div>
 

@@ -9,14 +9,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import type { LayoutServerData } from './$types';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
-
-	// generate user itials from name
-	function generateUsername(name: string): string {
-		const parts = name.split(' ');
-		if (parts.length === 0) return '';
-		if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
-		return `${parts[0].charAt(0).toUpperCase()}${parts[1].charAt(0).toUpperCase()}`;
-	}
+	import { generateUsername } from '$lib/utils.js';
 
 	let { children, data }: { children: any; data: LayoutServerData } = $props();
 
@@ -59,25 +52,24 @@
 				{/each}
 			</NavigationMenu.List>
 		</NavigationMenu.Root>
+
+		<NavigationMenu.Root>
+			<NavigationMenu.List>
+				<NavigationMenu.Item>
+					<NavigationMenu.Trigger>More</NavigationMenu.Trigger>
+					<NavigationMenu.Content>
+						<ul class="min-w-[150px] p-2">
+							{#each dropdownLinks as link}
+								<li>
+									<NavigationMenu.Link href={link.href}>{link.label}</NavigationMenu.Link>
+								</li>
+							{/each}
+						</ul>
+					</NavigationMenu.Content>
+				</NavigationMenu.Item>
+			</NavigationMenu.List>
+		</NavigationMenu.Root>
 	</div>
-
-	<NavigationMenu.Root>
-		<NavigationMenu.List>
-			<NavigationMenu.Item>
-				<NavigationMenu.Trigger>More</NavigationMenu.Trigger>
-				<NavigationMenu.Content>
-					<ul class="min-w-[150px] p-2">
-						{#each dropdownLinks as link}
-							<li>
-								<NavigationMenu.Link href={link.href}>{link.label}</NavigationMenu.Link>
-							</li>
-						{/each}
-					</ul>
-				</NavigationMenu.Content>
-			</NavigationMenu.Item>
-		</NavigationMenu.List>
-	</NavigationMenu.Root>
-
 	<!-- User Authentication Section -->
 	<div class="flex items-center gap-2">
 		{#if data.user}
@@ -86,7 +78,15 @@
 			<DropdownMenu.Root>
 				<DropdownMenu.Trigger>
 					<Avatar.Root>
-						<Avatar.Image src={`/resources/${data.user.img}`} alt={data.user.img} />
+						{#if data.user.img}
+							{#if data.user.img.startsWith('http')}
+								<!-- UploadThing URL -->
+								<Avatar.Image src={data.user.img} alt={data.user.name} />
+							{:else}
+								<!-- Legacy local file path -->
+								<!-- <Avatar.Image src={`/resources/${data.user.img}`} alt={data.user.name} /> -->
+							{/if}
+						{/if}
 						<Avatar.Fallback>{generateUsername(data.user.name)}</Avatar.Fallback>
 					</Avatar.Root>
 				</DropdownMenu.Trigger>
@@ -94,7 +94,7 @@
 					<DropdownMenu.Group>
 						<DropdownMenu.Label>My Account</DropdownMenu.Label>
 						<DropdownMenu.Separator />
-						<DropdownMenu.Item><a href="/dashboard">Profile</a></DropdownMenu.Item>
+						<DropdownMenu.Item><a href="/dashboard">Dashboard</a></DropdownMenu.Item>
 						<DropdownMenu.Item><a href="/settings">Settings</a></DropdownMenu.Item>
 					</DropdownMenu.Group>
 				</DropdownMenu.Content>

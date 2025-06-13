@@ -24,27 +24,23 @@
 	<title>Join IBC - Sign Up</title>
 </svelte:head>
 
-<div
-	class="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4"
->
+<div class="flex min-h-screen items-center justify-center p-4">
 	<div class="w-full max-w-2xl">
-		<Card class="shadow-lg">
+		<Card class="border-border shadow-lg">
 			<CardHeader class="space-y-2 text-center">
-				<div
-					class="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-blue-600"
-				>
-					<UserPlus class="h-6 w-6 text-white" />
+				<div class="bg-primary mx-auto mb-4 flex size-12 items-center justify-center rounded-full">
+					<UserPlus class="text-primary-foreground size-6" />
 				</div>
-				<CardTitle class="text-2xl font-bold">Join IBC</CardTitle>
-				<CardDescription>
+				<CardTitle class="text-foreground text-2xl font-bold">Join IBC</CardTitle>
+				<CardDescription class="text-muted-foreground">
 					You've been invited to join our community! Create your account below.
 				</CardDescription>
 			</CardHeader>
 
 			<CardContent>
 				{#if form?.message}
-					<div class="mb-6 rounded-md border border-red-200 bg-red-50 p-4">
-						<p class="text-sm text-red-800">{form.message}</p>
+					<div class="border-destructive bg-destructive/10 mb-6 rounded-md border p-4">
+						<p class="text-destructive text-sm">{form.message}</p>
 					</div>
 				{/if}
 
@@ -101,17 +97,17 @@
 							<button
 								type="button"
 								onclick={() => (showPassword = !showPassword)}
-								class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+								class="text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center pr-3"
 								disabled={loading}
 							>
 								{#if showPassword}
-									<EyeOff class="h-4 w-4" />
+									<EyeOff class="size-4" />
 								{:else}
-									<Eye class="h-4 w-4" />
+									<Eye class="size-4" />
 								{/if}
 							</button>
 						</div>
-						<p class="text-xs text-gray-500">Must be at least 8 characters long</p>
+						<p class="text-muted-foreground text-xs">Must be at least 8 characters long</p>
 					</div>
 
 					<div class="space-y-2">
@@ -129,13 +125,13 @@
 							<button
 								type="button"
 								onclick={() => (showConfirmPassword = !showConfirmPassword)}
-								class="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+								class="text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center pr-3"
 								disabled={loading}
 							>
 								{#if showConfirmPassword}
-									<EyeOff class="h-4 w-4" />
+									<EyeOff class="size-4" />
 								{:else}
-									<Eye class="h-4 w-4" />
+									<Eye class="size-4" />
 								{/if}
 							</button>
 						</div>
@@ -151,7 +147,7 @@
 							disabled={loading}
 							class="transition-colors"
 						/>
-						<p class="text-xs text-gray-500">Optional</p>
+						<p class="text-muted-foreground text-xs">Optional</p>
 					</div>
 
 					<div class="space-y-2">
@@ -164,7 +160,7 @@
 							disabled={loading}
 							class="transition-colors"
 						/>
-						<p class="text-xs text-gray-500">Optional</p>
+						<p class="text-muted-foreground text-xs">Optional</p>
 					</div>
 
 					<div class="space-y-2">
@@ -177,7 +173,7 @@
 							disabled={loading}
 							class="transition-colors"
 						/>
-						<p class="text-xs text-gray-500">Optional</p>
+						<p class="text-muted-foreground text-xs">Optional</p>
 					</div>
 
 					<div class="space-y-2">
@@ -196,7 +192,7 @@
 					<Button type="submit" disabled={loading} class="mt-6 w-full">
 						{#if loading}
 							<div
-								class="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"
+								class="border-primary-foreground mr-2 size-4 animate-spin rounded-full border-2 border-t-transparent"
 							></div>
 						{/if}
 						Create Account
@@ -204,9 +200,9 @@
 				</form>
 
 				<div class="mt-6 text-center">
-					<p class="text-sm text-gray-500">
+					<p class="text-muted-foreground text-sm">
 						Already have an account?
-						<a href="/login" class="font-medium text-blue-600 hover:text-blue-800">
+						<a href="/login" class="text-primary hover:text-primary/80 font-medium">
 							Sign in here
 						</a>
 					</p>

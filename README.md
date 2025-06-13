@@ -5,11 +5,13 @@ A complete modernization of the Island Beer Club website built with SvelteKit 2,
 ## 🚀 Features
 
 - **Modern Frontend**: SvelteKit 2 with Svelte 5 Runes
-- **Authentication**: Lucia Auth with session-based authentication
+- **Authentication**: Custom session-based authentication
 - **Database**: PostgreSQL with Drizzle ORM
 - **Styling**: Tailwind CSS with shadcn-svelte components
 - **Type Safety**: Full TypeScript implementation
-- **Image Uploads**: Profile image management
+- **Image Management**: UploadThing integration for cloud image storage
+- **User System**: Complete user profiles and invitation system
+- **Test System**: Membership qualification testing
 - **Responsive Design**: Mobile-first responsive layout
 
 ## 🛠️ Tech Stack
@@ -19,7 +21,8 @@ A complete modernization of the Island Beer Club website built with SvelteKit 2,
 - **Styling**: Tailwind CSS 4.0
 - **Components**: shadcn-svelte
 - **Database**: PostgreSQL with Drizzle ORM
-- **Authentication**: Lucia Auth
+- **Authentication**: Custom session-based auth system
+- **Image Storage**: UploadThing for cloud image management
 - **Forms**: SvelteKit Superforms with Zod validation
 - **Testing**: Vitest
 - **TypeScript**: Strict type checking
@@ -29,6 +32,7 @@ A complete modernization of the Island Beer Club website built with SvelteKit 2,
 - Node.js 18+
 - PostgreSQL database
 - pnpm (recommended) or npm
+- UploadThing account (for image uploads)
 
 ## 🚀 Getting Started
 
@@ -61,9 +65,22 @@ DATABASE_URL_LOCAL="postgresql://username@localhost:5432/database_name"
 
 # For production
 DATABASE_URL="postgresql://username:password@host:port/database_name"
+
+# UploadThing configuration (for image uploads)
+UPLOADTHING_TOKEN="your_uploadthing_secret_token"
 ```
 
-### 4. Database Setup
+### 4. UploadThing Setup (Optional)
+
+For cloud image storage:
+
+1. Create an account at [uploadthing.com](https://uploadthing.com)
+2. Create a new application
+3. Copy your secret token to the `UPLOADTHING_TOKEN` environment variable
+
+See `UPLOADTHING_SETUP.md` for detailed configuration instructions.
+
+### 5. Database Setup
 
 Generate and push the database schema:
 
@@ -71,7 +88,7 @@ Generate and push the database schema:
 pnpm db:push
 ```
 
-### 5. Start Development Server
+### 6. Start Development Server
 
 ```bash
 pnpm dev

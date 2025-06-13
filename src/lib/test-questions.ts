@@ -10,130 +10,123 @@ export interface TestQuestion {
 export const testQuestions: TestQuestion[] = [
 	{
 		id: 1,
-		question: 'What is the primary rule regarding beer consumption at IBC events?',
+		question: 'Who are the five Founders of the Island Beer Club?',
 		options: [
-			'Members must drink at least 3 beers per event',
-			'Only craft beer is allowed',
-			'Drink responsibly and know your limits',
-			'Beer must be consumed within 30 minutes of opening'
-		],
-		correctAnswer: 2,
-		explanation:
-			'The Island Beer Club prioritizes responsible drinking and member safety above all else.'
-	},
-	{
-		id: 2,
-		question: 'How should new members be welcomed to the club?',
-		options: [
-			'With a formal initiation ceremony',
-			'By ignoring them until they prove themselves',
-			'With warmth, inclusivity, and introduction to club traditions',
-			'By challenging them to a drinking contest'
-		],
-		correctAnswer: 2,
-		explanation: 'IBC values creating a welcoming and inclusive environment for all members.'
-	},
-	{
-		id: 3,
-		question: 'What is the appropriate behavior during club meetings?',
-		options: [
-			'Respectful participation and listening to others',
-			'Constant interruption to show enthusiasm',
-			'Silent observation only',
-			'Debating every point aggressively'
+			'Jeff "Bones" Wilkens, Wayne "Big Oly" Oldendorph, John "Old Doc" Morton, John "Cruncher" Muncy and Rob "Crenny" Crenshaw',
+			'John Lennon, Ringo Starr, George Harrison, Paul McCartney and Stuart Sutcliffe',
+			'Tom Smisek, Casey Tanaka, Richard Bailey, Mike Woiwode and Bill Sandke',
+			'Bernie Madoff, Duke Cunningham, Andrew Fastow, Jeffrey Skilling and Charles Ponzi'
 		],
 		correctAnswer: 0,
 		explanation:
-			'Club meetings should be conducted with mutual respect and active, thoughtful participation.'
+			'The five founding members established the Island Beer Club and remain legendary figures in IBC history.'
+	},
+	{
+		id: 2,
+		question: 'When was the Island Beer Club founded?',
+		options: ['March 22, 2004', 'December 25, 2008', 'October 2, 2012', 'June 8, 1960'],
+		correctAnswer: 0,
+		explanation:
+			'The Island Beer Club was founded on March 22, 2004, marking the beginning of a legendary brotherhood.'
+	},
+	{
+		id: 3,
+		question: 'What afternoon T.V. show did members watch in the early days of the Beer Club?',
+		options: ['Oprah', 'Jerry Springer', 'Days of Our Lives', 'Beers Around the World'],
+		correctAnswer: 1,
+		explanation:
+			'In the early days, members would gather to watch Days of Our Lives, creating shared memories and traditions.'
 	},
 	{
 		id: 4,
-		question: 'How should conflicts between members be handled?',
+		question: 'What is the motto of the Island Beer Club?',
 		options: [
-			'Through public confrontation at events',
-			'By involving the entire membership in the dispute',
-			'With maturity, direct communication, and club leadership if needed',
-			'By excluding one of the parties from future events'
+			'We have more time than money',
+			'Beer rules the world',
+			'Alley lingerers will be shot',
+			'All for one and one for all'
 		],
-		correctAnswer: 2,
+		correctAnswer: 0,
 		explanation:
-			'Conflicts should be resolved maturely and privately, with leadership assistance when necessary.'
+			'"We have more time than money" perfectly captures the IBC philosophy of prioritizing friendship and good times over material wealth.'
 	},
 	{
 		id: 5,
-		question: "What is the club's stance on diversity and inclusion?",
+		question: 'What is the domain name of the IBC website?',
 		options: [
-			'Only certain types of people fit the club culture',
-			"Diversity is welcomed as long as it doesn't change traditions",
-			'The club actively welcomes and celebrates diversity in all forms',
-			'Diversity is not a consideration for membership'
+			'www.coorslightsucks.com',
+			'www.coronadoalcoholics.org',
+			'www.islandbeerclub.com',
+			'www.oldguysrule.com'
 		],
 		correctAnswer: 2,
-		explanation:
-			'The Island Beer Club is committed to being an inclusive community that welcomes all people.'
+		explanation: 'The official IBC website can be found at www.islandbeerclub.com.'
 	},
 	{
 		id: 6,
-		question: 'What should you do if you notice a fellow member has had too much to drink?',
-		options: [
-			'Encourage them to drink more to keep up with the group',
-			"Ignore it - it's not your responsibility",
-			'Look out for their safety and help them get home safely',
-			'Mock them for not being able to handle their alcohol'
-		],
+		question: 'What is the name of the alley where the IBC is located?',
+		options: ['Brewpub Lane', 'Beer Belly Blvd.', 'Ale Avenue', 'Stella Street'],
 		correctAnswer: 2,
-		explanation: "Members should always look out for each other's safety and wellbeing."
+		explanation:
+			'The Island Beer Club headquarters is located on Stella Street, the heart of IBC operations.'
 	},
 	{
 		id: 7,
-		question: 'How should club events and venues be treated?',
-		options: [
-			'As opportunities to party without consequences',
-			'With respect, cleanliness, and consideration for others',
-			"As places where normal social rules don't apply",
-			'With casual disregard since someone else will clean up'
-		],
-		correctAnswer: 1,
-		explanation: 'Club members should always show respect for venues and clean up after themselves.'
+		question: 'How many kegerators are in the Island Beer Club Headquarters?',
+		options: ['3', '1', '121', 'None of the above'],
+		correctAnswer: 0,
+		explanation:
+			'The IBC headquarters features 3 kegerators to ensure a proper selection of craft beers for members.'
 	},
 	{
 		id: 8,
-		question: 'What is the purpose of the Island Beer Club?',
-		options: [
-			'To drink as much beer as possible',
-			"To exclude people who don't fit in",
-			'To build lasting friendships through shared appreciation of beer and good times',
-			'To compete with other drinking organizations'
-		],
+		question:
+			'What is the highest mountain that an IBC member climbed to display the Beer Club banner?',
+		options: ['Mt. Whitney', 'Mt. Everest', 'Mt Kilimanjaro', 'K2'],
 		correctAnswer: 2,
 		explanation:
-			'The IBC is fundamentally about building community and lasting friendships centered around beer appreciation.'
+			'An IBC member proudly displayed the Beer Club banner atop Mt. Kilimanjaro, bringing IBC spirit to new heights.'
 	},
 	{
 		id: 9,
-		question: 'How should members represent the club in public?',
+		question: 'When does the Beer Club meet?',
 		options: [
-			'By being as loud and attention-seeking as possible',
-			'With pride, respect, and positive behavior that reflects club values',
-			'By keeping club membership secret',
-			'By challenging others to drinking contests'
+			'Every Wednesday, 4:00 PM to 6:00 PM (Standard Time); 4:30 PM to 6:30 PM (Daylight Savings Time)',
+			'Every other Thursday, 1:00 PM to 9:00 PM',
+			'Whenever Bones was in town',
+			'Every day, 4:30 PM to 6:30 PM'
 		],
-		correctAnswer: 1,
+		correctAnswer: 0,
 		explanation:
-			'Members are ambassadors of the club and should represent it positively in all settings.'
+			'The IBC has regular Wednesday meetings with times adjusted for Standard vs. Daylight Savings Time.'
 	},
 	{
 		id: 10,
-		question: 'What is the most important aspect of being an IBC member?',
+		question: 'As of June 2020 how many members are in the Island Beer Club?',
+		options: ['52', '912', '407', '357'],
+		correctAnswer: 2,
+		explanation: 'As of June 2020, the Island Beer Club had grown to 52 members worldwide.'
+	},
+	{
+		id: 11,
+		question: 'What are IBUs?',
 		options: [
-			'Having the highest alcohol tolerance',
-			'Knowing the most about beer varieties',
-			'Contributing positively to the club community and friendships',
-			'Attending every single event'
+			'Island Beer Unequal',
+			'International Bittering Units',
+			'Integrated Business Units',
+			'I Beer Up'
 		],
+		correctAnswer: 1,
+		explanation:
+			'IBU stands for International Bittering Units, a measure of hop bitterness in beer.'
+	},
+	{
+		id: 12,
+		question: 'How many kegs have been purchased since the inception of Beer Club in 2004?',
+		options: ['59+', '220+', '700+', '962'],
 		correctAnswer: 2,
 		explanation:
-			'The heart of IBC membership is about contributing to a positive, supportive community.'
+			'Since 2004, the IBC has purchased over 700 kegs, demonstrating their commitment to quality craft beer.'
 	}
 ];
 
