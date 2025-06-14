@@ -14,9 +14,7 @@ const f = createUploadthing({
 });
 
 // Helper function to get user from session using our custom auth
-const getUserFromRequest = async (
-	req: Request
-): Promise<{ id: string; mbr: number | null } | null> => {
+const getUserFromRequest = async (req: Request): Promise<{ id: string } | null> => {
 	try {
 		const cookies = req.headers.get('cookie');
 		if (!cookies) return null;
@@ -32,7 +30,7 @@ const getUserFromRequest = async (
 		const { session, user } = await validateSessionToken(sessionToken);
 		if (!session || !user) return null;
 
-		return { id: user.id, mbr: user.mbr };
+		return { id: user.id };
 	} catch (error) {
 		console.error('Failed to get user from request:', error);
 		return null;
@@ -53,10 +51,10 @@ export const ourFileRouter = {
 			const user = await getUserFromRequest(req);
 			if (!user) throw new Error('Unauthorized');
 
-			// Label files with custom identifier using member number for better organization
+			// Label files with custom identifier for better organization
 			const filesWithCustomIds = files.map((file) => ({
 				...file,
-				customId: `profile-member-${user.mbr || user.id}`
+				customId: `profile-${user.id}-${randomUUID()}`
 			}));
 
 			return {
