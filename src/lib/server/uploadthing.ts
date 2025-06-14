@@ -1,11 +1,11 @@
-import { createUploadthing, UTFiles, UTApi } from 'uploadthing/server';
+import { createUploadthing, UTFiles } from 'uploadthing/server';
 import type { FileRouter } from 'uploadthing/server';
 import { db } from './db';
 import { users } from './db/schema';
 import { eq } from 'drizzle-orm';
 import { sessionCookieName, validateSessionToken } from './auth';
 
-const utapi = new UTApi();
+// const utapi = new UTApi();
 
 const f = createUploadthing({
 	errorFormatter: (err) => {
@@ -65,7 +65,6 @@ export const ourFileRouter = {
 			return {
 				userId: user.id,
 				uploadType: 'profile' as const,
-				currentImageKey,
 				[UTFiles]: filesWithCustomIds
 			};
 		})
@@ -82,9 +81,9 @@ export const ourFileRouter = {
 					.where(eq(users.id, metadata.userId))
 					.returning({ id: users.id, img: users.img });
 
-				if (metadata.currentImageKey) {
-					await utapi.deleteFiles(metadata.currentImageKey);
-				}
+				// if (metadata.currentImageKey) {
+				// 	await utapi.deleteFiles(metadata.currentImageKey);
+				// }
 			} catch (error) {
 				console.error('Failed to update user profile image:', error);
 				throw error;
