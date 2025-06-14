@@ -60,6 +60,7 @@ export const ourFileRouter = {
 				customId: `profile-${user.id}`
 			}));
 			const currentImageKey = user.img?.split('/f/')[1];
+			console.log('Current image key:', currentImageKey);
 
 			return {
 				userId: user.id,
@@ -69,6 +70,7 @@ export const ourFileRouter = {
 			};
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
+			console.log('Upload complete for profile image:', metadata);
 			// Update user's profile image in database
 			try {
 				await db
