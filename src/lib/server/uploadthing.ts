@@ -5,8 +5,6 @@ import { users } from './db/schema';
 import { eq } from 'drizzle-orm';
 import { sessionCookieName, validateSessionToken } from './auth';
 
-// const utapi = new UTApi();
-
 const f = createUploadthing({
 	errorFormatter: (err) => {
 		console.error('UploadThing error:', err.message, err.cause);
@@ -17,7 +15,7 @@ const f = createUploadthing({
 // Helper function to get user from session using our custom auth
 const getUserFromRequest = async (
 	req: Request
-): Promise<{ id: string; img: string | null } | null> => {
+): Promise<{ id: string; mbr: number | null } | null> => {
 	try {
 		const cookies = req.headers.get('cookie');
 		if (!cookies) return null;
@@ -33,7 +31,7 @@ const getUserFromRequest = async (
 		const { session, user } = await validateSessionToken(sessionToken);
 		if (!session || !user) return null;
 
-		return { id: user.id, img: user.img };
+		return { id: user.id, mbr: user.mbr };
 	} catch (error) {
 		console.error('Failed to get user from request:', error);
 		return null;
@@ -57,10 +55,8 @@ export const ourFileRouter = {
 			// Label files with custom identifier for better organization
 			const filesWithCustomIds = files.map((file) => ({
 				...file,
-				customId: `profile-${user.id}`
+				customId: `profile-${user.id}}`
 			}));
-			const currentImageKey = user.img?.split('/f/')[1];
-			console.log('Current image key:', currentImageKey);
 
 			return {
 				userId: user.id,
@@ -69,27 +65,22 @@ export const ourFileRouter = {
 			};
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
-			console.log('Upload complete for profile image:', metadata);
 			// Update user's profile image in database
 			try {
 				await db
 					.update(users)
 					.set({
-						img: file.ufsUrl,
+						img: file.url, // Use file.url instead of file.ufsUrl
 						updated_at: new Date()
 					})
 					.where(eq(users.id, metadata.userId))
 					.returning({ id: users.id, img: users.img });
-
-				// if (metadata.currentImageKey) {
-				// 	await utapi.deleteFiles(metadata.currentImageKey);
-				// }
 			} catch (error) {
 				console.error('Failed to update user profile image:', error);
 				throw error;
 			}
 
-			return { uploadedBy: metadata.userId, imageUrl: file.ufsUrl };
+			return { uploadedBy: metadata.userId, imageUrl: file.url };
 		}),
 
 	// Profile image migration route - server-only uploads for migrating existing profile images
@@ -133,7 +124,7 @@ export const ourFileRouter = {
 			};
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
-			return { uploadedBy: metadata.userId, imageUrl: file.ufsUrl };
+			return { uploadedBy: metadata.userId, imageUrl: file.url };
 		})
 } satisfies FileRouter;
 
