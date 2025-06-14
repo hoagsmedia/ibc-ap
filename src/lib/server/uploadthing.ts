@@ -57,6 +57,11 @@ export const ourFileRouter = {
 			const user = await getUserFromRequest(req);
 			if (!user) throw new Error('Unauthorized');
 			console.log('User authenticated for profile image upload:', user.id);
+			//console log headers
+			console.log(
+				'Request headers:',
+				JSON.stringify(Object.fromEntries(req.headers.entries()), null, 2)
+			);
 
 			// Label files with custom identifier for better organization
 			const filesWithCustomIds = files.map((file) => ({
