@@ -52,12 +52,13 @@ export const ourFileRouter = {
 			const user = await getUserFromRequest(req);
 			if (!user) throw new Error('Unauthorized');
 
-			// Create custom ID for the upload if user.mbr ?? user.mbr : user.id
-			const customId = user.mbr
-				? `profile-mbr-${user.mbr}-${user.id}` // Use member number if available
-				: `profile-user-${user.id}`; // Fallback to user ID if no member number
+			// // Create custom ID for the upload if user.mbr ?? user.mbr : user.id
+			// const customId = user.mbr
+			// 	? `profile-mbr-${user.mbr}-${user.id}` // Use member number if available
+			// 	: `profile-user-${user.id}`; // Fallback to user ID if no member number
 			// Alternatively, you could use a different format if needed
-			// const customId = `profile-member-${user.mbr || user.id}`;
+			const customId = `profile-member-${user.id}`;
+			console.log('Custom ID for profile upload:', customId);
 
 			return {
 				userId: user.id,
