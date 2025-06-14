@@ -1,4 +1,4 @@
-import { createUploadthing } from 'uploadthing/server';
+import { createUploadthing, UTFiles } from 'uploadthing/server';
 import type { FileRouter } from 'uploadthing/server';
 import { db } from './db';
 import { users } from './db/schema';
@@ -48,14 +48,20 @@ export const ourFileRouter = {
 			acl: 'public-read'
 		}
 	})
-		.middleware(async ({ req }) => {
+		.middleware(async ({ req, files }) => {
 			const user = await getUserFromRequest(req);
 			if (!user) throw new Error('Unauthorized');
+
+			// Label files with custom identifier for better organization
+			const filesWithCustomIds = files.map((file) => ({
+				...file,
+				customId: `profile-${user.id}}`
+			}));
 
 			return {
 				userId: user.id,
 				uploadType: 'profile' as const,
-				customId: `profile-member-${user.id}` // Set customId directly on metadata
+				[UTFiles]: filesWithCustomIds
 			};
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
