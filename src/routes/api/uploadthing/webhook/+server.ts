@@ -12,10 +12,14 @@ const handler = createRouteHandler({
 });
 
 export async function POST(event: RequestEvent) {
+	const vercelBypassHeader = event.request.headers.get('x-vercel-protection-bypass');
+
 	console.log('🎯 UploadThing WEBHOOK POST received:', {
 		url: event.url.href,
 		method: event.request.method,
 		searchParams: Object.fromEntries(event.url.searchParams.entries()),
+		hasVercelBypass: !!vercelBypassHeader,
+		vercelBypassValue: vercelBypassHeader ? 'SECRET_PRESENT' : 'NOT_FOUND',
 		headers: Object.fromEntries(event.request.headers.entries())
 	});
 
