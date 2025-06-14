@@ -1,11 +1,23 @@
-import { createUploadthing } from 'uploadthing/server';
+import { randomUUID } from 'crypto';
+import { createUploadthing, UTFiles } from 'uploadthing/server';
 import type { FileRouter } from 'uploadthing/server';
 import { db } from './db';
 import { users } from './db/schema';
 import { eq } from 'drizzle-orm';
 import { sessionCookieName, validateSessionToken } from './auth';
 
-const f = createUploadthing();
+const f = createUploadthing({
+	/**
+	 * Log out more information about the error, but don't return it to the client
+	 * @see https://docs.uploadthing.com/errors#error-formatting
+	 */
+	errorFormatter: (err) => {
+		console.log('Error uploading file', err.message);
+		console.log('  - Above error caused by:', err.cause);
+
+		return { message: err.message };
+	}
+});
 
 // // Helper function to get user from session using our custom auth
 const getUserFromRequest = async (req: Request): Promise<{ id: string } | null> => {
@@ -37,16 +49,25 @@ export const ourFileRouter = {
 	profileImageUploader: f({
 		image: {
 			maxFileSize: '4MB',
-			maxFileCount: 1
+			maxFileCount: 1,
+			acl: 'public-read'
 		}
 	})
-		.middleware(async ({ req }) => {
+		.middleware(async ({ req, files }) => {
 			const user = await getUserFromRequest(req);
 			if (!user) throw new Error('Unauthorized');
 			console.log('User authenticated for profile image upload:', user.id);
+
+			// Label files with custom identifier for better organization
+			const filesWithCustomIds = files.map((file) => ({
+				...file,
+				customId: `profile-${user.id}-${randomUUID()}`
+			}));
+
 			return {
 				userId: user.id,
-				uploadType: 'profile' as const
+				uploadType: 'profile' as const,
+				[UTFiles]: filesWithCustomIds
 			};
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
@@ -60,7 +81,8 @@ export const ourFileRouter = {
 						name: file.name,
 						size: file.size,
 						type: file.type,
-						ufsUrl: file.ufsUrl
+						ufsUrl: file.ufsUrl,
+						customId: file.customId
 					},
 					null,
 					2
@@ -119,21 +141,30 @@ export const ourFileRouter = {
 	galleryImageUploader: f({
 		image: {
 			maxFileSize: '8MB',
-			maxFileCount: 10
+			maxFileCount: 10,
+			acl: 'public-read'
 		}
 	})
-		.middleware(async ({ req }) => {
+		.middleware(async ({ req, files }) => {
 			const user = await getUserFromRequest(req);
 			if (!user) throw new Error('Unauthorized');
 
+			// Label files with custom identifier for better organization
+			const filesWithCustomIds = files.map((file, idx) => ({
+				...file,
+				customId: `gallery-${user.id}-${idx}-${randomUUID()}`
+			}));
+
 			return {
 				userId: user.id,
-				uploadType: 'gallery' as const
+				uploadType: 'gallery' as const,
+				[UTFiles]: filesWithCustomIds
 			};
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
 			console.log('Gallery image upload complete for userId:', metadata.userId);
 			console.log('Gallery image URL:', file.ufsUrl);
+			console.log('Gallery image customId:', file.customId);
 
 			// TODO: Store gallery image metadata in database if needed
 			// You might want to create a separate gallery_images table
