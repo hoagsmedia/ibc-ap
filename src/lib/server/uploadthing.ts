@@ -7,20 +7,16 @@ import { eq } from 'drizzle-orm';
 import { sessionCookieName, validateSessionToken } from './auth';
 
 const f = createUploadthing({
-	/**
-	 * Log out more information about the error, but don't return it to the client
-	 * @see https://docs.uploadthing.com/errors#error-formatting
-	 */
 	errorFormatter: (err) => {
-		console.log('Error uploading file', err.message);
-		console.log('  - Above error caused by:', err.cause);
-
+		console.error('UploadThing error:', err.message, err.cause);
 		return { message: err.message };
 	}
 });
 
-// // Helper function to get user from session using our custom auth
-const getUserFromRequest = async (req: Request): Promise<{ id: string } | null> => {
+// Helper function to get user from session using our custom auth
+const getUserFromRequest = async (
+	req: Request
+): Promise<{ id: string; mbr: number | null } | null> => {
 	try {
 		const cookies = req.headers.get('cookie');
 		if (!cookies) return null;
@@ -36,7 +32,7 @@ const getUserFromRequest = async (req: Request): Promise<{ id: string } | null> 
 		const { session, user } = await validateSessionToken(sessionToken);
 		if (!session || !user) return null;
 
-		return { id: user.id };
+		return { id: user.id, mbr: user.mbr };
 	} catch (error) {
 		console.error('Failed to get user from request:', error);
 		return null;
@@ -56,17 +52,11 @@ export const ourFileRouter = {
 		.middleware(async ({ req, files }) => {
 			const user = await getUserFromRequest(req);
 			if (!user) throw new Error('Unauthorized');
-			console.log('User authenticated for profile image upload:', user.id);
-			//console log headers
-			console.log(
-				'Request headers:',
-				JSON.stringify(Object.fromEntries(req.headers.entries()), null, 2)
-			);
 
-			// Label files with custom identifier for better organization
+			// Label files with custom identifier using member number for better organization
 			const filesWithCustomIds = files.map((file) => ({
 				...file,
-				customId: `profile-${user.id}-${randomUUID()}`
+				customId: `profile-member-${user.mbr || user.id}`
 			}));
 
 			return {
@@ -76,28 +66,9 @@ export const ourFileRouter = {
 			};
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
-			console.log('🎯 UploadComplete callback triggered!');
-			console.log('📊 Metadata:', JSON.stringify(metadata, null, 2));
-			console.log(
-				'📁 File info:',
-				JSON.stringify(
-					{
-						key: file.key,
-						name: file.name,
-						size: file.size,
-						type: file.type,
-						ufsUrl: file.ufsUrl,
-						customId: file.customId
-					},
-					null,
-					2
-				)
-			);
-
 			// Update user's profile image in database
 			try {
-				console.log('💾 Attempting database update for user:', metadata.userId);
-				const updateResult = await db
+				await db
 					.update(users)
 					.set({
 						img: file.ufsUrl,
@@ -105,17 +76,12 @@ export const ourFileRouter = {
 					})
 					.where(eq(users.id, metadata.userId))
 					.returning({ id: users.id, img: users.img });
-
-				console.log('✅ Database update successful:', updateResult);
-				console.log('✅ Updated user profile image in database');
 			} catch (error) {
-				console.error('❌ Failed to update user profile image:', error);
+				console.error('Failed to update user profile image:', error);
 				throw error; // Re-throw to ensure UploadThing knows the callback failed
 			}
 
-			const response = { uploadedBy: metadata.userId, imageUrl: file.ufsUrl };
-			console.log('📤 Returning callback response:', response);
-			return response;
+			return { uploadedBy: metadata.userId, imageUrl: file.ufsUrl };
 		}),
 
 	// Profile image migration route - server-only uploads for migrating existing profile images
@@ -137,8 +103,6 @@ export const ourFileRouter = {
 			throw new Error('Migration route only accessible from server');
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
-			console.log('Profile migration upload complete:', file.name);
-			console.log('Profile migration URL:', file.ufsUrl);
 			return { source: metadata.source, imageUrl: file.ufsUrl };
 		}),
 
@@ -167,10 +131,6 @@ export const ourFileRouter = {
 			};
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
-			console.log('Gallery image upload complete for userId:', metadata.userId);
-			console.log('Gallery image URL:', file.ufsUrl);
-			console.log('Gallery image customId:', file.customId);
-
 			// TODO: Store gallery image metadata in database if needed
 			// You might want to create a separate gallery_images table
 

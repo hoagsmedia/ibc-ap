@@ -16,18 +16,15 @@
 	// Create UploadThing helper
 	const { startUpload, isUploading } = createUploadThing('profileImageUploader', {
 		onClientUploadComplete: (res) => {
-			console.log('Upload Completed', res);
 			uploading = false;
 			// Refresh the page to show the new image
 			window.location.reload();
 		},
 		onUploadError: (error: Error) => {
-			console.error('Upload error:', error);
 			uploading = false;
 			alert(`Upload failed: ${error.message}`);
 		},
 		onUploadBegin: (name) => {
-			console.log('Upload has begun for', name);
 			uploading = true;
 		}
 	});
@@ -47,7 +44,6 @@
 			try {
 				await startUpload(Array.from(files));
 			} catch (error) {
-				console.error('Upload failed:', error);
 				uploading = false;
 			}
 		}

@@ -41,10 +41,10 @@ interface ConnectionResult {
 
 /**
  * Extract member number from UploadThing custom ID
- * Example: "profile-mbr-343-1234567890" -> "343"
+ * Example: "profile-member-343" -> "343"
  */
 function extractMbrFromCustomId(customId: string): string | null {
-	const match = customId.match(/profile-mbr-(\d+)-\d+/);
+	const match = customId.match(/profile-member-(\d+)/);
 	return match ? match[1] : null;
 }
 
