@@ -1,4 +1,4 @@
-import { createUploadthing, UTFiles } from 'uploadthing/server';
+import { createUploadthing, UTApi, UTFiles } from 'uploadthing/server';
 import type { FileRouter } from 'uploadthing/server';
 import { db } from './db';
 import { users } from './db/schema';
@@ -6,7 +6,7 @@ import { eq } from 'drizzle-orm';
 import { sessionCookieName, validateSessionToken } from './auth';
 import { formatDateTime } from '$lib/utils';
 
-// const utapi = new UTApi()
+const utapi = new UTApi();
 
 const f = createUploadthing({
 	errorFormatter: (err) => {
@@ -57,11 +57,11 @@ export const ourFileRouter = {
 
 			const currentImageKey = user.img?.split('/f/')[1];
 			console.log('Current user', user);
-			console.log('Current image key:', currentImageKey);
 
 			// Label files with custom identifier for better organization
 			const filesWithCustomIds = files.map((file) => ({
 				...file,
+				currentImageKey,
 				customId: `profile-${user.id}-${user.mbr}-${formatDateTime(new Date())}`
 			}));
 
@@ -78,17 +78,21 @@ export const ourFileRouter = {
 				await db
 					.update(users)
 					.set({
-						img: file.url, // Use file.url instead of file.ufsUrl
+						img: file.ufsUrl,
 						updated_at: new Date()
 					})
 					.where(eq(users.id, metadata.userId))
 					.returning({ id: users.id, img: users.img });
+				//Delete the old image if it exists
+				if (metadata.currentImageKey) {
+					await utapi.deleteFiles(metadata.currentImageKey);
+				}
 			} catch (error) {
 				console.error('Failed to update user profile image:', error);
 				throw error;
 			}
 
-			return { uploadedBy: metadata.userId, imageUrl: file.url };
+			return { uploadedBy: metadata.userId, imageUrl: file.ufsUrl };
 		}),
 
 	// Profile image migration route - server-only uploads for migrating existing profile images
@@ -132,7 +136,7 @@ export const ourFileRouter = {
 			};
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
-			return { uploadedBy: metadata.userId, imageUrl: file.url };
+			return { uploadedBy: metadata.userId, imageUrl: file.ufsUrl };
 		})
 } satisfies FileRouter;
 
