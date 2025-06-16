@@ -23,6 +23,7 @@ export const users = pgTable('users', {
 	bio: text('bio'),
 	hobbies: text('hobbies'),
 	img: text('img'),
+	phone: text('phone'),
 	role: text('role', { enum: ['guest', 'member', 'admin'] })
 		.notNull()
 		.default('guest'),

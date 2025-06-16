@@ -96,6 +96,11 @@
 						<DropdownMenu.Separator />
 						<DropdownMenu.Item><a href="/dashboard">Dashboard</a></DropdownMenu.Item>
 						<DropdownMenu.Item><a href="/settings">Settings</a></DropdownMenu.Item>
+						{#if data.user.role === 'admin'}
+							<DropdownMenu.Separator />
+							<DropdownMenu.Label>Admin</DropdownMenu.Label>
+							<DropdownMenu.Item><a href="/members">Member Directory</a></DropdownMenu.Item>
+						{/if}
 					</DropdownMenu.Group>
 				</DropdownMenu.Content>
 			</DropdownMenu.Root>
