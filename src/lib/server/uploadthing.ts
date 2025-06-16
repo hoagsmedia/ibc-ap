@@ -4,6 +4,9 @@ import { db } from './db';
 import { users } from './db/schema';
 import { eq } from 'drizzle-orm';
 import { sessionCookieName, validateSessionToken } from './auth';
+import { formatDateTime } from '$lib/utils';
+
+// const utapi = new UTApi()
 
 const f = createUploadthing({
 	errorFormatter: (err) => {
@@ -15,7 +18,7 @@ const f = createUploadthing({
 // Helper function to get user from session using our custom auth
 const getUserFromRequest = async (
 	req: Request
-): Promise<{ id: string; mbr: number | null } | null> => {
+): Promise<{ id: string; mbr: number | null; img: string | null } | null> => {
 	try {
 		const cookies = req.headers.get('cookie');
 		if (!cookies) return null;
@@ -31,7 +34,7 @@ const getUserFromRequest = async (
 		const { session, user } = await validateSessionToken(sessionToken);
 		if (!session || !user) return null;
 
-		return { id: user.id, mbr: user.mbr };
+		return { id: user.id, img: user.img, mbr: user.mbr };
 	} catch (error) {
 		console.error('Failed to get user from request:', error);
 		return null;
@@ -52,15 +55,20 @@ export const ourFileRouter = {
 			const user = await getUserFromRequest(req);
 			if (!user) throw new Error('Unauthorized');
 
+			const currentImageKey = user.img?.split('/f/')[1];
+			console.log('Current user', user);
+			console.log('Current image key:', currentImageKey);
+
 			// Label files with custom identifier for better organization
 			const filesWithCustomIds = files.map((file) => ({
 				...file,
-				customId: `profile-${user.id}}`
+				customId: `profile-${user.id}-${user.mbr}-${formatDateTime(new Date())}`
 			}));
 
 			return {
 				userId: user.id,
 				uploadType: 'profile' as const,
+				currentImageKey: currentImageKey,
 				[UTFiles]: filesWithCustomIds
 			};
 		})
