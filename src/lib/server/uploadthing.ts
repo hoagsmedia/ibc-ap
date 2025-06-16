@@ -78,7 +78,7 @@ export const ourFileRouter = {
 				await db
 					.update(users)
 					.set({
-						img: file.url, // Use file.url instead of file.ufsUrl
+						img: file.ufsUrl,
 						updated_at: new Date()
 					})
 					.where(eq(users.id, metadata.userId))
@@ -92,7 +92,7 @@ export const ourFileRouter = {
 				throw error;
 			}
 
-			return { uploadedBy: metadata.userId, imageUrl: file.url };
+			return { uploadedBy: metadata.userId, imageUrl: file.ufsUrl };
 		}),
 
 	// Profile image migration route - server-only uploads for migrating existing profile images
@@ -136,7 +136,7 @@ export const ourFileRouter = {
 			};
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
-			return { uploadedBy: metadata.userId, imageUrl: file.url };
+			return { uploadedBy: metadata.userId, imageUrl: file.ufsUrl };
 		})
 } satisfies FileRouter;
 
