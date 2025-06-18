@@ -1,102 +1,81 @@
-import { error, redirect } from '@sveltejs/kit';
+import { redirect, error } from '@sveltejs/kit';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
-import { asc, count, desc, sql } from 'drizzle-orm';
+import { asc, or, ilike, sql, count } from 'drizzle-orm';
 import type { PageServerLoad } from './$types';
 
-const ITEMS_PER_PAGE = 10;
-
 export const load: PageServerLoad = async ({ locals, url }) => {
-	// Check if user is authenticated
+	// Authentication checks
 	if (!locals.user) {
-		return redirect(302, '/login');
+		throw redirect(302, '/login');
 	}
 
-	// Check if user has admin role
 	if (locals.user.role !== 'admin') {
-		return error(403, 'Access denied. Admin role required.');
+		throw error(403, 'Unauthorized');
 	}
 
 	// Get pagination parameters from URL
-	const page = parseInt(url.searchParams.get('page') || '1');
-	const search = url.searchParams.get('search') || '';
-	const sortBy = url.searchParams.get('sort') || 'name';
-	const sortOrder = url.searchParams.get('order') || 'asc';
+	const page = Number(url.searchParams.get('page') || '1');
+	const perPage = Number(url.searchParams.get('perPage') || '10');
+	const searchTerm = url.searchParams.get('search') || '';
 
-	// Validate page number
-	if (page < 1) {
-		return redirect(302, '/members?page=1');
-	}
+	// Validate pagination parameters
+	if (isNaN(page) || page < 1) throw error(400, 'Invalid page number');
+	if (isNaN(perPage) || perPage < 1 || perPage > 100) throw error(400, 'Invalid items per page');
 
 	// Calculate offset
-	const offset = (page - 1) * ITEMS_PER_PAGE;
+	const offset = (page - 1) * perPage;
 
-	// Build where conditions for search
-	const whereConditions = search
-		? sql`${users.name} ILIKE ${`%${search}%`} OR ${users.email} ILIKE ${`%${search}%`}`
-		: undefined;
+	// Build query conditions
+	let conditions = undefined;
 
-	// Build order by clause
-	const orderBy = (() => {
-		const column =
-			sortBy === 'name'
-				? users.name
-				: sortBy === 'email'
-					? users.email
-					: sortBy === 'role'
-						? users.role
-						: sortBy === 'mbr'
-							? users.mbr
-							: sortBy === 'created_at'
-								? users.created_at
-								: users.name;
+	if (searchTerm) {
+		// Convert searchTerm to number for potential member number comparison
+		const numericSearchTerm = !isNaN(Number(searchTerm)) ? Number(searchTerm) : null;
 
-		return sortOrder === 'desc' ? desc(column) : asc(column);
-	})();
-
-	try {
-		// Get total count for pagination
-		const totalCountResult = await db.select({ count: count() }).from(users).where(whereConditions);
-
-		const totalItems = totalCountResult[0]?.count || 0;
-		const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
-
-		// Get paginated members
-		const members = await db
-			.select({
-				id: users.id,
-				name: users.name,
-				email: users.email,
-				img: users.img,
-				phone: users.phone,
-				role: users.role,
-				mbr: users.mbr,
-				msd: users.msd,
-				test_passed: users.test_passed,
-				created_at: users.created_at
-			})
-			.from(users)
-			.where(whereConditions)
-			.orderBy(orderBy)
-			.limit(ITEMS_PER_PAGE)
-			.offset(offset);
-
-		return {
-			members,
-			pagination: {
-				currentPage: page,
-				totalPages,
-				totalItems,
-				itemsPerPage: ITEMS_PER_PAGE,
-				hasNextPage: page < totalPages,
-				hasPreviousPage: page > 1
-			},
-			search,
-			sortBy,
-			sortOrder
-		};
-	} catch (err) {
-		console.error('Failed to load members:', err);
-		return error(500, 'Failed to load members');
+		if (numericSearchTerm !== null) {
+			// If searchTerm is a valid number, we can search directly in the numeric field
+			// and also in text fields with the string version
+			conditions = or(
+				ilike(users.name, `%${searchTerm}%`),
+				ilike(users.email, `%${searchTerm}%`),
+				sql`CAST(${users.mbr} AS TEXT) LIKE ${`%${searchTerm}%`}`,
+				sql`${users.mbr} = ${numericSearchTerm}`
+			);
+		} else {
+			// If searchTerm is not a number, we only search in text fields
+			conditions = or(
+				ilike(users.name, `%${searchTerm}%`),
+				ilike(users.email, `%${searchTerm}%`),
+				sql`CAST(${users.mbr} AS TEXT) LIKE ${`%${searchTerm}%`}`
+			);
+		}
 	}
+
+	// Fetch members with pagination and search filter
+	const members = await db.query.users.findMany({
+		where: conditions,
+		orderBy: [asc(users.mbr)],
+		limit: perPage,
+		offset
+	});
+
+	// Count total number of members for pagination with search filter applied
+	const totalCountResult = await db.select({ count: count() }).from(users).where(conditions);
+
+	const totalCount = Number(totalCountResult[0].count);
+
+	// Calculate total pages
+	const totalPages = Math.ceil(totalCount / perPage);
+
+	return {
+		members,
+		searchTerm,
+		pagination: {
+			page,
+			perPage,
+			totalCount,
+			totalPages
+		}
+	};
 };
