@@ -3,6 +3,7 @@ import { createInvitationToken, getInvitationsByUser } from '$lib/server/invitat
 import { fail } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
+	console.log('user in dashboard load:', locals.user);
 	if (!locals.user) {
 		return fail(401);
 	}

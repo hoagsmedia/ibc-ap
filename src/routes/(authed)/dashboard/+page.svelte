@@ -1,31 +1,32 @@
 <script lang="ts">
 	import type { PageData, ActionData } from './$types';
 	import { enhance } from '$app/forms';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button';
 	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Alert from '$lib/components/ui/alert';
 	import { CheckIcon, ClockIcon, LinkIcon, Copy } from '@lucide/svelte/icons';
+	import { formatDate, formatDateTime } from '$lib/utils';
 
 	let { data }: { data: PageData } = $props();
 
-	let form = $derived($page.form as ActionData | null);
+	let form = $derived(page.form as ActionData | null);
 	let creating = $state(false);
 
 	function copyToClipboard(text: string) {
 		navigator.clipboard.writeText(text);
 	}
 
-	function formatDate(date: Date) {
-		return new Intl.DateTimeFormat('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric',
-			hour: 'numeric',
-			minute: '2-digit'
-		}).format(new Date(date));
-	}
+	// function formatDateTime(date: Date) {
+	// 	return new Intl.DateTimeFormat('en-US', {
+	// 		month: 'short',
+	// 		day: 'numeric',
+	// 		year: 'numeric',
+	// 		hour: 'numeric',
+	// 		minute: '2-digit'
+	// 	}).format(new Date(date));
+	// }
 </script>
 
 <svelte:head>
@@ -62,7 +63,9 @@
 							</div>
 							<div>
 								<dt class="text-muted-foreground text-sm font-medium">Member Since</dt>
-								<dd class="text-card-foreground text-sm">Recently</dd>
+								<dd class="text-card-foreground text-sm">
+									{data.user.msd ? formatDate(new Date(data.user.msd)) : 'Unknown'}
+								</dd>
 							</div>
 						</dl>
 					</div>
@@ -220,7 +223,7 @@
 																{invitation.token.slice(0, 8)}...
 															</span>
 															<span class="text-muted-foreground text-xs">
-																Created {formatDate(invitation.created_at)}
+																Created {formatDateTime(invitation.created_at)}
 															</span>
 														</div>
 													</div>

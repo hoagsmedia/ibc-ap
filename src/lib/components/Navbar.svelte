@@ -164,7 +164,7 @@
 								{#each [...navLinks, ...dropdownLinks] as link}
 									<a
 										href={link.href}
-										class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold"
+										class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
 									>
 										{link.label}
 									</a>
@@ -175,23 +175,20 @@
 								{#if isAuthenticated && user}
 									<div class="flex items-center gap-4">
 										<div>
-											<p class="font-semibold">{user.name}</p>
-											<a href="/dashboard" class="text-muted-foreground text-sm hover:underline"
-												>View Dashboard</a
-											>
+											<a href="/dashboard" class="text-foreground">View Dashboard</a>
 										</div>
 									</div>
 									<div class="mt-4 space-y-2">
 										<a
 											href="/settings"
-											class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold"
+											class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
 										>
 											Settings
 										</a>
 										<form method="post" action="/logout" use:enhance class="w-full">
 											<button
 												type="submit"
-												class="text-foreground hover:bg-muted -mx-3 block w-full rounded-lg px-3 py-2 text-left text-base leading-7 font-semibold"
+												class="text-foreground hover:bg-muted -mx-3 block w-full rounded-lg px-3 py-2 text-left text-base"
 											>
 												Logout
 											</button>
@@ -200,7 +197,7 @@
 								{:else}
 									<a
 										href="/login"
-										class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2.5 text-base leading-7 font-semibold"
+										class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2.5 text-base"
 									>
 										Log in
 									</a>
