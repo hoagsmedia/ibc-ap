@@ -11,43 +11,19 @@
 	import { toggleMode } from 'mode-watcher';
 	import { Menu } from '@lucide/svelte';
 	import { enhance } from '$app/forms';
+	import logo from '$lib/assets/ibc-logo.svg';
+	import { navLinks, dropdownLinks } from '$lib/config/navigation';
 
 	// --- Reactive State ---
 	const pageData = $state(page);
+	let isOpen = $state(true);
 	const user = $derived(pageData.data.user);
 	const isAuthenticated = $derived(!!user);
 	const currentPath = $derived(pageData.url.pathname);
-
-	// --- Navigation Links ---
-	const navLinks = [
-		{ href: '/', label: 'Home', description: 'Return to the homepage.' },
-		{ href: '/history', label: 'History', description: 'Our club history.' },
-		{ href: '/events', label: 'Events', description: 'Upcoming and past events.' },
-		{ href: '/fun', label: 'Fun', description: 'Games, jokes, and more.' },
-		{ href: '/contact', label: 'Contact', description: 'Get in touch with us.' },
-		{ href: '/gallery', label: 'Gallery', description: 'Photo gallery of club events.' }
-	];
-
-	const dropdownLinks = [
-		{ href: '/links', label: 'Links', description: 'Beer resources and friends.' },
-		{ href: '/rules', label: 'Rules', description: 'Club rules and guidelines.' },
-		{ href: '/movie', label: 'IBC Movie', description: 'Watch the IBC movie.' },
-		{ href: '/foodog', label: 'Foo Dogs', description: 'Learn about Foo Dogs.' },
-		{
-			href: '/science',
-			label: 'Science Corner',
-			description: 'Explore beer science and fun facts.'
-		},
-		{ href: '/styles', label: 'Beer Styles', description: 'Learn about different beer styles.' },
-		{ href: '/stats', label: 'IBC Stats', description: 'View club statistics and records.' }
-	];
-
-	// --- Mobile State ---
 	const isMobile = new IsMobile();
-	let isOpen = $state(false);
 
+	//Close mobile menu on route change
 	$effect(() => {
-		// Close mobile menu on route change
 		if (currentPath) {
 			isOpen = false;
 		}
@@ -74,10 +50,9 @@
 <header
 	class="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur"
 >
-	<div class="container flex h-16 items-center">
-		<a href="/" class="mr-6 flex items-center space-x-2">
-			<!-- TODO: Add Logo Component/Image -->
-			<span class="hidden px-2 font-bold sm:inline-block">Island Beer Club</span>
+	<div class="container flex h-24 items-center">
+		<a href="/" class="flex items-center">
+			<img src={logo} alt="Island Beer Club Logo" class="w-[90px] object-contain px-2" />
 		</a>
 
 		{#if !isMobile.current}
@@ -128,9 +103,9 @@
 				</NavigationMenu.List>
 			</NavigationMenu.Root>
 
-			<div class="flex flex-1 items-center justify-end gap-4">
+			<div class="flex flex-1 flex-col-reverse items-center justify-end">
 				{#if isAuthenticated && user}
-					<span class="text-muted-foreground text-sm">Hello, {user.name}!</span>
+					<span class="text-muted-foreground text-sm">{user.name}!</span>
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger>
 							<Button variant="ghost" class="relative size-8 rounded-full">
@@ -175,9 +150,13 @@
 					</Sheet.Trigger>
 					<Sheet.Content preventScroll={false} side="right" class="flex w-[200px] sm:w-[220px]">
 						<Sheet.Header>
-							<a href="/" class="mb-8 flex items-center">
-								<Sheet.Title class="font-bold">Island Beer Club</Sheet.Title>
+							<a href="/dashboard">
+								<Avatar.Root class="mx-auto mt-4 mb-2 size-12">
+									<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
+									<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
+								</Avatar.Root>
 							</a>
+							<span class="text-center text-[11px]">{user.name}</span>
 						</Sheet.Header>
 
 						<nav class="flex-grow overflow-y-auto pl-6">
@@ -195,12 +174,6 @@
 							<div class="mt-6 border-t pt-6">
 								{#if isAuthenticated && user}
 									<div class="flex items-center gap-4">
-										<Avatar.Root>
-											{#if user.img}
-												<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
-											{/if}
-											<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
-										</Avatar.Root>
 										<div>
 											<p class="font-semibold">{user.name}</p>
 											<a href="/dashboard" class="text-muted-foreground text-sm hover:underline"

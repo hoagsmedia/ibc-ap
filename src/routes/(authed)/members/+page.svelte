@@ -35,9 +35,10 @@
 		if (searchTimeout) clearTimeout(searchTimeout);
 
 		searchTimeout = setTimeout(() => {
-			// Reset to page 1 when search changes
 			goto(
-				`?page=1&perPage=${data.pagination.perPage}${searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ''}`
+				`?page=1&perPage=${data.pagination.perPage}${
+					searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ''
+				}`
 			);
 		}, 300);
 	}
@@ -58,11 +59,13 @@
 		<div class="relative flex-1">
 			<Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
 			<Input
+				bind:value={searchTerm}
+				autofocus
+				oninput={handleSearch}
 				type="search"
 				placeholder="Search members by name, email, or member #..."
 				class="pl-9"
-				bind:value={searchTerm}
-				oninput={handleSearch}
+				aria-label="Search members"
 			/>
 		</div>
 	</div>
