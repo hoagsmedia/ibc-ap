@@ -5,7 +5,10 @@
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
-	import { Sheet, SheetContent, SheetTrigger } from '$lib/components/ui/sheet/index.js';
+	import * as Sheet from '$lib/components/ui/sheet/index.js';
+	import SunIcon from '@lucide/svelte/icons/sun';
+	import MoonIcon from '@lucide/svelte/icons/moon';
+	import { toggleMode } from 'mode-watcher';
 	import { Menu } from '@lucide/svelte';
 	import { enhance } from '$app/forms';
 
@@ -41,12 +44,12 @@
 
 	// --- Mobile State ---
 	const isMobile = new IsMobile();
-	let mobileMenuOpen = $state(false);
+	let isOpen = $state(false);
 
 	$effect(() => {
 		// Close mobile menu on route change
 		if (currentPath) {
-			mobileMenuOpen = false;
+			isOpen = false;
 		}
 	});
 
@@ -111,6 +114,17 @@
 							</ul>
 						</NavigationMenu.Content>
 					</NavigationMenu.Item>
+					<NavigationMenu.Item>
+						<Button onclick={toggleMode} variant="outline" size="icon">
+							<SunIcon
+								class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
+							/>
+							<MoonIcon
+								class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
+							/>
+							<span class="sr-only">Toggle theme</span>
+						</Button>
+					</NavigationMenu.Item>
 				</NavigationMenu.List>
 			</NavigationMenu.Root>
 
@@ -121,9 +135,7 @@
 						<DropdownMenu.Trigger>
 							<Button variant="ghost" class="relative size-8 rounded-full">
 								<Avatar.Root class="size-8">
-									{#if user.img}
-										<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
-									{/if}
+									<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
 									<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
 								</Avatar.Root>
 							</Button>
@@ -154,70 +166,76 @@
 		{:else}
 			<!-- Mobile Navigation -->
 			<div class="ml-auto">
-				<Sheet bind:open={mobileMenuOpen}>
-					<SheetTrigger>
+				<Sheet.Root bind:open={isOpen}>
+					<Sheet.Trigger>
 						<Button variant="ghost" size="icon">
 							<Menu class="size-5" />
 							<span class="sr-only">Toggle Menu</span>
 						</Button>
-					</SheetTrigger>
-					<SheetContent class=" p-3">
-						<a href="/" class="mb-8 flex items-center">
-							<span class="font-bold">Island Beer Club</span>
-						</a>
-						<div class="flex flex-col space-y-2">
-							{#each [...navLinks, ...dropdownLinks] as link}
-								<a
-									href={link.href}
-									class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold"
-								>
-									{link.label}
-								</a>
-							{/each}
-						</div>
-						<div class="mt-6 border-t pt-6">
-							{#if isAuthenticated && user}
-								<div class="flex items-center gap-4">
-									<Avatar.Root>
-										{#if user.img}
-											<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
-										{/if}
-										<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
-									</Avatar.Root>
-									<div>
-										<p class="font-semibold">{user.name}</p>
-										<a href="/dashboard" class="text-muted-foreground text-sm hover:underline"
-											>View Dashboard</a
-										>
-									</div>
-								</div>
-								<div class="mt-4 space-y-2">
+					</Sheet.Trigger>
+					<Sheet.Content preventScroll={false} side="right" class="flex w-[200px] sm:w-[220px]">
+						<Sheet.Header>
+							<a href="/" class="mb-8 flex items-center">
+								<Sheet.Title class="font-bold">Island Beer Club</Sheet.Title>
+							</a>
+						</Sheet.Header>
+
+						<nav class="flex-grow overflow-y-auto pl-6">
+							<div class="flex flex-col space-y-2">
+								{#each [...navLinks, ...dropdownLinks] as link}
 									<a
-										href="/settings"
+										href={link.href}
 										class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold"
 									>
-										Settings
+										{link.label}
 									</a>
-									<form method="post" action="/logout" use:enhance class="w-full">
-										<button
-											type="submit"
-											class="text-foreground hover:bg-muted -mx-3 block w-full rounded-lg px-3 py-2 text-left text-base leading-7 font-semibold"
+								{/each}
+							</div>
+
+							<div class="mt-6 border-t pt-6">
+								{#if isAuthenticated && user}
+									<div class="flex items-center gap-4">
+										<Avatar.Root>
+											{#if user.img}
+												<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
+											{/if}
+											<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
+										</Avatar.Root>
+										<div>
+											<p class="font-semibold">{user.name}</p>
+											<a href="/dashboard" class="text-muted-foreground text-sm hover:underline"
+												>View Dashboard</a
+											>
+										</div>
+									</div>
+									<div class="mt-4 space-y-2">
+										<a
+											href="/settings"
+											class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base leading-7 font-semibold"
 										>
-											Logout
-										</button>
-									</form>
-								</div>
-							{:else}
-								<a
-									href="/login"
-									class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2.5 text-base leading-7 font-semibold"
-								>
-									Log in
-								</a>
-							{/if}
-						</div>
-					</SheetContent>
-				</Sheet>
+											Settings
+										</a>
+										<form method="post" action="/logout" use:enhance class="w-full">
+											<button
+												type="submit"
+												class="text-foreground hover:bg-muted -mx-3 block w-full rounded-lg px-3 py-2 text-left text-base leading-7 font-semibold"
+											>
+												Logout
+											</button>
+										</form>
+									</div>
+								{:else}
+									<a
+										href="/login"
+										class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2.5 text-base leading-7 font-semibold"
+									>
+										Log in
+									</a>
+								{/if}
+							</div>
+						</nav>
+					</Sheet.Content>
+				</Sheet.Root>
 			</div>
 		{/if}
 	</div>

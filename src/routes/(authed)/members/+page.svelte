@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Pagination from '$lib/components/ui/pagination/index.js';
 	import ChevronLeftIcon from '@lucide/svelte/icons/chevron-left';
@@ -8,11 +10,16 @@
 	import { Search } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import type { PageProps } from './$types';
+	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
+	import { generateUsername } from '$lib/utils';
 
 	let { data }: PageProps = $props();
 
+	// --- Reactive State ---
 	let searchTerm = $state(data.searchTerm || '');
-
+	const pageData = $state(page);
+	const admin = $derived(pageData.data.user.role === 'admin');
+	const isAuthenticated = $derived(!!admin);
 	// Debounce timer for search
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -44,10 +51,6 @@
 <div class="container py-8">
 	<div class="mb-6 flex items-center justify-between">
 		<h1 class="text-3xl font-bold">Member Directory</h1>
-		<div class="flex gap-2">
-			<Button variant="outline">Export</Button>
-			<Button>Add Member</Button>
-		</div>
 	</div>
 
 	<!-- Search Bar -->
@@ -68,11 +71,13 @@
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>
-					<Table.Head class="w-16">Profile</Table.Head>
+					<Table.Head>Profile</Table.Head>
 					<Table.Head>Name</Table.Head>
 					<Table.Head>Member #</Table.Head>
-					<Table.Head>Email</Table.Head>
-					<Table.Head class="text-right">Actions</Table.Head>
+					{#if !IsMobile}
+						<Table.Head>Email</Table.Head>
+					{/if}
+					<Table.Head>Actions</Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
@@ -86,26 +91,21 @@
 					{#each data.members as member (member.id)}
 						<Table.Row>
 							<Table.Cell>
-								{#if member.img}
-									<img
-										src={member.img}
-										alt={member.name}
-										class="h-10 w-10 rounded-full object-cover"
-									/>
-								{:else}
-									<div class="bg-muted flex h-10 w-10 items-center justify-center rounded-full">
-										<span class="text-muted-foreground">
-											{member.name?.[0]?.toUpperCase() || '?'}
-										</span>
-									</div>
-								{/if}
+								<Avatar.Root class="size-8">
+									<Avatar.Image src={member.img} alt={member.name ?? 'User Avatar'} />
+									<Avatar.Fallback>{generateUsername(member.name)}</Avatar.Fallback>
+								</Avatar.Root>
 							</Table.Cell>
 							<Table.Cell>{member.name || 'N/A'}</Table.Cell>
 							<Table.Cell>{member.mbr || 'N/A'}</Table.Cell>
-							<Table.Cell>{member.email || 'N/A'}</Table.Cell>
-							<Table.Cell class="text-right">
+							{#if !IsMobile}
+								<Table.Cell>{member.email || 'N/A'}</Table.Cell>
+							{/if}
+							<Table.Cell>
 								<Button variant="ghost" size="sm">View</Button>
-								<Button variant="ghost" size="sm">Edit</Button>
+								{#if isAuthenticated && admin}
+									<Button variant="ghost" size="sm">Edit</Button>
+								{/if}
 							</Table.Cell>
 						</Table.Row>
 					{/each}
