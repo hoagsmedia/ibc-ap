@@ -1,133 +1,24 @@
 <script lang="ts">
 	import '../app.css';
-	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import SunIcon from '@lucide/svelte/icons/sun';
-	import MoonIcon from '@lucide/svelte/icons/moon';
-	import { enhance } from '$app/forms';
-	import { toggleMode, ModeWatcher } from 'mode-watcher';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import type { LayoutServerData } from './$types';
-	import * as Avatar from '$lib/components/ui/avatar/index.js';
-	import { generateUsername } from '$lib/utils.js';
-
-	let { children, data }: { children: any; data: LayoutServerData } = $props();
-
-	const navLinks = [
-		{ href: '/', label: 'Home', description: 'Return to the homepage.' },
-		{ href: '/history', label: 'History', description: 'Our club history.' },
-		{ href: '/members', label: 'Members', description: 'Meet our members.' },
-		{ href: '/events', label: 'Events', description: 'Upcoming and past events.' },
-		{ href: '/fun', label: 'Fun', description: 'Games, jokes, and more.' },
-		{ href: '/contact', label: 'Contact', description: 'Get in touch with us.' },
-		{ href: '/gallery', label: 'Gallery', description: 'Photo gallery of club events.' }
-	];
-
-	const dropdownLinks = [
-		{ href: '/links', label: 'Links', description: 'Beer resources and friends.' },
-		{ href: '/rules', label: 'Rules', description: 'Club rules and guidelines.' },
-		{ href: '/movie', label: 'IBC Movie', description: 'Watch the IBC movie.' },
-		{ href: '/foodog', label: 'Foo Dogs', description: 'Learn about Foo Dogs.' },
-		{
-			href: '/science',
-			label: 'Science Corner',
-			description: 'Explore beer science and fun facts.'
-		},
-		{ href: '/styles', label: 'Beer Styles', description: 'Learn about different beer styles.' },
-		{ href: '/stats', label: 'IBC Stats', description: 'View club statistics and records.' }
-	];
-
-	const mainLinks = navLinks.filter((l) => !dropdownLinks.some((d) => d.href === l.href));
+	import Navbar from '$lib/components/Navbar.svelte';
+	import { ModeWatcher } from 'mode-watcher';
+	import { Toaster } from '$lib/components/ui/sonner';
+	let { children } = $props();
 </script>
 
-<div class="shadow-background flex h-20 items-center justify-around">
-	<div class="flex items-center gap-4">
-		<img src="/IBCLogo.png" alt="Island Beer Club Logo" class="h-10 w-auto" />
-		<NavigationMenu.Root>
-			<NavigationMenu.List>
-				{#each mainLinks as link}
-					<NavigationMenu.Item>
-						<NavigationMenu.Link href={link.href}>{link.label}</NavigationMenu.Link>
-					</NavigationMenu.Item>
-				{/each}
-			</NavigationMenu.List>
-		</NavigationMenu.Root>
-
-		<NavigationMenu.Root>
-			<NavigationMenu.List>
-				<NavigationMenu.Item>
-					<NavigationMenu.Trigger>More</NavigationMenu.Trigger>
-					<NavigationMenu.Content>
-						<ul class="min-w-[150px] p-2">
-							{#each dropdownLinks as link}
-								<li>
-									<NavigationMenu.Link href={link.href}>{link.label}</NavigationMenu.Link>
-								</li>
-							{/each}
-						</ul>
-					</NavigationMenu.Content>
-				</NavigationMenu.Item>
-			</NavigationMenu.List>
-		</NavigationMenu.Root>
-	</div>
-	<!-- User Authentication Section -->
-	<div class="flex items-center gap-2">
-		{#if data.user}
-			<!-- User is logged in -->
-			<span class="text-muted-foreground text-sm">Hello, {data.user.name}!</span>
-			<DropdownMenu.Root>
-				<DropdownMenu.Trigger>
-					<Avatar.Root>
-						{#if data.user.img}
-							{#if data.user.img.startsWith('http')}
-								<!-- UploadThing URL -->
-								<Avatar.Image src={data.user.img} alt={data.user.name} />
-							{:else}
-								<!-- Legacy local file path -->
-								<!-- <Avatar.Image src={`/resources/${data.user.img}`} alt={data.user.name} /> -->
-							{/if}
-						{/if}
-						<Avatar.Fallback>{generateUsername(data.user.name)}</Avatar.Fallback>
-					</Avatar.Root>
-				</DropdownMenu.Trigger>
-				<DropdownMenu.Content>
-					<DropdownMenu.Group>
-						<DropdownMenu.Label>My Account</DropdownMenu.Label>
-						<DropdownMenu.Separator />
-						<DropdownMenu.Item><a href="/dashboard">Dashboard</a></DropdownMenu.Item>
-						<DropdownMenu.Item><a href="/settings">Settings</a></DropdownMenu.Item>
-						{#if data.user.role === 'admin'}
-							<DropdownMenu.Separator />
-							<DropdownMenu.Label>Admin</DropdownMenu.Label>
-							<DropdownMenu.Item><a href="/members">Member Directory</a></DropdownMenu.Item>
-						{/if}
-					</DropdownMenu.Group>
-				</DropdownMenu.Content>
-			</DropdownMenu.Root>
-
-			<form method="post" action="/logout" use:enhance>
-				<Button type="submit" variant="outline" size="sm">Logout</Button>
-			</form>
-		{:else}
-			<!-- User is not logged in -->
-			<Button variant="outline" size="sm">
-				<a href="/login">Login</a>
-			</Button>
-		{/if}
-
-		<Button onclick={toggleMode} variant="outline" size="icon">
-			<SunIcon
-				class="size-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
-			/>
-			<MoonIcon
-				class="absolute size-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
-			/>
-			<span class="sr-only">Toggle theme</span>
-		</Button>
-	</div>
+<div class="bg-background relative flex min-h-dvh flex-col">
+	<Navbar />
+	<main class="flex-1">
+		{@render children()}
+	</main>
+	<footer class="py-6 md:px-8 md:py-0">
+		<div class="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
+			<p class="text-muted-foreground text-center text-sm leading-loose text-balance md:text-left">
+				© {new Date().getFullYear()} Island Beer Club. All rights reserved.
+			</p>
+		</div>
+	</footer>
 </div>
 
-<div class="mx-auto max-w-7xl sm:px-6 lg:px-8">
-	<ModeWatcher />
-	{@render children()}
-</div>
+<Toaster />
+<ModeWatcher />
