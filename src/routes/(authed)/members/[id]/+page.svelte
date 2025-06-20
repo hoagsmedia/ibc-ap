@@ -171,7 +171,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="flex flex-col gap-2 md:flex-row">
-						<Button variant="outline">Edit Member</Button>
+						<Button variant="outline" href={`/members/${data.member.id}/edit`}>Edit Member</Button>
 						<!-- <Button disabled variant="outline">Send Message</Button> -->
 						<Button disabled variant="destructive">Delete Member</Button>
 					</div>

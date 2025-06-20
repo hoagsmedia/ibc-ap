@@ -119,7 +119,8 @@
 									View
 								</Button>
 								{#if isAuthenticated && admin}
-									<Button variant="ghost" disabled size="sm">Edit</Button>
+									<Button variant="ghost" href={`/members/${member.id}/edit`} size="sm">Edit</Button
+									>
 								{/if}
 							</Table.Cell>
 						</Table.Row>
