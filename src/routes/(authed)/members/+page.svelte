@@ -3,15 +3,14 @@
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Pagination from '$lib/components/ui/pagination/index.js';
-	import ChevronLeftIcon from '@lucide/svelte/icons/chevron-left';
-	import ChevronRightIcon from '@lucide/svelte/icons/chevron-right';
+	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Search } from '@lucide/svelte';
 	import { goto } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
-	import { generateUsername } from '$lib/utils';
+	import { cn, generateUsername } from '$lib/utils';
 
 	let { data }: PageProps = $props();
 
@@ -20,6 +19,7 @@
 	const pageData = $state(page);
 	const admin = $derived(pageData.data.user.role === 'admin');
 	const isAuthenticated = $derived(!!admin);
+	const isMobile = new IsMobile();
 	// Debounce timer for search
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -48,11 +48,19 @@
 	<title>Member Directory | Island Beer Club</title>
 	<meta name="description" content="Island Beer Club member directory - Admin access only" />
 </svelte:head>
-
-<div class="container py-8">
+<div class="container py-8 md:w-full">
+	<!-- Header with back button -->
+	<div class="mb-6 flex flex-col items-center gap-4 md:flex-row">
+		<Button variant="outline" size="sm" onclick={() => history.back()}>
+			<ArrowLeft class="size-4" />
+			Back to Dashboard
+		</Button>
+		<h1 class="text-3xl font-bold">Member Details</h1>
+	</div>
+	<!-- <div class="container py-8">
 	<div class="mb-6 flex items-center justify-between">
 		<h1 class="text-3xl font-bold">Member Directory</h1>
-	</div>
+	</div> -->
 
 	<!-- Search Bar -->
 	<div class="mb-4 flex items-center gap-2">
@@ -76,11 +84,11 @@
 				<Table.Row>
 					<Table.Head>Profile</Table.Head>
 					<Table.Head>Name</Table.Head>
-					<Table.Head>Member #</Table.Head>
-					{#if !IsMobile}
+					<Table.Head class={cn('p-5', isMobile.current && 'text-center')}>Member #</Table.Head>
+					{#if !isMobile.current}
 						<Table.Head>Email</Table.Head>
 					{/if}
-					<Table.Head>Actions</Table.Head>
+					<Table.Head class="text-end">Actions</Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
@@ -100,14 +108,18 @@
 								</Avatar.Root>
 							</Table.Cell>
 							<Table.Cell>{member.name || 'N/A'}</Table.Cell>
-							<Table.Cell>{member.mbr || 'N/A'}</Table.Cell>
-							{#if !IsMobile}
+							<Table.Cell class={cn('', isMobile.current && 'text-center')}
+								>{member.mbr || 'N/A'}</Table.Cell
+							>
+							{#if !isMobile.current}
 								<Table.Cell>{member.email || 'N/A'}</Table.Cell>
 							{/if}
-							<Table.Cell>
-								<Button variant="ghost" size="sm">View</Button>
+							<Table.Cell class="text-end">
+								<Button variant="ghost" size="sm" onclick={() => goto(`/members/${member.id}`)}>
+									View
+								</Button>
 								{#if isAuthenticated && admin}
-									<Button variant="ghost" size="sm">Edit</Button>
+									<Button variant="ghost" disabled size="sm">Edit</Button>
 								{/if}
 							</Table.Cell>
 						</Table.Row>

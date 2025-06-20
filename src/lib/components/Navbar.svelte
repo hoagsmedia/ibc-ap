@@ -109,13 +109,13 @@
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger>
 							<Button variant="ghost" class="relative size-8 rounded-full">
-								<Avatar.Root class="size-8">
+								<Avatar.Root class="size-8 outline-2 outline-offset-2 outline-solid">
 									<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
 									<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
 								</Avatar.Root>
 							</Button>
 						</DropdownMenu.Trigger>
-						<DropdownMenu.Content align="end" class="w-56">
+						<DropdownMenu.Content align="center" class="w-56">
 							<DropdownMenu.Label>My Account</DropdownMenu.Label>
 							<DropdownMenu.Separator />
 							<DropdownMenu.Item>

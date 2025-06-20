@@ -17,16 +17,6 @@
 	function copyToClipboard(text: string) {
 		navigator.clipboard.writeText(text);
 	}
-
-	// function formatDateTime(date: Date) {
-	// 	return new Intl.DateTimeFormat('en-US', {
-	// 		month: 'short',
-	// 		day: 'numeric',
-	// 		year: 'numeric',
-	// 		hour: 'numeric',
-	// 		minute: '2-digit'
-	// 	}).format(new Date(date));
-	// }
 </script>
 
 <svelte:head>
@@ -74,30 +64,30 @@
 					<div class="bg-card rounded-lg p-6 shadow">
 						<h3 class="text-card-foreground mb-4 text-lg font-medium">Quick Actions</h3>
 						<div class="space-y-3">
-							<a
+							<Button
 								href="/settings"
-								class="bg-muted text-muted-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+								class="bg-accent text-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
 							>
 								Profile Settings
-							</a>
-							<a
+							</Button>
+							<Button
 								href="/gallery"
-								class="bg-accent text-accent-foreground hover:bg-accent/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+								class="bg-accent text-foreground hover:bg-accent/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
 							>
 								View Gallery
-							</a>
-							<a
+							</Button>
+							<Button
 								href="/events"
-								class="bg-secondary text-secondary-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+								class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
 							>
 								Upcoming Events
-							</a>
-							<a
+							</Button>
+							<Button
 								href="/members"
-								class="bg-muted text-muted-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+								class="bg-accent text-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
 							>
 								Member Directory
-							</a>
+							</Button>
 						</div>
 					</div>
 
