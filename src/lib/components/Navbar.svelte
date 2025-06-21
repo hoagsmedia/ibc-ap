@@ -151,13 +151,18 @@
 					</Sheet.Trigger>
 					<Sheet.Content preventScroll={false} side="right" class="flex w-[230px] sm:w-[220px]">
 						<Sheet.Header>
-							<a href="/dashboard">
-								<Avatar.Root class="mx-auto mt-4 mb-2 size-12">
-									<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
-									<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
-								</Avatar.Root>
-							</a>
-							<span class="text-center text-[11px]">{user.name}</span>
+							{#if user}
+								<a href="/dashboard">
+									<Avatar.Root class="mx-auto mt-4 mb-2 size-12">
+										<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
+										<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
+									</Avatar.Root>
+									<span class="text-center text-[11px]">{user.name}</span>
+								</a>
+								<h2 class="text-lg font-semibold">Welcome, {user.name}!</h2>
+							{:else}
+								<h2 class="text-lg font-semibold">Welcome!</h2>
+							{/if}
 						</Sheet.Header>
 						<nav class="flex-grow pl-6">
 							<ScrollArea class="h-92 ">
