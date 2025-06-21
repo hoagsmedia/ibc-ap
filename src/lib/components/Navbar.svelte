@@ -13,10 +13,12 @@
 	import { enhance } from '$app/forms';
 	import logo from '$lib/assets/ibc-logo.svg';
 	import { navLinks, dropdownLinks } from '$lib/config/navigation';
+	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
+	import Separator from './ui/separator/separator.svelte';
 
 	// --- Reactive State ---
 	const pageData = $state(page);
-	let isOpen = $state(true);
+	let isOpen = $state(false);
 	const user = $derived(pageData.data.user);
 	const isAuthenticated = $derived(!!user);
 	const currentPath = $derived(pageData.url.pathname);
@@ -143,12 +145,12 @@
 			<div class="ml-auto">
 				<Sheet.Root bind:open={isOpen}>
 					<Sheet.Trigger>
-						<Button variant="ghost" size="icon">
-							<Menu class="size-5" />
+						<Button class="mr-7" variant="ghost" size="icon">
+							<Menu class=" size-7 " />
 							<span class="sr-only">Toggle Menu</span>
 						</Button>
 					</Sheet.Trigger>
-					<Sheet.Content preventScroll={false} side="right" class="flex w-[200px] sm:w-[220px]">
+					<Sheet.Content preventScroll={false} side="right" class="flex w-[230px] sm:w-[220px]">
 						<Sheet.Header>
 							<a href="/dashboard">
 								<Avatar.Root class="mx-auto mt-4 mb-2 size-12">
@@ -158,19 +160,19 @@
 							</a>
 							<span class="text-center text-[11px]">{user.name}</span>
 						</Sheet.Header>
-
-						<nav class="flex-grow overflow-y-auto pl-6">
-							<div class="flex flex-col space-y-2">
-								{#each [...navLinks, ...dropdownLinks] as link}
-									<a
-										href={link.href}
-										class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
-									>
-										{link.label}
-									</a>
-								{/each}
-							</div>
-
+						<nav class="flex-grow pl-6">
+							<ScrollArea class="h-92 ">
+								<div class="flex flex-col space-y-2">
+									{#each [...navLinks, ...dropdownLinks] as link}
+										<a
+											href={link.href}
+											class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
+										>
+											{link.label}
+										</a>
+									{/each}
+								</div>
+							</ScrollArea>
 							<div class="mt-6 border-t pt-6">
 								{#if isAuthenticated && user}
 									<div class="flex items-center gap-4">

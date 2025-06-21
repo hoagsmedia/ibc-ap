@@ -32,8 +32,6 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		throw error(404, 'Member not found');
 	}
 
-	// console.log('Member details:', member);
-
 	// Transform member data to match schema expectations
 	const memberData = {
 		id: member.id,
@@ -60,12 +58,82 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request }) => {
+	default: async ({ request, locals, params }) => {
+		// Check authentication and authorization
+		if (!locals.user) {
+			throw redirect(302, '/login');
+		}
+
+		if (locals.user.role !== 'admin') {
+			throw error(403, 'Access denied. Admin role required.');
+		}
+
 		const form = await superValidate(request, zod(memberSchema));
-		console.log(form);
 
-		if (!form.valid) return fail(400, { form });
+		if (!form.valid) {
+			return fail(400, { form });
+		}
 
-		return message(form, 'Form posted successfully!');
+		const { id } = params;
+		if (!id) {
+			throw error(400, 'User ID is required');
+		}
+
+		try {
+			// Extract the form data
+			const {
+				name,
+				email,
+				phone,
+				address,
+				bio,
+				hobbies,
+				role,
+				likes,
+				mbr,
+				msd,
+				sponsor,
+				test_passed
+			} = form.data;
+
+			// Verify the member exists before updating
+			const existingMember = await db.query.users.findFirst({
+				where: eq(users.id, id)
+			});
+
+			if (!existingMember) {
+				return fail(404, { form, message: 'Member not found' });
+			}
+
+			// Update the member in the database
+			const updatedMember = await db
+				.update(users)
+				.set({
+					name: name || '',
+					email: email || '',
+					phone: phone || null,
+					address: address || null,
+					bio: bio || '',
+					hobbies: hobbies || null,
+					role: (role as 'guest' | 'member' | 'admin') || 'member',
+					likes: likes || null,
+					mbr: mbr || 0,
+					msd: msd || new Date().toISOString().split('T')[0],
+					sponsor: sponsor || null,
+					test_passed: test_passed ? new Date(test_passed) : null,
+					updated_at: new Date()
+				})
+				.where(eq(users.id, id))
+				.returning();
+
+			if (!updatedMember.length) {
+				return fail(500, { form, message: 'Failed to update member' });
+			}
+
+			return message(form, 'Member updated successfully!');
+		} catch (err) {
+			console.error('Error updating member:', err);
+			return fail(500, { form, message: 'An error occurred while updating the member' });
+		}
 	}
 };
