@@ -8,6 +8,13 @@
       "when": 1750043862057,
       "tag": "0000_yellow_purple_man",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1750467323751,
+      "tag": "0001_vengeful_black_widow",
+      "breakpoints": true
     }
   ]
 }

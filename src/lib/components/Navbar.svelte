@@ -8,17 +8,16 @@
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
+	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
 	import { toggleMode } from 'mode-watcher';
 	import { Menu } from '@lucide/svelte';
 	import { enhance } from '$app/forms';
 	import logo from '$lib/assets/ibc-logo.svg';
 	import { navLinks, dropdownLinks } from '$lib/config/navigation';
-	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
-	import Separator from './ui/separator/separator.svelte';
 
 	// --- Reactive State ---
 	const pageData = $state(page);
-	let isOpen = $state(false);
+	let isOpen = $state(true);
 	const user = $derived(pageData.data.user);
 	const isAuthenticated = $derived(!!user);
 	const currentPath = $derived(pageData.url.pathname);
@@ -143,7 +142,7 @@
 		{:else}
 			<!-- Mobile Navigation -->
 			<div class="ml-auto">
-				<Sheet.Root bind:open={isOpen}>
+				<Sheet.Root>
 					<Sheet.Trigger>
 						<Button class="mr-7" variant="ghost" size="icon">
 							<Menu class=" size-7 " />
