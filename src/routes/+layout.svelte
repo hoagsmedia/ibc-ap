@@ -8,7 +8,7 @@
 
 <div class="bg-background relative flex min-h-dvh flex-col">
 	<Navbar />
-	<main class="flex-1">
+	<main class="mx-auto max-w-4xl flex-1">
 		{@render children()}
 	</main>
 	<footer class="py-6 md:px-8 md:py-0">

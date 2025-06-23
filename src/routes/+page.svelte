@@ -1,58 +1,6 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
-
-	const quotes = [
-		{
-			text: 'Best Club on this side of the drink!',
-			author: 'Ken May',
-			date: '30 Oct 09'
-		},
-		{
-			text: `Regular consumption of beer eliminates the weaker brain cells,\nmaking the brain a faster and more efficient machine. That's why you\nalways feel smarter after a few beers.`,
-			author: 'Cliff Clavin',
-			submitter: 'Richard Smith',
-			date: '24 Mar 10'
-		},
-		{
-			text: 'ALWAYS PLAN AHEAD! --- Buy two cases of beer.'
-		},
-		{
-			text: 'Beer is proof that God loves us and wants us to be happy.',
-			author: 'Benjamin Franklin'
-		},
-		{
-			text: 'Beer is not just a breakfast beverage. It is a way of life.',
-			author: 'COL Jack Holly, USMC'
-		},
-		{
-			text: 'Finish your beer. There are sober folks in China.',
-			author: 'Unknown'
-		},
-		{
-			text: 'Remember "I" before "E", except in Budweiser.',
-			author: 'Unknown'
-		},
-		{
-			text: `Life's tough... it's even tougher if you're stupid.`,
-			author: 'John Wayne'
-		},
-		{
-			text: 'I read about the evils of drinking, I gave up reading.',
-			author: 'Henny Youngman'
-		},
-		{
-			text: `Everybody's got to believe in something.\nI believe I'll have another beer.`,
-			author: 'W. C. Fields'
-		},
-		{
-			text: `Alcohol - the cause of and the solution to - all of life's problems.`,
-			author: 'Homer Simpson'
-		},
-		{
-			text: 'Beer: Helping ugly people have sex since 1862.',
-			author: 'Anonymous'
-		}
-	];
+	import { quotes } from '$lib/data/quotes.js';
 
 	// Sort quotes by date descending, putting undated quotes last
 	function parseDate(date?: string): number {
@@ -76,7 +24,7 @@
 		title: 'Island Beer Club',
 		description:
 			'The official site of Island Beer Club. Learn about our members, events, and the spirit of craft beer on Coronado Island.',
-		image: '/groupGarage.jpg',
+		image: '/the-founders.png',
 		url: 'https://islandbeerclub.com/'
 	};
 </script>
@@ -91,11 +39,11 @@
 	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
-<section class="relative flex h-[60vh] min-h-[340px] items-center justify-center">
+<section class="relative flex min-h-[300px] items-center justify-center md:min-h-[500px]">
 	<img
-		src="/groupGarage.jpg"
-		alt="Island Beer Club group in garage"
-		class="absolute inset-0 z-0 h-full w-full object-cover object-center brightness-75"
+		src="/the-founders.png"
+		alt="Island Beer Club founders"
+		class="absolute inset-0 z-0 mt-2 h-full w-full rounded object-contain object-center brightness-75 md:object-cover"
 		loading="eager"
 		draggable="false"
 	/>
