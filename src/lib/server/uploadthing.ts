@@ -160,9 +160,10 @@ export const ourFileRouter = {
 
 			// Extract the member ID from the referer URL - updated regex for UUID format
 			const referer = req.headers.get('referer');
-			const memberIdMatch = referer?.match(/\/members\/([a-f0-9-]{36})/);
+			// Extract member ID from referer URL with flexible matching
+			const memberIdMatch = referer?.match(/\/members\/([a-zA-Z0-9_-]+)/);
 
-			if (!memberIdMatch || !memberIdMatch[1]) {
+			if (!memberIdMatch || !memberIdMatch[1] || memberIdMatch[1].length < 8) {
 				throw new Error('Member ID not found in referer URL');
 			}
 
