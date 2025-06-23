@@ -358,7 +358,7 @@
 		<ul class="space-y-8">
 			{#each sortedQuotes as quote}
 				<li>
-					<Card.Root>
+					<Card.Root class="bg-accent p-6 shadow-lg">
 						<Card.Header>
 							<Card.Title class="text-lg font-light whitespace-pre-line">{quote.text}</Card.Title>
 							{#if quote.author || quote.submitter || quote.date}

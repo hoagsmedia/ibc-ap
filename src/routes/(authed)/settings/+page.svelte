@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { createUploadThing } from '$lib/utils';
 	import type { PageData } from './$types';
 	import * as Avatar from '$lib/components/ui/avatar';
@@ -11,7 +11,7 @@
 	let updating = $state(false);
 
 	// Get form data from page store using $derived
-	let form = $derived($page.form as { success?: boolean; message?: string } | null);
+	let form = $derived(page.form as { success?: boolean; message?: string } | null);
 
 	// Create UploadThing helper
 	const { startUpload, isUploading } = createUploadThing('profileImageUploader', {

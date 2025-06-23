@@ -44,6 +44,7 @@ Please write code using the following technologies and tools:
 - Component libraries: use `shadcn-svelte` for inputs, dialogs, modals, etc.
 - Avoid deprecated or unstable APIs.
 - Always generate **valid**, **typed**, and **runnable** code.
+- Use import lucide icons from '@lucide/svelte'
 
 ---
 
