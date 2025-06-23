@@ -55,12 +55,8 @@
 			<ArrowLeft class="size-4" />
 			Back to Dashboard
 		</Button>
-		<h1 class="text-3xl font-bold">Member Details</h1>
+		<h1 class="text-3xl font-bold">Members</h1>
 	</div>
-	<!-- <div class="container py-8">
-	<div class="mb-6 flex items-center justify-between">
-		<h1 class="text-3xl font-bold">Member Directory</h1>
-	</div> -->
 
 	<!-- Search Bar -->
 	<div class="mb-4 flex items-center gap-2">
@@ -80,7 +76,7 @@
 
 	<div class="rounded-md border">
 		<Table.Root>
-			<Table.Header>
+			<Table.Header class="bg-muted">
 				<Table.Row>
 					<Table.Head>Profile</Table.Head>
 					<Table.Head>Name</Table.Head>

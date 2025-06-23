@@ -9,6 +9,7 @@
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
+	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { toggleMode } from 'mode-watcher';
 	import { Menu } from '@lucide/svelte';
 	import { enhance } from '$app/forms';
@@ -22,6 +23,8 @@
 	const isAuthenticated = $derived(!!user);
 	const currentPath = $derived(pageData.url.pathname);
 	const isMobile = new IsMobile();
+
+	$inspect('currentPath', currentPath);
 
 	//Close mobile menu on route change
 	$effect(() => {
@@ -104,9 +107,8 @@
 				</NavigationMenu.List>
 			</NavigationMenu.Root>
 
-			<div class="flex flex-1 flex-col-reverse items-center justify-end">
+			<div class="flex flex-1 flex-col items-center justify-end space-y-2">
 				{#if isAuthenticated && user}
-					<span class="text-muted-foreground text-sm">{user.name}!</span>
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger>
 							<Button variant="ghost" class="relative size-8 rounded-full">
@@ -133,6 +135,7 @@
 							</DropdownMenu.Item>
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
+					<span class="text-muted-foreground text-sm">{user.name}!</span>
 				{:else}
 					<Button variant="ghost">
 						<a href="/login">Login</a>
@@ -142,7 +145,7 @@
 		{:else}
 			<!-- Mobile Navigation -->
 			<div class="ml-auto">
-				<Sheet.Root>
+				<Sheet.Root bind:open={isOpen}>
 					<Sheet.Trigger>
 						<Button class="mr-7" variant="ghost" size="icon">
 							<Menu class=" size-7 " />
@@ -151,40 +154,22 @@
 					</Sheet.Trigger>
 					<Sheet.Content preventScroll={false} side="right" class="flex w-[230px] sm:w-[220px]">
 						<Sheet.Header>
-							{#if user}
-								<a href="/dashboard">
-									<Avatar.Root class="mx-auto mt-4 mb-2 size-12">
-										<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
-										<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
-									</Avatar.Root>
-									<span class="text-center text-[11px]">{user.name}</span>
-								</a>
-								<h2 class="text-lg font-semibold">Welcome, {user.name}!</h2>
-							{:else}
-								<h2 class="text-lg font-semibold">Welcome!</h2>
-							{/if}
-						</Sheet.Header>
-						<nav class="flex-grow pl-6">
-							<ScrollArea class="h-92 ">
-								<div class="flex flex-col space-y-2">
-									{#each [...navLinks, ...dropdownLinks] as link}
+							<div class="pt-6">
+								{#if isAuthenticated && user}
+									<a href="/dashboard">
+										<Avatar.Root class="mx-auto mt-4 mb-2 size-12">
+											<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
+											<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
+										</Avatar.Root>
+										<span class="text-center text-[11px]">{user.name}</span>
+									</a>
+									<div class="mt-4 space-y-2">
 										<a
-											href={link.href}
+											href="/dashboard"
 											class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
 										>
-											{link.label}
+											Dashboard
 										</a>
-									{/each}
-								</div>
-							</ScrollArea>
-							<div class="mt-6 border-t pt-6">
-								{#if isAuthenticated && user}
-									<div class="flex items-center gap-4">
-										<div>
-											<a href="/dashboard" class="text-foreground">View Dashboard</a>
-										</div>
-									</div>
-									<div class="mt-4 space-y-2">
 										<a
 											href="/settings"
 											class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
@@ -209,6 +194,21 @@
 									</a>
 								{/if}
 							</div>
+							<Separator class="my-2" />
+						</Sheet.Header>
+						<nav class="flex-grow pl-6">
+							<ScrollArea class="h-92 ">
+								<div class="flex flex-col space-y-2">
+									{#each [...navLinks, ...dropdownLinks] as link}
+										<a
+											href={link.href}
+											class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
+										>
+											{link.label}
+										</a>
+									{/each}
+								</div>
+							</ScrollArea>
 						</nav>
 					</Sheet.Content>
 				</Sheet.Root>

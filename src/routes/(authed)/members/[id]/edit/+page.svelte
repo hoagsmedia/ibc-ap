@@ -4,8 +4,9 @@
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
+	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { ArrowLeft, Check } from '@lucide/svelte';
+	import { ArrowLeft, Check, Trash2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
@@ -17,9 +18,16 @@
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { generateUsername } from '$lib/utils';
 
-	let { data }: { data: { form: SuperValidated<Infer<MemberSchema>>; member: any } } = $props();
+	let { data }: { data: { form: SuperValidated<Infer<MemberSchema>>; member: any; user: any } } =
+		$props();
 	let uploading = $state(false);
 	let fileInput = $state<HTMLInputElement | null>(null);
+	let deleteDialogOpen = $state(false);
+	let deleteConfirmText = $state('');
+	let isDeleting = $state(false);
+
+	// Check if current user is admin (for delete access)
+	const isAdmin = $derived(data.user?.role === 'admin');
 
 	const form = superForm(data.form, {
 		validators: zodClient(memberSchema),
@@ -75,6 +83,58 @@
 				console.error('Upload failed:', error);
 			}
 		}
+	}
+
+	async function handleDeleteMember() {
+		if (deleteConfirmText !== 'DELETE') {
+			return;
+		}
+
+		isDeleting = true;
+		try {
+			const response = await fetch(`/members/${data.member.id}/edit`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded'
+				},
+				body: new URLSearchParams({
+					action: 'delete',
+					id: data.member.id
+				})
+			});
+
+			if (response.ok) {
+				toast.success('Member deleted successfully!', {
+					icon: Check,
+					duration: 3000,
+					position: 'bottom-right'
+				});
+				// Redirect to members list after successful deletion
+				window.location.href = '/members';
+			} else {
+				throw new Error('Failed to delete member');
+			}
+		} catch (error) {
+			console.error('Delete failed:', error);
+			toast.error('Failed to delete member. Please try again.', {
+				duration: 5000,
+				position: 'bottom-right'
+			});
+		} finally {
+			isDeleting = false;
+			deleteDialogOpen = false;
+			deleteConfirmText = '';
+		}
+	}
+
+	function openDeleteDialog() {
+		deleteConfirmText = '';
+		deleteDialogOpen = true;
+	}
+
+	function closeDeleteDialog() {
+		deleteDialogOpen = false;
+		deleteConfirmText = '';
 	}
 </script>
 
@@ -290,15 +350,92 @@
 				<Form.FieldErrors />
 			</Form.Field>
 
-			<div class="flex gap-4">
-				<Button type="submit" disabled={$submitting}>
-					{$submitting ? 'Updating...' : 'Update Member'}
-				</Button>
-				<Button type="button" variant="outline" onclick={() => history.back()}
-					>{$message ? 'Close' : 'Cancel'}</Button
-				>
+			<div class="flex justify-between gap-4">
+				<div class="flex gap-4">
+					<Button type="submit" disabled={$submitting}>
+						{$submitting ? 'Updating...' : 'Update Member'}
+					</Button>
+					<Button type="button" variant="outline" onclick={() => history.back()}
+						>{$message ? 'Close' : 'Cancel'}</Button
+					>
+				</div>
+
+				<!-- Delete Button - Admin Only -->
+				{#if isAdmin}
+					<Button
+						type="button"
+						variant="destructive"
+						onclick={openDeleteDialog}
+						class="flex items-center gap-2"
+					>
+						<Trash2 class="size-4" />
+						Delete Member
+					</Button>
+				{/if}
 			</div>
 		</form>
 	</Card.Content>
 </Card.Root>
-<!-- <Toaster closeButton /> -->
+
+<!-- Delete Confirmation Dialog -->
+<Dialog.Root bind:open={deleteDialogOpen}>
+	<Dialog.Content class="sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title class="text-destructive flex items-center gap-2">
+				<Trash2 class="size-5" />
+				Delete Member
+			</Dialog.Title>
+			<Dialog.Description>
+				This action cannot be undone. This will permanently delete {data.member.name}'s account and
+				remove all associated data.
+			</Dialog.Description>
+		</Dialog.Header>
+
+		<div class="space-y-4">
+			<div class="rounded-md bg-red-50 p-4">
+				<div class="text-sm text-red-800">
+					<strong>Warning:</strong> This will permanently delete:
+					<ul class="mt-2 list-inside list-disc space-y-1">
+						<li>Member profile and account</li>
+						<li>All associated data</li>
+						<li>Upload history and images</li>
+					</ul>
+				</div>
+			</div>
+
+			<div class="space-y-2">
+				<label for="delete-confirm" class="text-sm font-medium">
+					To confirm deletion, type <strong>DELETE</strong> in the box below:
+				</label>
+				<Input
+					id="delete-confirm"
+					bind:value={deleteConfirmText}
+					placeholder="Type DELETE to confirm"
+					class="font-mono"
+				/>
+			</div>
+		</div>
+
+		<Dialog.Footer class="flex gap-2">
+			<Button variant="outline" onclick={closeDeleteDialog} disabled={isDeleting}>Cancel</Button>
+			<Button
+				variant="destructive"
+				onclick={handleDeleteMember}
+				disabled={deleteConfirmText !== 'DELETE' || isDeleting}
+				class="flex items-center gap-2"
+			>
+				{#if isDeleting}
+					<div
+						class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+					></div>
+					Deleting...
+				{:else}
+					<Trash2 class="size-4" />
+					Delete Member
+				{/if}
+			</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
+
+<Toaster closeButton />

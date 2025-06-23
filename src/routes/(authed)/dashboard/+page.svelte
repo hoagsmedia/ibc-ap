@@ -3,7 +3,7 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
 	import { Button } from '$lib/components/ui/button';
-	import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
+	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import * as Alert from '$lib/components/ui/alert';
 	import { CheckIcon, ClockIcon, LinkIcon, Copy } from '@lucide/svelte/icons';
@@ -16,6 +16,19 @@
 
 	function copyToClipboard(text: string) {
 		navigator.clipboard.writeText(text);
+	}
+
+	function getRoleBadgeVariant(role: string) {
+		switch (role) {
+			case 'admin':
+				return 'destructive';
+			case 'moderator':
+				return 'secondary';
+			case 'member':
+				return 'default';
+			default:
+				return 'outline';
+		}
 	}
 </script>
 
@@ -36,9 +49,11 @@
 			{#if data.user}
 				<div class="grid grid-cols-1 gap-6 md:grid-cols-3">
 					<!-- Member Info Card -->
-					<div class="bg-card rounded-lg p-6 shadow">
-						<h3 class="text-card-foreground mb-4 text-lg font-medium">Member Information</h3>
-						<dl class="space-y-2">
+					<Card.Root class="bg-card rounded-lg p-6 shadow">
+						<Card.Header>
+							<Card.Title>Member Information</Card.Title>
+						</Card.Header>
+						<Card.Content class="space-y-2">
 							<div>
 								<dt class="text-muted-foreground text-sm font-medium">Name</dt>
 								<dd class="text-card-foreground text-sm">{data.user.name}</dd>
@@ -49,7 +64,10 @@
 							</div>
 							<div>
 								<dt class="text-muted-foreground text-sm font-medium">Role</dt>
-								<dd class="text-card-foreground text-sm capitalize">{data.user.role}</dd>
+								<!-- <dd class="text-card-foreground text-sm capitalize">{data.user.role}</dd> -->
+								<Badge variant={getRoleBadgeVariant(data.user.role)}>
+									{data.user.role.charAt(0).toUpperCase() + data.user.role.slice(1)}
+								</Badge>
 							</div>
 							<div>
 								<dt class="text-muted-foreground text-sm font-medium">Member Since</dt>
@@ -57,13 +75,15 @@
 									{data.user.msd ? formatDate(new Date(data.user.msd)) : 'Unknown'}
 								</dd>
 							</div>
-						</dl>
-					</div>
+						</Card.Content>
+					</Card.Root>
 
 					<!-- Quick Actions Card -->
-					<div class="bg-card rounded-lg p-6 shadow">
-						<h3 class="text-card-foreground mb-4 text-lg font-medium">Quick Actions</h3>
-						<div class="space-y-3">
+					<Card.Root class="bg-card rounded-lg p-6 shadow">
+						<Card.Header>
+							<Card.Title>Quick Actions</Card.Title>
+						</Card.Header>
+						<Card.Content class="space-y-3">
 							<Button
 								href="/settings"
 								class="bg-accent text-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
@@ -88,13 +108,15 @@
 							>
 								Member Directory
 							</Button>
-						</div>
-					</div>
+						</Card.Content>
+					</Card.Root>
 
 					<!-- Club Stats Card -->
-					<div class="bg-card rounded-lg p-6 shadow">
-						<h3 class="text-card-foreground mb-4 text-lg font-medium">Club Stats</h3>
-						<div class="space-y-3">
+					<Card.Root class="bg-card rounded-lg p-6 shadow">
+						<Card.Header>
+							<Card.Title>Club Stats</Card.Title>
+						</Card.Header>
+						<Card.Content class="space-y-3">
 							<div class="flex justify-between">
 								<span class="text-muted-foreground text-sm">Total Members</span>
 								<span class="text-card-foreground text-sm font-medium">436</span>
@@ -111,21 +133,21 @@
 								<span class="text-muted-foreground text-sm">Kegs Consumed</span>
 								<span class="text-card-foreground text-sm font-medium">147</span>
 							</div>
-						</div>
-					</div>
+						</Card.Content>
+					</Card.Root>
 				</div>
 			{/if}
 
 			<!-- Invitation Management Section -->
 			<div class="mt-8">
-				<Card>
-					<CardHeader>
-						<CardTitle class="flex items-center gap-2">
+				<Card.Root>
+					<Card.Header>
+						<Card.Title class="flex items-center gap-2">
 							<LinkIcon class="size-5" />
 							Invitation Links
-						</CardTitle>
-					</CardHeader>
-					<CardContent>
+						</Card.Title>
+					</Card.Header>
+					<Card.Content>
 						<!-- Success/Error Messages -->
 						{#if form?.success}
 							<Alert.Root class="mb-4">
@@ -252,17 +274,17 @@
 								{/if}
 							{/if}
 						</div>
-					</CardContent>
-				</Card>
+					</Card.Content>
+				</Card.Root>
 			</div>
 
 			<div class="mt-8">
-				<a
+				<Button
 					href="/"
 					class="bg-accent text-accent-foreground hover:bg-accent/80 focus:ring-ring inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-offset-2 focus:outline-none"
 				>
 					← Back to Main Site
-				</a>
+				</Button>
 			</div>
 		</div>
 	</div>

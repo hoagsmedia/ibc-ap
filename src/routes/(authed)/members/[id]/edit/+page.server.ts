@@ -53,6 +53,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	return {
 		member,
+		user: locals.user,
 		form: await superValidate(memberData, zod(memberSchema))
 	};
 };
@@ -68,6 +69,43 @@ export const actions: Actions = {
 			throw error(403, 'Access denied. Admin role required.');
 		}
 
+		const formData = await request.formData();
+		const action = formData.get('action');
+
+		// Handle delete action
+		if (action === 'delete') {
+			const { id } = params;
+			if (!id) {
+				throw error(400, 'User ID is required');
+			}
+
+			try {
+				// Verify the member exists before deleting
+				const existingMember = await db.query.users.findFirst({
+					where: eq(users.id, id)
+				});
+
+				if (!existingMember) {
+					return fail(404, { message: 'Member not found' });
+				}
+
+				// Prevent deleting yourself
+				if (existingMember.id === locals.user.id) {
+					return fail(400, { message: 'You cannot delete your own account' });
+				}
+
+				// Delete the member
+				await db.delete(users).where(eq(users.id, id));
+
+				// Redirect to members list after successful deletion
+				throw redirect(302, '/members');
+			} catch (err) {
+				console.error('Error deleting member:', err);
+				return fail(500, { message: 'Failed to delete member' });
+			}
+		}
+
+		// Handle regular form update
 		const form = await superValidate(request, zod(memberSchema));
 
 		if (!form.valid) {
