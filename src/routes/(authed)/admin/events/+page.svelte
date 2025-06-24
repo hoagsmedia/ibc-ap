@@ -9,10 +9,15 @@
 	} from '$lib/components/ui/card/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import { Plus, Calendar, MapPin, Edit, Trash2, Eye, EyeOff } from '@lucide/svelte';
+	import { Plus, Calendar, MapPin, Edit, Trash2, Eye, EyeOff, Loader2 } from '@lucide/svelte';
+	import { enhance } from '$app/forms';
 	import type { PageData } from './$types.js';
 
 	const { data }: { data: PageData } = $props();
+
+	// Track loading states for each event's publish/unpublish action
+	let loadingStates = $state<Record<string, boolean>>({});
+	let deleteLoadingStates = $state<Record<string, boolean>>({});
 
 	function formatDate(date: Date | null) {
 		if (!date) return 'No date set';
@@ -72,18 +77,33 @@
 								</Badge> -->
 								<div class="flex gap-1">
 									<!-- Toggle Publish/Unpublish -->
-									<form method="POST" action="?/togglePublish" class="inline">
+									<form 
+										method="POST" 
+										action="?/togglePublish" 
+										class="inline"
+										use:enhance={() => {
+											loadingStates[event.id] = true;
+											return async ({ update }) => {
+												await update();
+												loadingStates[event.id] = false;
+											};
+										}}
+									>
 										<input type="hidden" name="eventId" value={event.id} />
 										<input type="hidden" name="currentStatus" value={event.is_published} />
 										<Button
 											type="submit"
 											variant="outline"
 											size="sm"
+											disabled={loadingStates[event.id]}
 											class="gap-1 {event.is_published === 1
 												? 'text-orange-600 hover:bg-orange-50'
 												: 'text-green-600 hover:bg-green-50'}"
 										>
-											{#if event.is_published === 1}
+											{#if loadingStates[event.id]}
+												<Loader2 class="h-3 w-3 animate-spin" />
+												{event.is_published === 1 ? 'Unpublishing...' : 'Publishing...'}
+											{:else if event.is_published === 1}
 												<EyeOff class="h-3 w-3" />
 												Unpublish
 											{:else}
@@ -124,9 +144,32 @@
 												<Dialog.Close>
 													<Button variant="outline">Cancel</Button>
 												</Dialog.Close>
-												<form method="POST" action="?/delete" class="inline">
+												<form 
+													method="POST" 
+													action="?/delete" 
+													class="inline"
+													use:enhance={() => {
+														deleteLoadingStates[event.id] = true;
+														return async ({ update }) => {
+															await update();
+															deleteLoadingStates[event.id] = false;
+														};
+													}}
+												>
 													<input type="hidden" name="eventId" value={event.id} />
-													<Button type="submit" variant="destructive">Delete Event</Button>
+													<Button 
+														type="submit" 
+														variant="destructive"
+														disabled={deleteLoadingStates[event.id]}
+														class="gap-1"
+													>
+														{#if deleteLoadingStates[event.id]}
+															<Loader2 class="h-3 w-3 animate-spin" />
+															Deleting...
+														{:else}
+															Delete Event
+														{/if}
+													</Button>
 												</form>
 											</div>
 										</Dialog.Content>

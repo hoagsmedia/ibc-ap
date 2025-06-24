@@ -23,7 +23,7 @@
 		title: z.string().min(1, 'Title is required').max(255, 'Title is too long'),
 		description: z.string().optional(),
 		content: z.string().optional(),
-		event_date: z.string().optional(),
+		event_date: z.string().min(1, 'Event date is required'),
 		location: z.string().optional(),
 		is_published: z.boolean().default(false)
 	});
@@ -90,6 +90,7 @@
 						name="event_date"
 						type="datetime-local"
 						bind:value={$form.event_date}
+						required
 					/>
 					{#if $errors.event_date}
 						<p class="text-destructive text-sm">{$errors.event_date}</p>
