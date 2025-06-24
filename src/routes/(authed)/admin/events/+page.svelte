@@ -9,7 +9,7 @@
 	} from '$lib/components/ui/card/index.js';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import { Plus, Calendar, MapPin, Edit, Trash2 } from '@lucide/svelte';
+	import { Plus, Calendar, MapPin, Edit, Trash2, Eye, EyeOff } from '@lucide/svelte';
 	import type { PageData } from './$types.js';
 
 	const { data }: { data: PageData } = $props();
@@ -67,10 +67,33 @@
 								{/if}
 							</div>
 							<div class="flex items-center gap-2">
-								<Badge variant={event.is_published === 1 ? 'default' : 'secondary'}>
+								<!-- <Badge variant={event.is_published === 1 ? 'default' : 'secondary'}>
 									{event.is_published === 1 ? 'Published' : 'Draft'}
-								</Badge>
+								</Badge> -->
 								<div class="flex gap-1">
+									<!-- Toggle Publish/Unpublish -->
+									<form method="POST" action="?/togglePublish" class="inline">
+										<input type="hidden" name="eventId" value={event.id} />
+										<input type="hidden" name="currentStatus" value={event.is_published} />
+										<Button
+											type="submit"
+											variant="outline"
+											size="sm"
+											class="gap-1 {event.is_published === 1
+												? 'text-orange-600 hover:bg-orange-50'
+												: 'text-green-600 hover:bg-green-50'}"
+										>
+											{#if event.is_published === 1}
+												<EyeOff class="h-3 w-3" />
+												Unpublish
+											{:else}
+												<Eye class="h-3 w-3" />
+												Publish
+											{/if}
+										</Button>
+									</form>
+
+									<!-- Edit Button -->
 									<Button
 										href="/admin/events/{event.id}/edit"
 										variant="outline"
@@ -80,16 +103,14 @@
 										<Edit class="h-3 w-3" />
 										Edit
 									</Button>
+
+									<!-- Delete Button with Dialog -->
 									<Dialog.Root>
-										<Dialog.Trigger>
-											<Button
-												variant="outline"
-												size="sm"
-												class="text-destructive hover:bg-destructive hover:text-destructive-foreground gap-1"
-											>
-												<Trash2 class="h-3 w-3" />
-												Delete
-											</Button>
+										<Dialog.Trigger
+											class="inline-flex h-8 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs outline-none transition-all hover:bg-destructive hover:text-destructive-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 text-destructive [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+										>
+											<Trash2 class="h-3 w-3" />
+											Delete
 										</Dialog.Trigger>
 										<Dialog.Content>
 											<Dialog.Header>

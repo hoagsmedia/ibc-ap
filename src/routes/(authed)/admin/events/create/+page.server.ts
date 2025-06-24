@@ -12,10 +12,10 @@ function generateId(): string {
 
 const createEventSchema = z.object({
 	title: z.string().min(1, 'Title is required').max(255, 'Title is too long'),
-	description: z.string().optional(),
-	content: z.string().optional(),
-	event_date: z.string().optional(),
-	location: z.string().optional(),
+	description: z.string().min(1, 'Description is required').max(100, 'Description is too long'),
+	content: z.string().min(1, 'Content is required').max(1000, 'Content is too long'),
+	event_date: z.string(),
+	location: z.string(),
 	is_published: z.boolean().default(false)
 });
 
@@ -55,12 +55,11 @@ export const actions: Actions = {
 				is_published: form.data.is_published ? 1 : 0,
 				created_by_id: locals.user.id
 			});
-
-			throw redirect(302, '/admin/events');
 		} catch (error) {
-			if (error instanceof Response) throw error;
 			console.error('Error creating event:', error);
 			return fail(500, { form, message: 'Failed to create event' });
 		}
+
+		throw redirect(302, '/admin/events');
 	}
 };

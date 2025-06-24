@@ -49,7 +49,7 @@
 			{#if data.user}
 				<div class="grid grid-cols-1 gap-6 md:grid-cols-3">
 					<!-- Member Info Card -->
-					<Card.Root class="bg-card rounded-lg p-6 shadow">
+					<Card.Root class="">
 						<Card.Header>
 							<Card.Title>Member Information</Card.Title>
 						</Card.Header>
@@ -79,7 +79,7 @@
 					</Card.Root>
 
 					<!-- Quick Actions Card -->
-					<Card.Root class="bg-card rounded-lg p-6 shadow">
+					<Card.Root class="">
 						<Card.Header>
 							<Card.Title>Quick Actions</Card.Title>
 						</Card.Header>
@@ -112,7 +112,7 @@
 					</Card.Root>
 
 					<!-- Club Stats Card -->
-					<Card.Root class="bg-card rounded-lg p-6 shadow">
+					<Card.Root class="">
 						<Card.Header>
 							<Card.Title>Club Stats</Card.Title>
 						</Card.Header>

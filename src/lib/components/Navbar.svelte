@@ -24,8 +24,6 @@
 	const currentPath = $derived(pageData.url.pathname);
 	const isMobile = new IsMobile();
 
-	$inspect('currentPath', currentPath);
-
 	//Close mobile menu on route change
 	$effect(() => {
 		if (currentPath) {
@@ -111,12 +109,10 @@
 				{#if isAuthenticated && user}
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger>
-							<Button variant="ghost" class="relative size-8 rounded-full">
-								<Avatar.Root class="size-8 outline-2 outline-offset-2 outline-solid">
-									<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
-									<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
-								</Avatar.Root>
-							</Button>
+							<Avatar.Root class="size-8 outline-2 outline-offset-2 outline-solid">
+								<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
+								<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
+							</Avatar.Root>
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content align="center" class="w-56">
 							<DropdownMenu.Label>My Account</DropdownMenu.Label>

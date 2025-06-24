@@ -50,12 +50,14 @@
 	<Card class="mx-auto w-full max-w-2xl">
 		<CardHeader>
 			<CardTitle>Event Details</CardTitle>
-			<CardDescription>Fill out the information for your new event</CardDescription>
+			<CardDescription
+				>Fill out the information for your new event. All fields are required.</CardDescription
+			>
 		</CardHeader>
 		<CardContent>
 			<form method="POST" use:enhance class="space-y-6">
 				<div class="space-y-2">
-					<Label for="title">Title *</Label>
+					<Label for="title">Title <span class="text-destructive">*</span></Label>
 					<Input
 						id="title"
 						name="title"
@@ -69,7 +71,7 @@
 				</div>
 
 				<div class="space-y-2">
-					<Label for="description">Description</Label>
+					<Label for="description">Description <span class="text-destructive">*</span></Label>
 					<Input
 						id="description"
 						name="description"
@@ -82,7 +84,7 @@
 				</div>
 
 				<div class="space-y-2">
-					<Label for="event_date">Event Date & Time</Label>
+					<Label for="event_date">Event Date & Time <span class="text-destructive">*</span></Label>
 					<Input
 						id="event_date"
 						name="event_date"
@@ -95,7 +97,7 @@
 				</div>
 
 				<div class="space-y-2">
-					<Label for="location">Location</Label>
+					<Label for="location">Location <span class="text-destructive">*</span></Label>
 					<Input
 						id="location"
 						name="location"
@@ -108,7 +110,7 @@
 				</div>
 
 				<div class="space-y-2">
-					<Label for="content">Content</Label>
+					<Label for="content">Content <span class="text-destructive">*</span></Label>
 					<Textarea
 						id="content"
 						name="content"

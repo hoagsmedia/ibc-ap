@@ -77,12 +77,12 @@ export const actions: Actions = {
 					updated_at: new Date()
 				})
 				.where(eq(events.id, params.id));
-
-			throw redirect(302, '/admin/events');
 		} catch (error) {
 			if (error instanceof Response) throw error;
 			console.error('Error updating event:', error);
 			return fail(500, { form, message: 'Failed to update event' });
 		}
+
+		throw redirect(302, '/admin/events');
 	}
 };
