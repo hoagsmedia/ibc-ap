@@ -15,6 +15,13 @@
       "when": 1750467323751,
       "tag": "0001_vengeful_black_widow",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1750723632586,
+      "tag": "0002_white_carlie_cooper",
+      "breakpoints": true
     }
   ]
 }

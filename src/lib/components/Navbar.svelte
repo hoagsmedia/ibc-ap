@@ -127,6 +127,16 @@
 							<DropdownMenu.Item>
 								<a href="/settings" class="w-full">Settings</a>
 							</DropdownMenu.Item>
+							{#if user.role === 'admin'}
+								<DropdownMenu.Separator />
+								<DropdownMenu.Label>Admin</DropdownMenu.Label>
+								<DropdownMenu.Item>
+									<a href="/admin/events" class="w-full">Manage Events</a>
+								</DropdownMenu.Item>
+								<DropdownMenu.Item>
+									<a href="/members" class="w-full">Manage Members</a>
+								</DropdownMenu.Item>
+							{/if}
 							<DropdownMenu.Separator />
 							<DropdownMenu.Item>
 								<form method="post" action="/logout" use:enhance class="w-full">
@@ -176,6 +186,23 @@
 										>
 											Settings
 										</a>
+										{#if user.role === 'admin'}
+											<div class="mt-2 border-t pt-2">
+												<p class="text-muted-foreground mb-2 px-3 text-xs">Admin</p>
+												<a
+													href="/admin/events"
+													class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
+												>
+													Manage Events
+												</a>
+												<a
+													href="/members"
+													class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
+												>
+													Manage Members
+												</a>
+											</div>
+										{/if}
 										<form method="post" action="/logout" use:enhance class="w-full">
 											<button
 												type="submit"
