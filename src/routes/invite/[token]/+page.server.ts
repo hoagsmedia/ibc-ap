@@ -2,8 +2,7 @@ import type { PageServerLoad, Actions } from './$types';
 import { validateInvitationToken, markInvitationTokenAsUsed } from '$lib/server/invitations';
 import { error, redirect, fail } from '@sveltejs/kit';
 import { generateSessionToken, createSession, setSessionTokenCookie } from '$lib/server/auth';
-// import { hash } from '@node-rs/argon2';
-import bcrypt from 'bcrypt';
+import { hash } from '@node-rs/argon2';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
@@ -88,12 +87,12 @@ export const actions: Actions = {
 			}
 
 			// Hash password
-			// const passwordHash = await hash(password, {
-			// 	memoryCost: 19456,
-			// 	timeCost: 2,
-			// 	outputLen: 32,
-			// 	parallelism: 1
-			// });
+			const passwordHash = await hash(password, {
+				memoryCost: 19456,
+				timeCost: 2,
+				outputLen: 32,
+				parallelism: 1
+			});
 
 			// Create user
 			const userId = crypto.randomUUID();
@@ -101,7 +100,7 @@ export const actions: Actions = {
 				id: userId,
 				name,
 				email,
-				password_hash: await bcrypt.hash(password, 10), // Using bcrypt for password hashing
+				password_hash: passwordHash, // Using bcrypt for password hashing
 				phone: null,
 				address: null,
 				bio: bio || null,
