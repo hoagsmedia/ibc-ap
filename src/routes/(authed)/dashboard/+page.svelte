@@ -97,10 +97,10 @@
 								View Gallery
 							</Button>
 							<Button
-								href="/events"
+								href="/admin/events"
 								class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
 							>
-								Upcoming Events
+								Manage Events
 							</Button>
 							<Button
 								href="/members"
