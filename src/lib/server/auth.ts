@@ -27,15 +27,11 @@ export async function createSession(token: string, userId: string) {
 }
 
 export async function validateSessionToken(token: string) {
-	console.log(`[Auth] Validating session token: ${token ? token.substring(0, 5) + '...' : 'none'}`);
-
 	if (!token) {
-		console.log('[Auth] No token provided');
 		return { session: null, user: null };
 	}
 
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-	console.log(`[Auth] Session ID from token: ${sessionId.substring(0, 5)}...`);
 
 	try {
 		const [result] = await db
@@ -58,24 +54,19 @@ export async function validateSessionToken(token: string) {
 			.where(eq(table.session.id, sessionId));
 
 		if (!result) {
-			console.log('[Auth] No session found for token');
 			return { session: null, user: null };
 		}
-
-		console.log(`[Auth] Found session for user: ${result.user.email}`);
 
 		const { session, user } = result;
 
 		const sessionExpired = Date.now() >= session.expires_at.getTime();
 		if (sessionExpired) {
-			console.log('[Auth] Session expired, deleting');
 			await db.delete(table.session).where(eq(table.session.id, session.id));
 			return { session: null, user: null };
 		}
 
 		const renewSession = Date.now() >= session.expires_at.getTime() - DAY_IN_MS * 15;
 		if (renewSession) {
-			console.log('[Auth] Renewing session');
 			session.expires_at = new Date(Date.now() + DAY_IN_MS * 30);
 			await db
 				.update(table.session)
@@ -85,8 +76,7 @@ export async function validateSessionToken(token: string) {
 
 		return { session, user };
 	} catch (err) {
-		console.error('[Auth] Error validating session:', err);
-		return { session: null, user: null };
+		return { session: null, user: null, error: err as Error };
 	}
 }
 
