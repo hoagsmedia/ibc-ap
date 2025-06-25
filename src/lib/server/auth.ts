@@ -76,7 +76,8 @@ export async function validateSessionToken(token: string) {
 
 		return { session, user };
 	} catch (err) {
-		return { session: null, user: null, error: err as Error };
+		console.error('Error validating session token:', err);
+		return { session: null, user: null, error: 'An error occurred' };
 	}
 }
 
