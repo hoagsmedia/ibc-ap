@@ -1,4 +1,4 @@
-import { hash, verify } from '@node-rs/argon2';
+import { hash, verify } from 'argon2';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { fail, redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
@@ -37,44 +37,40 @@ export const actions: Actions = {
 		}
 
 		// Handle users with dev-hash (first-time login)
-		if (existingUser.password_hash === 'dev-hash') {
-			// For users with dev-hash, accept any password and update their hash
-			const newpassword_hash = await hash(password, {
-				memoryCost: 19456,
-				timeCost: 2,
-				outputLen: 32,
-				parallelism: 1
-			});
+		// if (existingUser.password_hash === 'dev-hash') {
+		// 	const newpassword_hash = await hash(password, {
+		// 		memoryCost: 19456,
+		// 		timeCost: 2,
+		// 		parallelism: 1
+		// 	});
 
-			// Update the user's password hash
-			await db
-				.update(table.users)
-				.set({ password_hash: newpassword_hash })
-				.where(eq(table.users.id, existingUser.id));
+		// 	// Update the user's password hash
+		// 	await db
+		// 		.update(table.users)
+		// 		.set({ password_hash: newpassword_hash })
+		// 		.where(eq(table.users.id, existingUser.id));
 
-			const sessionToken = auth.generateSessionToken();
-			const session = await auth.createSession(sessionToken, existingUser.id);
-			auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
+		// 	const sessionToken = auth.generateSessionToken();
+		// 	const session = await auth.createSession(sessionToken, existingUser.id);
+		// 	auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
 
-			return redirect(302, '/dashboard');
-		}
+		// 	return redirect(302, '/dashboard');
+		// }
 
 		// Normal password verification for users with proper hashes
-		const validPassword = await verify(existingUser.password_hash, password, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
+		const validPassword = await verify(existingUser.password_hash, password);
 		if (!validPassword) {
 			return fail(400, { message: 'Incorrect email or password' });
 		}
 
 		const sessionToken = auth.generateSessionToken();
+
 		const session = await auth.createSession(sessionToken, existingUser.id);
+
 		auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
 
-		return redirect(302, '/dashboard');
+		// Use the standard SvelteKit redirect with explicit options
+		throw redirect(302, '/dashboard');
 	},
 	register: async (event) => {
 		const formData = await event.request.formData();
@@ -93,13 +89,7 @@ export const actions: Actions = {
 		}
 
 		const userId = generateUserId();
-		const password_hash = await hash(password, {
-			// recommended minimum parameters
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
+		const password_hash = await hash(password);
 
 		try {
 			await db.insert(table.users).values({

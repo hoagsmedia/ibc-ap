@@ -4,7 +4,13 @@ import { fail } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
-		return fail(401);
+		// Instead of using fail(), we should redirect or return an empty object
+		// The authed layout should handle the redirect if the user isn't authenticated
+		return {
+			user: null,
+			invitations: [],
+			baseUrl: url.origin
+		};
 	}
 
 	// Load user's invitation tokens
