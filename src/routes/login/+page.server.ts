@@ -17,7 +17,6 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
 	login: async (event) => {
 		const formData = await event.request.formData();
-		console.log('Login form data:', formData);
 		const email = formData.get('email');
 		const password = formData.get('password');
 
@@ -65,19 +64,10 @@ export const actions: Actions = {
 		}
 
 		const sessionToken = auth.generateSessionToken();
-		console.log(`[Login] Generated session token: ${sessionToken.substring(0, 5)}...`);
 
 		const session = await auth.createSession(sessionToken, existingUser.id);
-		console.log(
-			`[Login] Created session with ID: ${session.id.substring(0, 5)}... for user: ${existingUser.email}`
-		);
 
 		auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
-		console.log(`[Login] Set session cookie with expiry: ${session.expires_at}`);
-
-		// Debug cookie
-		const cookieAfterSet = event.cookies.get(auth.sessionCookieName);
-		console.log(`[Login] Cookie after setting: ${cookieAfterSet ? 'exists' : 'missing'}`);
 
 		// Use the standard SvelteKit redirect with explicit options
 		throw redirect(302, '/dashboard');
