@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { page } from '$app/state';
 	import * as Form from '$lib/components/ui/form/index.js';
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
@@ -9,7 +8,6 @@
 	import { ArrowLeft, Check, Trash2 } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
-	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Textarea } from '$lib/components/ui/textarea/index.js';
 	import { memberSchema, type MemberSchema } from './edit-member-schema';
@@ -24,11 +22,11 @@
 	let fileInput = $state<HTMLInputElement | null>(null);
 	let deleteDialogOpen = $state(false);
 	let deleteConfirmText = $state('');
-	let isDeleting = $state(false);
 
 	// Check if current user is admin (for delete access)
 	const isAdmin = $derived(data.user?.role === 'admin');
 
+	// Update form
 	const form = superForm(data.form, {
 		validators: zodClient(memberSchema),
 		resetForm: false,
@@ -49,6 +47,33 @@
 	});
 
 	const { form: formData, enhance, submitting, message } = form;
+
+	// Delete form
+	const deleteForm = superForm(data.form, {
+		id: 'delete-member',
+		resetForm: false,
+		onResult: ({ result }) => {
+			if (result.type === 'success') {
+				toast.success('Member deleted successfully!', {
+					icon: Check,
+					duration: 3000,
+					position: 'bottom-right'
+				});
+				// Redirect to members list after successful deletion
+				window.location.href = '/members';
+			} else if (result.type === 'error') {
+				toast.error('Failed to delete member. Please try again.', {
+					duration: 5000,
+					position: 'bottom-right'
+				});
+			}
+			// Close dialog regardless
+			deleteDialogOpen = false;
+			deleteConfirmText = '';
+		}
+	});
+
+	const { enhance: enhanceDelete, submitting: isDeleting } = deleteForm;
 
 	// Create UploadThing helper
 	const { startUpload } = createUploadThing('updateMemberImage', {
@@ -82,48 +107,6 @@
 				uploading = false;
 				console.error('Upload failed:', error);
 			}
-		}
-	}
-
-	async function handleDeleteMember() {
-		if (deleteConfirmText !== 'DELETE') {
-			return;
-		}
-
-		isDeleting = true;
-		try {
-			const response = await fetch(`/members/${data.member.id}/edit`, {
-				method: 'POST',
-				headers: {
-					'Content-Type': 'application/x-www-form-urlencoded'
-				},
-				body: new URLSearchParams({
-					action: 'delete',
-					id: data.member.id
-				})
-			});
-
-			if (response.ok) {
-				toast.success('Member deleted successfully!', {
-					icon: Check,
-					duration: 3000,
-					position: 'bottom-right'
-				});
-				// Redirect to members list after successful deletion
-				window.location.href = '/members';
-			} else {
-				throw new Error('Failed to delete member');
-			}
-		} catch (error) {
-			console.error('Delete failed:', error);
-			toast.error('Failed to delete member. Please try again.', {
-				duration: 5000,
-				position: 'bottom-right'
-			});
-		} finally {
-			isDeleting = false;
-			deleteDialogOpen = false;
-			deleteConfirmText = '';
 		}
 	}
 
@@ -208,7 +191,7 @@
 		<Card.Description>Update the member's information below.</Card.Description>
 	</Card.Header>
 	<Card.Content>
-		<form method="POST" use:enhance class="space-y-6">
+		<form method="POST" action="?/update" use:enhance class="space-y-6">
 			<!-- Use the member ID from form data -->
 			<input type="hidden" name="id" value={$formData.id} />
 
@@ -391,50 +374,58 @@
 			</Dialog.Description>
 		</Dialog.Header>
 
-		<div class="space-y-4">
-			<div class="rounded-md bg-red-50 p-4">
-				<div class="text-sm text-red-800">
-					<strong>Warning:</strong> This will permanently delete:
-					<ul class="mt-2 list-inside list-disc space-y-1">
-						<li>Member profile and account</li>
-						<li>All associated data</li>
-						<li>Upload history and images</li>
-					</ul>
+		<form method="POST" action="?/delete" use:enhanceDelete>
+			<!-- Hidden input to pass the member ID -->
+			<input type="hidden" name="id" value={data.member.id} />
+
+			<div class="space-y-4">
+				<div class="rounded-md bg-red-50 p-4">
+					<div class="text-sm text-red-800">
+						<strong>Warning:</strong> This will permanently delete:
+						<ul class="mt-2 list-inside list-disc space-y-1">
+							<li>Member profile and account</li>
+							<li>All associated data</li>
+							<li>Upload history and images</li>
+						</ul>
+					</div>
+				</div>
+
+				<div class="space-y-2">
+					<label for="delete-confirm" class="text-sm font-medium">
+						To confirm deletion, type <strong>DELETE</strong> in the box below:
+					</label>
+					<Input
+						id="delete-confirm"
+						name="confirmText"
+						bind:value={deleteConfirmText}
+						placeholder="Type DELETE to confirm"
+						class="font-mono"
+					/>
 				</div>
 			</div>
 
-			<div class="space-y-2">
-				<label for="delete-confirm" class="text-sm font-medium">
-					To confirm deletion, type <strong>DELETE</strong> in the box below:
-				</label>
-				<Input
-					id="delete-confirm"
-					bind:value={deleteConfirmText}
-					placeholder="Type DELETE to confirm"
-					class="font-mono"
-				/>
-			</div>
-		</div>
-
-		<Dialog.Footer class="flex gap-2">
-			<Button variant="outline" onclick={closeDeleteDialog} disabled={isDeleting}>Cancel</Button>
-			<Button
-				variant="destructive"
-				onclick={handleDeleteMember}
-				disabled={deleteConfirmText !== 'DELETE' || isDeleting}
-				class="flex items-center gap-2"
-			>
-				{#if isDeleting}
-					<div
-						class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-					></div>
-					Deleting...
-				{:else}
-					<Trash2 class="size-4" />
-					Delete Member
-				{/if}
-			</Button>
-		</Dialog.Footer>
+			<Dialog.Footer class="mt-4 flex gap-2">
+				<Button type="button" variant="outline" onclick={closeDeleteDialog} disabled={$isDeleting}
+					>Cancel</Button
+				>
+				<Button
+					type="submit"
+					variant="destructive"
+					disabled={deleteConfirmText !== 'DELETE' || $isDeleting}
+					class="flex items-center gap-2"
+				>
+					{#if $isDeleting}
+						<div
+							class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+						></div>
+						Deleting...
+					{:else}
+						<Trash2 class="size-4" />
+						Delete Member
+					{/if}
+				</Button>
+			</Dialog.Footer>
+		</form>
 	</Dialog.Content>
 </Dialog.Root>
 
