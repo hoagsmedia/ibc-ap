@@ -17,6 +17,7 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
 	login: async (event) => {
 		const formData = await event.request.formData();
+		console.log('Login form data:', formData);
 		const email = formData.get('email');
 		const password = formData.get('password');
 
@@ -37,26 +38,25 @@ export const actions: Actions = {
 		}
 
 		// Handle users with dev-hash (first-time login)
-		if (existingUser.password_hash === 'dev-hash') {
-			// For users with dev-hash, accept any password and update their hash
-			const newpassword_hash = await hash(password, {
-				memoryCost: 19456,
-				timeCost: 2,
-				parallelism: 1
-			});
+		// if (existingUser.password_hash === 'dev-hash') {
+		// 	const newpassword_hash = await hash(password, {
+		// 		memoryCost: 19456,
+		// 		timeCost: 2,
+		// 		parallelism: 1
+		// 	});
 
-			// Update the user's password hash
-			await db
-				.update(table.users)
-				.set({ password_hash: newpassword_hash })
-				.where(eq(table.users.id, existingUser.id));
+		// 	// Update the user's password hash
+		// 	await db
+		// 		.update(table.users)
+		// 		.set({ password_hash: newpassword_hash })
+		// 		.where(eq(table.users.id, existingUser.id));
 
-			const sessionToken = auth.generateSessionToken();
-			const session = await auth.createSession(sessionToken, existingUser.id);
-			auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
+		// 	const sessionToken = auth.generateSessionToken();
+		// 	const session = await auth.createSession(sessionToken, existingUser.id);
+		// 	auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
 
-			return redirect(302, '/dashboard');
-		}
+		// 	return redirect(302, '/dashboard');
+		// }
 
 		// Normal password verification for users with proper hashes
 		const validPassword = await verify(existingUser.password_hash, password);
@@ -65,10 +65,22 @@ export const actions: Actions = {
 		}
 
 		const sessionToken = auth.generateSessionToken();
-		const session = await auth.createSession(sessionToken, existingUser.id);
-		auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
+		console.log(`[Login] Generated session token: ${sessionToken.substring(0, 5)}...`);
 
-		return redirect(302, '/dashboard');
+		const session = await auth.createSession(sessionToken, existingUser.id);
+		console.log(
+			`[Login] Created session with ID: ${session.id.substring(0, 5)}... for user: ${existingUser.email}`
+		);
+
+		auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
+		console.log(`[Login] Set session cookie with expiry: ${session.expires_at}`);
+
+		// Debug cookie
+		const cookieAfterSet = event.cookies.get(auth.sessionCookieName);
+		console.log(`[Login] Cookie after setting: ${cookieAfterSet ? 'exists' : 'missing'}`);
+
+		// Use the standard SvelteKit redirect with explicit options
+		throw redirect(302, '/dashboard');
 	},
 	register: async (event) => {
 		const formData = await event.request.formData();
