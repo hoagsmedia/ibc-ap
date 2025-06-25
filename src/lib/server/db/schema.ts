@@ -51,6 +51,7 @@ export const invitationTokens = pgTable('invitation_tokens', {
 
 export const events = pgTable('events', {
 	id: text('id').primaryKey(),
+	img: text('img'),
 	title: text('title').notNull(),
 	description: text('description'),
 	content: text('content'),

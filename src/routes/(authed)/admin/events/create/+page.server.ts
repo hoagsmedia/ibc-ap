@@ -16,7 +16,8 @@ const createEventSchema = z.object({
 	content: z.string().min(1, 'Content is required').max(1000, 'Content is too long'),
 	event_date: z.string().min(1, 'Event date is required'),
 	location: z.string(),
-	is_published: z.boolean().default(false)
+	is_published: z.boolean().default(false),
+	img: z.string().optional()
 });
 
 export const load: PageServerLoad = async ({ locals }) => {
@@ -53,6 +54,7 @@ export const actions: Actions = {
 				event_date: eventDate,
 				location: form.data.location || null,
 				is_published: form.data.is_published ? 1 : 0,
+				img: form.data.img || null,
 				created_by_id: locals.user.id
 			});
 		} catch (error) {

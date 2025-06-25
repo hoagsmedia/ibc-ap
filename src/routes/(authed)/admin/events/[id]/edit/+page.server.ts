@@ -13,7 +13,8 @@ const editEventSchema = z.object({
 	content: z.string().optional(),
 	event_date: z.string().min(1, 'Event date is required'),
 	location: z.string().optional(),
-	is_published: z.boolean().default(false)
+	is_published: z.boolean().default(false),
+	img: z.string().optional()
 });
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -33,7 +34,6 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const formattedEventDate = eventData.event_date
 		? eventData.event_date.toISOString().slice(0, 16)
 		: '';
-
 	return {
 		event: eventData,
 		form: await superValidate(
@@ -43,7 +43,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 				content: eventData.content || '',
 				event_date: formattedEventDate,
 				location: eventData.location || '',
-				is_published: Boolean(eventData.is_published)
+				is_published: Boolean(eventData.is_published),
+				img: eventData.img || ''
 			},
 			zod(editEventSchema)
 		)
@@ -74,6 +75,7 @@ export const actions: Actions = {
 					event_date: eventDate,
 					location: form.data.location || null,
 					is_published: form.data.is_published ? 1 : 0,
+					img: form.data.img || null,
 					updated_at: new Date()
 				})
 				.where(eq(events.id, params.id));

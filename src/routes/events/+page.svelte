@@ -95,7 +95,12 @@
 				<div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
 					{#each upcomingEvents as event}
 						<Card.Root class="flex h-full min-h-[300px] flex-col transition-shadow hover:shadow-lg">
-							<Card.Header>
+							{#if event.img}
+								<div class="-mt-6 overflow-hidden rounded-t-lg">
+									<img src={event.img} alt={event.title} class="h-48 w-full object-cover" />
+								</div>
+							{/if}
+							<Card.Header class={event.img ? '' : 'rounded-t-lg'}>
 								<div class="flex items-start justify-between">
 									<div class="space-y-2">
 										<Card.Title class="text-xl">{event.title}</Card.Title>
@@ -146,8 +151,15 @@
 				</h2>
 				<div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
 					{#each pastEvents as event}
-						<Card.Root class="flex h-full min-h-[250px] flex-col opacity-90 transition-shadow hover:shadow-lg">
-							<Card.Header>
+						<Card.Root
+							class="flex h-full min-h-[250px] flex-col opacity-90 transition-shadow hover:shadow-lg"
+						>
+							{#if event.img}
+								<div class="overflow-hidden rounded-t-lg">
+									<img src={event.img} alt={event.title} class="h-32 w-full object-cover" />
+								</div>
+							{/if}
+							<Card.Header class={event.img ? '' : 'rounded-t-lg'}>
 								<div class="space-y-2">
 									<Card.Title class="text-lg">{event.title}</Card.Title>
 									{#if event.description}

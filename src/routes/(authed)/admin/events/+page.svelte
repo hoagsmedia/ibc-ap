@@ -77,9 +77,9 @@
 								</Badge> -->
 								<div class="flex gap-1">
 									<!-- Toggle Publish/Unpublish -->
-									<form 
-										method="POST" 
-										action="?/togglePublish" 
+									<form
+										method="POST"
+										action="?/togglePublish"
 										class="inline"
 										use:enhance={() => {
 											loadingStates[event.id] = true;
@@ -127,7 +127,7 @@
 									<!-- Delete Button with Dialog -->
 									<Dialog.Root>
 										<Dialog.Trigger
-											class="inline-flex h-8 shrink-0 items-center justify-center gap-1 whitespace-nowrap rounded-md border border-input bg-background px-3 text-sm font-medium shadow-xs outline-none transition-all hover:bg-destructive hover:text-destructive-foreground focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:pointer-events-none disabled:opacity-50 text-destructive [&_svg:not([class*='size-'])]:size-4 [&_svg]:pointer-events-none [&_svg]:shrink-0"
+											class="border-input bg-background hover:bg-destructive hover:text-destructive-foreground focus-visible:ring-ring/50 text-destructive inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-md border px-3 text-sm font-medium whitespace-nowrap shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
 										>
 											<Trash2 class="h-3 w-3" />
 											Delete
@@ -144,9 +144,9 @@
 												<Dialog.Close>
 													<Button variant="outline">Cancel</Button>
 												</Dialog.Close>
-												<form 
-													method="POST" 
-													action="?/delete" 
+												<form
+													method="POST"
+													action="?/delete"
 													class="inline"
 													use:enhance={() => {
 														deleteLoadingStates[event.id] = true;
@@ -157,8 +157,8 @@
 													}}
 												>
 													<input type="hidden" name="eventId" value={event.id} />
-													<Button 
-														type="submit" 
+													<Button
+														type="submit"
 														variant="destructive"
 														disabled={deleteLoadingStates[event.id]}
 														class="gap-1"
@@ -179,6 +179,15 @@
 						</div>
 					</CardHeader>
 					<CardContent>
+						{#if event.img}
+							<div class="mb-4">
+								<img
+									src={event.img}
+									alt={event.title}
+									class="h-32 w-full rounded-lg object-cover"
+								/>
+							</div>
+						{/if}
 						<div class="text-muted-foreground space-y-2 text-sm">
 							{#if event.event_date}
 								<div class="flex items-center gap-2">
