@@ -49,8 +49,26 @@ export const invitationTokens = pgTable('invitation_tokens', {
 	used_by_id: text('used_by_id').references(() => users.id, { onDelete: 'set null' })
 });
 
+export const events = pgTable('events', {
+	id: text('id').primaryKey(),
+	img: text('img'),
+	title: text('title').notNull(),
+	description: text('description'),
+	content: text('content'),
+	event_date: timestamp('event_date', { withTimezone: true, mode: 'date' }),
+	location: text('location'),
+	is_published: integer('is_published').notNull().default(0),
+	created_by_id: text('created_by_id')
+		.notNull()
+		.references(() => users.id, { onDelete: 'cascade' }),
+	created_at: timestamp('created_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow(),
+	updated_at: timestamp('updated_at', { withTimezone: true, mode: 'date' }).notNull().defaultNow()
+});
+
 export type Session = typeof session.$inferSelect;
 
 export type User = typeof users.$inferSelect;
 
 export type InvitationToken = typeof invitationTokens.$inferSelect;
+
+export type Event = typeof events.$inferSelect;

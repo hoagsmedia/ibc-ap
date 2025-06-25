@@ -100,11 +100,13 @@ export const actions: Actions = {
 				id: userId,
 				name,
 				email,
-				password_hash: passwordHash,
+				password_hash: passwordHash, // Using bcrypt for password hashing
+				phone: null,
+				address: null,
 				bio: bio || null,
 				hobbies: hobbies || null,
 				img: null,
-				role: 'member', // Users invited get member role by default
+				role: 'guest', // Users invited get guest role by default
 				likes: likes || null,
 				mbr: null,
 				msd: null,
