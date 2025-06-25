@@ -1,4 +1,4 @@
-import { hash, verify } from '@node-rs/argon2';
+import { hash, verify } from 'argon2';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { fail, redirect } from '@sveltejs/kit';
 import { eq } from 'drizzle-orm';
@@ -42,7 +42,6 @@ export const actions: Actions = {
 			const newpassword_hash = await hash(password, {
 				memoryCost: 19456,
 				timeCost: 2,
-				outputLen: 32,
 				parallelism: 1
 			});
 
@@ -60,12 +59,7 @@ export const actions: Actions = {
 		}
 
 		// Normal password verification for users with proper hashes
-		const validPassword = await verify(existingUser.password_hash, password, {
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
+		const validPassword = await verify(existingUser.password_hash, password);
 		if (!validPassword) {
 			return fail(400, { message: 'Incorrect email or password' });
 		}
@@ -93,13 +87,7 @@ export const actions: Actions = {
 		}
 
 		const userId = generateUserId();
-		const password_hash = await hash(password, {
-			// recommended minimum parameters
-			memoryCost: 19456,
-			timeCost: 2,
-			outputLen: 32,
-			parallelism: 1
-		});
+		const password_hash = await hash(password);
 
 		try {
 			await db.insert(table.users).values({
