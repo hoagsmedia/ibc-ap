@@ -1,17 +1,18 @@
 import type { PageServerLoad, Actions } from './$types';
 import { fail, redirect } from '@sveltejs/kit';
-import { testQuestions, PASSING_SCORE } from '$lib/test-questions';
+import { testQuestions } from '$lib/test-questions';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 
-export const load: PageServerLoad = async ({ locals }) => {
+export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
 		return fail(401);
 	}
 
-	// If user has already passed, redirect to dashboard
-	if (locals.user.test_passed) {
+	// If user has already passed, redirect to dashboard (unless they just passed)
+	const justPassed = url.searchParams.get('passed') === 'true';
+	if (locals.user.test_passed && !justPassed) {
 		throw redirect(302, '/dashboard');
 	}
 
@@ -76,8 +77,8 @@ export const actions: Actions = {
 			});
 		}
 
-		const passed = correctAnswers >= PASSING_SCORE;
 		const scorePercentage = Math.round((correctAnswers / testQuestions.length) * 100);
+		const passed = scorePercentage === 100; // Must be 100% to pass
 
 		// If passed, update user record
 		if (passed) {
@@ -86,26 +87,20 @@ export const actions: Actions = {
 				await db
 					.update(users)
 					.set({
-						test_passed: testPassedDate
+						test_passed: testPassedDate,
+						role: 'member'
 					})
 					.where(eq(users.id, locals.user.id));
 
 				// Update the locals.user for immediate reflection
 				locals.user.test_passed = testPassedDate;
-
-				return {
-					success: true,
-					passed: true,
-					score: correctAnswers,
-					total: testQuestions.length,
-					percentage: scorePercentage,
-					message: `Congratulations! You passed with ${scorePercentage}%. You can now create invitation links.`,
-					results
-				};
 			} catch (error) {
 				console.error('Error updating test status:', error);
 				return fail(500, { message: 'Error recording test results' });
 			}
+
+			// Redirect to the same page with a query parameter to show the dialog
+			throw redirect(302, '/test?passed=true');
 		} else {
 			return {
 				success: true,
@@ -113,7 +108,7 @@ export const actions: Actions = {
 				score: correctAnswers,
 				total: testQuestions.length,
 				percentage: scorePercentage,
-				message: `You scored ${scorePercentage}%. You need ${Math.round((PASSING_SCORE / testQuestions.length) * 100)}% to pass. Please review the club guidelines and try again.`,
+				message: `You scored ${scorePercentage}%. You need 100% to pass. Please review the club guidelines and try again.`,
 				results
 			};
 		}

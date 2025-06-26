@@ -66,7 +66,7 @@ export const testQuestions: TestQuestion[] = [
 		id: 6,
 		question: 'What is the name of the alley where the IBC is located?',
 		options: ['Brewpub Lane', 'Beer Belly Blvd.', 'Ale Avenue', 'Stella Street'],
-		correctAnswer: 2,
+		correctAnswer: 1,
 		explanation:
 			'The Island Beer Club headquarters is located on Stella Street, the heart of IBC operations.'
 	},
@@ -130,5 +130,5 @@ export const testQuestions: TestQuestion[] = [
 	}
 ];
 
-export const PASSING_SCORE = 8; // 80% passing rate
+export const PASSING_SCORE = 100; // 100% passing rate (must get all questions correct)
 export const TOTAL_QUESTIONS = testQuestions.length;

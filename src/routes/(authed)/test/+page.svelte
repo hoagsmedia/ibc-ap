@@ -1,6 +1,13 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import { Button } from '$lib/components/ui/button';
+	import {
+		Dialog,
+		DialogContent,
+		DialogHeader,
+		DialogTitle,
+		DialogFooter
+	} from '$lib/components/ui/dialog';
 	import { Label } from '$lib/components/ui/label';
 	import {
 		Card,
@@ -13,6 +20,7 @@
 	import * as Alert from '$lib/components/ui/alert';
 	import { CheckCircle, XCircle, BookOpen } from '@lucide/svelte/icons';
 	import { goto } from '$app/navigation';
+	import { page } from '$app/state';
 
 	let { data, form } = $props();
 
@@ -22,15 +30,22 @@
 	// If form has results, show them
 	let showResults = $derived(form?.success === true);
 	let testPassed = $derived(form?.passed === true);
+	let showPassDialog = $state(false);
+
+	// Show dialog when user just passed (from URL parameter)
+	$effect(() => {
+		const justPassed = page.url.searchParams.get('passed') === 'true';
+		if (justPassed && data.user?.test_passed) {
+			showPassDialog = true;
+		}
+	});
 
 	function selectAnswer(questionId: number, answerIndex: number) {
 		selectedAnswers[questionId] = answerIndex;
 	}
 
-	function handleSuccess() {
-		if (testPassed) {
-			goto('/dashboard');
-		}
+	function navigateToDashboard() {
+		goto('/dashboard');
 	}
 </script>
 
@@ -52,7 +67,7 @@
 				<CardTitle class="text-foreground text-2xl font-bold">IBC Official Test</CardTitle>
 				<CardDescription class="text-muted-foreground">
 					Before you can create invitation links, please complete this test about Island Beer Club
-					values and guidelines. You need to answer 80% correctly to pass.
+					values and guidelines. You need to answer 100% correctly to pass.
 				</CardDescription>
 			</CardHeader>
 
@@ -150,7 +165,7 @@
 						Test Passed!
 					</Badge>
 				{:else}
-					<Badge variant="destructive" class="mx-auto w-fit">Test Failed - Need 80% to Pass</Badge>
+					<Badge variant="destructive" class="mx-auto w-fit">Test Failed - Need 100% to Pass</Badge>
 				{/if}
 			</CardHeader>
 
@@ -214,7 +229,7 @@
 
 				<div class="flex justify-center space-x-4 pt-6">
 					{#if testPassed}
-						<Button onclick={handleSuccess} class="px-8">Continue to Dashboard</Button>
+						<Button onclick={navigateToDashboard} class="px-8">Continue to Dashboard</Button>
 					{:else}
 						<Button onclick={() => window.location.reload()} variant="outline" class="px-6">
 							Take Test Again
@@ -230,4 +245,28 @@
 			</CardContent>
 		</Card>
 	{/if}
+
+	<!-- Dialog for test passed -->
+	<Dialog open={showPassDialog}>
+		<DialogContent>
+			<DialogHeader>
+				<DialogTitle>🎉 Welcome to the Island Beer Club!</DialogTitle>
+			</DialogHeader>
+			<div class="space-y-4">
+				<p class="text-muted-foreground">
+					Congratulations! You have successfully passed the Island Beer Club test and are now an
+					official member.
+				</p>
+				<div class="rounded-md bg-green-50 p-3 dark:bg-green-950">
+					<p class="text-sm text-green-800 dark:text-green-200">
+						✅ <strong>Member privileges unlocked:</strong> You can now create invitation links and access
+						all member features.
+					</p>
+				</div>
+			</div>
+			<DialogFooter>
+				<Button onclick={navigateToDashboard}>Continue to Dashboard</Button>
+			</DialogFooter>
+		</DialogContent>
+	</Dialog>
 </div>

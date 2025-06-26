@@ -1,16 +1,10 @@
 import type { PageServerLoad, Actions } from './$types';
 import { createInvitationToken, getInvitationsByUser } from '$lib/server/invitations';
-import { fail } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
-		// Instead of using fail(), we should redirect or return an empty object
-		// The authed layout should handle the redirect if the user isn't authenticated
-		return {
-			user: null,
-			invitations: [],
-			baseUrl: url.origin
-		};
+		throw redirect(302, '/login');
 	}
 
 	// Load user's invitation tokens
