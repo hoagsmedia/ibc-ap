@@ -6,18 +6,14 @@
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Button } from '$lib/components/ui/button';
-	import { CheckIcon, ClockIcon, LinkIcon, Copy } from '@lucide/svelte/icons';
-	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
+	import { CheckIcon, ClockIcon, LinkIcon } from '@lucide/svelte/icons';
 	import { formatDate, formatDateTime } from '$lib/utils';
+	import CustomCopy from '$lib/components/Custom-Copy.svelte';
 
 	let { data }: { data: PageData } = $props();
 
 	let form = $derived(page.form as ActionData | null);
 	let creating = $state(false);
-
-	function copyToClipboard(text: string) {
-		navigator.clipboard.writeText(text);
-	}
 
 	function getRoleBadgeVariant(role: string) {
 		switch (role) {
@@ -150,7 +146,7 @@
 							Invitation Links
 						</Card.Title>
 					</Card.Header>
-					<Card.Content>
+					<Card.Content class="p-2 md:p-6">
 						<!-- Success/Error Messages -->
 						{#if form?.success}
 							<Alert.Root class="mb-4">
@@ -169,13 +165,7 @@
 										>
 											{form.inviteUrl}
 										</code>
-										<Button
-											size="sm"
-											variant="outline"
-											onclick={() => copyToClipboard(form.inviteUrl)}
-										>
-											<Copy class="size-3" />
-										</Button>
+										<CustomCopy text={form.inviteUrl} ariaLabel="Copy invitation link" />
 									</div>
 								</div>
 							{/if}
@@ -239,9 +229,12 @@
 															<span class="text-muted-foreground font-mono text-xs">
 																{invitation.token.slice(0, 8)}...
 															</span>
-															<span class="text-muted-foreground text-xs">
-																Created {formatDateTime(invitation.created_at)}
-															</span>
+															<div class="text-muted-foreground flex flex-col text-xs md:flex-row">
+																<span> Created: </span>
+																<span>
+																	{formatDateTime(invitation.created_at)}
+																</span>
+															</div>
 														</div>
 													</div>
 													<div class="flex items-center gap-2">
@@ -262,14 +255,10 @@
 															</Badge>
 														{/if}
 														{#if !invitation.used_at && Date.now() < new Date(invitation.expires_at).getTime()}
-															<Button
-																size="sm"
-																variant="outline"
-																onclick={() =>
-																	copyToClipboard(`${data.baseUrl}/invite/${invitation.token}`)}
-															>
-																<Copy class="size-3" />
-															</Button>
+															<CustomCopy
+																text={`${data.baseUrl}/invite/${invitation.token}`}
+																ariaLabel="Copy invitation link"
+															/>
 														{/if}
 													</div>
 												</div>
