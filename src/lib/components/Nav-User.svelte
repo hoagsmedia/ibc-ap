@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import Avatar from './Avatar.svelte';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import Button from './ui/button/button.svelte';
 	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
 	import {
