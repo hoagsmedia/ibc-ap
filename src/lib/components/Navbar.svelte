@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { enhance } from '$app/forms';
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
@@ -10,12 +9,13 @@
 	import MoonIcon from '@lucide/svelte/icons/moon';
 	import NavUser from './Nav-User.svelte';
 	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { toggleMode } from 'mode-watcher';
 	import { Menu } from '@lucide/svelte';
-	import { enhance } from '$app/forms';
 	import logo from '$lib/assets/ibc-logo.svg';
 	import { navLinks, dropdownLinks } from '$lib/config/navigation';
+	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
 
 	// --- Reactive State ---
 	const pageData = $state(page);
@@ -159,7 +159,16 @@
 					</Sheet.Trigger>
 					<Sheet.Content preventScroll={false} side="right" class="flex w-[230px] sm:w-[220px]">
 						<Sheet.Header>
-							<div class="pt-6">
+							<div class="flex flex-col gap-2">
+								<Button onclick={toggleMode} variant="outline" class="-mt-2" size="icon">
+									<SunIcon
+										class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
+									/>
+									<MoonIcon
+										class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
+									/>
+									<span class="sr-only">Toggle theme</span>
+								</Button>
 								{#if isAuthenticated && user}
 									<NavUser {user} bind:isOpen />
 								{:else}
