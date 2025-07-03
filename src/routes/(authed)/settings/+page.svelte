@@ -249,7 +249,7 @@
 						/>
 					</div>
 
-					<div class="flex justify-between">
+					<div class="flex flex-col justify-between gap-4 md:flex-row">
 						<Form.Button disabled={$submitting}>
 							{$submitting ? 'Updating...' : 'Update Profile'}
 						</Form.Button>

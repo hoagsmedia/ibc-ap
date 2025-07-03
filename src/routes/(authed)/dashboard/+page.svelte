@@ -164,7 +164,9 @@
 										Your new invitation link:
 									</p>
 									<div class="flex items-center gap-2">
-										<code class="bg-muted text-muted-foreground flex-1 rounded px-2 py-1 text-xs">
+										<code
+											class="bg-muted text-muted-foreground flex-1 truncate rounded px-2 py-1 text-xs"
+										>
 											{form.inviteUrl}
 										</code>
 										<Button
@@ -204,7 +206,7 @@
 								</div>
 							{:else}
 								<!-- User has passed the test -->
-								<div class="flex items-center justify-between">
+								<div class="flex flex-col items-center justify-between gap-4 md:flex-row">
 									<p class="text-muted-foreground text-sm">
 										Create secure, one-time signup links to invite new members.
 									</p>
