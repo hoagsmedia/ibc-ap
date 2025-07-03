@@ -3,7 +3,8 @@
 	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Pagination from '$lib/components/ui/pagination/index.js';
-	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon } from '@lucide/svelte';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon, EllipsisVertical } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
 	import { Search } from '@lucide/svelte';
@@ -111,12 +112,26 @@
 								<Table.Cell>{member.email || 'N/A'}</Table.Cell>
 							{/if}
 							<Table.Cell class="text-end">
-								<Button variant="ghost" size="sm" onclick={() => goto(`/members/${member.id}`)}>
-									View
-								</Button>
 								{#if isAuthenticated && admin}
-									<Button variant="ghost" href={`/members/${member.id}/edit`} size="sm">Edit</Button
-									>
+									<DropdownMenu.Root>
+										<DropdownMenu.Trigger>
+											<EllipsisVertical class="text-muted-foreground size-5 cursor-pointer" />
+										</DropdownMenu.Trigger>
+										<DropdownMenu.Content>
+											<DropdownMenu.Group>
+												<DropdownMenu.Label>Actions</DropdownMenu.Label>
+												<DropdownMenu.Separator />
+												<DropdownMenu.Item>
+													<a href={`/members/${member.id}`}> View Profile </a>
+												</DropdownMenu.Item>
+												<DropdownMenu.Item>
+													<a href={`/members/${member.id}/edit`}> Edit Profile </a>
+												</DropdownMenu.Item>
+											</DropdownMenu.Group>
+										</DropdownMenu.Content>
+									</DropdownMenu.Root>
+								{:else}
+									<Button variant="ghost" href={`/members/${member.id}`} size="sm">View</Button>
 								{/if}
 							</Table.Cell>
 						</Table.Row>

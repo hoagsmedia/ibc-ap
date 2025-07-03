@@ -164,18 +164,21 @@
 				</Card.Content>
 			</Card.Root>
 
-			<!-- Actions -->
-			<Card.Root class="w-full max-w-sm md:max-w-full">
-				<Card.Header>
-					<Card.Title>Actions</Card.Title>
-				</Card.Header>
-				<Card.Content>
-					<div class="flex flex-col gap-2 md:flex-row">
-						<Button variant="outline" href={`/members/${data.member.id}/edit`}>Edit Member</Button>
-						<!-- <Button disabled variant="outline">Send Message</Button> -->
-					</div>
-				</Card.Content>
-			</Card.Root>
+			{#if data.user.role === 'admin'}
+				<!-- Actions -->
+				<Card.Root class="w-full max-w-sm md:max-w-full">
+					<Card.Header>
+						<Card.Title>Actions</Card.Title>
+					</Card.Header>
+					<Card.Content>
+						<div class="flex flex-col gap-2 md:flex-row">
+							<Button variant="outline" href={`/members/${data.member.id}/edit`}>Edit Member</Button
+							>
+							<!-- <Button disabled variant="outline">Send Message</Button> -->
+						</div>
+					</Card.Content>
+				</Card.Root>
+			{/if}
 		</div>
 	</div>
 </div>

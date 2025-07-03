@@ -5,7 +5,7 @@
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
-	import { ArrowLeft, Check, Trash2 } from '@lucide/svelte';
+	import { ArrowLeft, Check, Trash2, KeyRound, Copy } from '@lucide/svelte';
 	import { toast } from 'svelte-sonner';
 	import { Toaster } from '$lib/components/ui/sonner/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -22,6 +22,8 @@
 	let fileInput = $state<HTMLInputElement | null>(null);
 	let deleteDialogOpen = $state(false);
 	let deleteConfirmText = $state('');
+	let resetPasswordDialogOpen = $state(false);
+	let tempPassword = $state('');
 
 	// Check if current user is admin (for delete access)
 	const isAdmin = $derived(data.user?.role === 'admin');
@@ -75,6 +77,35 @@
 
 	const { enhance: enhanceDelete, submitting: isDeleting } = deleteForm;
 
+	// Reset password form
+	const resetPasswordForm = superForm(data.form, {
+		id: 'reset-password',
+		resetForm: false,
+		onResult: ({ result }) => {
+			if (result.type === 'success' && result.data?.tempPassword) {
+				tempPassword = result.data.tempPassword;
+				resetPasswordDialogOpen = true;
+				toast.success(`Password reset for ${result.data.memberName}`, {
+					icon: Check,
+					duration: 5000,
+					position: 'bottom-right'
+				});
+			} else if (result.type === 'failure' && result.data?.message) {
+				toast.error(result.data.message, {
+					duration: 5000,
+					position: 'bottom-right'
+				});
+			} else if (result.type === 'error') {
+				toast.error('Failed to reset password. Please try again.', {
+					duration: 5000,
+					position: 'bottom-right'
+				});
+			}
+		}
+	});
+
+	const { enhance: enhanceResetPassword, submitting: isResettingPassword } = resetPasswordForm;
+
 	// Create UploadThing helper
 	const { startUpload } = createUploadThing('updateMemberImage', {
 		onClientUploadComplete: (res) => {
@@ -118,6 +149,31 @@
 	function closeDeleteDialog() {
 		deleteDialogOpen = false;
 		deleteConfirmText = '';
+	}
+
+	function openResetPasswordDialog() {
+		resetPasswordDialogOpen = true;
+	}
+
+	function closeResetPasswordDialog() {
+		resetPasswordDialogOpen = false;
+		tempPassword = '';
+	}
+
+	async function copyToClipboard(text: string) {
+		try {
+			await navigator.clipboard.writeText(text);
+			toast.success('Password copied to clipboard!', {
+				duration: 2000,
+				position: 'bottom-right'
+			});
+		} catch (err) {
+			console.error('Failed to copy to clipboard:', err);
+			toast.error('Failed to copy to clipboard', {
+				duration: 3000,
+				position: 'bottom-right'
+			});
+		}
 	}
 </script>
 
@@ -343,17 +399,28 @@
 					>
 				</div>
 
-				<!-- Delete Button - Admin Only -->
+				<!-- Admin Actions -->
 				{#if isAdmin}
-					<Button
-						type="button"
-						variant="destructive"
-						onclick={openDeleteDialog}
-						class="flex items-center gap-2"
-					>
-						<Trash2 class="size-4" />
-						Delete Member
-					</Button>
+					<div class="flex gap-2">
+						<Button
+							type="button"
+							variant="outline"
+							onclick={openResetPasswordDialog}
+							class="flex items-center gap-2"
+						>
+							<KeyRound class="size-4" />
+							Reset Password
+						</Button>
+						<Button
+							type="button"
+							variant="destructive"
+							onclick={openDeleteDialog}
+							class="flex items-center gap-2"
+						>
+							<Trash2 class="size-4" />
+							Delete Member
+						</Button>
+					</div>
 				{/if}
 			</div>
 		</form>
@@ -426,6 +493,107 @@
 				</Button>
 			</Dialog.Footer>
 		</form>
+	</Dialog.Content>
+</Dialog.Root>
+
+<!-- Password Reset Dialog -->
+<Dialog.Root bind:open={resetPasswordDialogOpen}>
+	<Dialog.Content class="sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title class="flex items-center gap-2">
+				<KeyRound class="size-5" />
+				Reset Password
+			</Dialog.Title>
+			<Dialog.Description>
+				{#if tempPassword}
+					Password has been reset successfully for {data.member.name}.
+				{:else}
+					This will generate a new temporary password for {data.member.name}. The user will need to
+					change it upon next login.
+				{/if}
+			</Dialog.Description>
+		</Dialog.Header>
+
+		{#if tempPassword}
+			<!-- Show generated password -->
+			<div class="space-y-4">
+				<div class="rounded-md bg-green-50 p-4 dark:bg-green-950">
+					<div class="flex items-center justify-between">
+						<div>
+							<h4 class="text-sm font-medium text-green-800 dark:text-green-200">
+								New Temporary Password
+							</h4>
+							<div class="mt-2 flex items-center gap-2">
+								<code
+									class="rounded bg-green-100 px-2 py-1 font-mono text-sm text-green-800 dark:bg-green-900 dark:text-green-200"
+								>
+									{tempPassword}
+								</code>
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onclick={() => copyToClipboard(tempPassword)}
+									class="flex items-center gap-1"
+								>
+									<Copy class="size-3" />
+									Copy
+								</Button>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="rounded-md bg-amber-50 p-4 dark:bg-amber-950">
+					<div class="text-sm text-amber-800 dark:text-amber-200">
+						<strong>Important:</strong>
+						<ul class="mt-2 list-inside list-disc space-y-1">
+							<li>Share this password securely with the member</li>
+							<li>The member should change this password immediately after logging in</li>
+							<li>This password will not be shown again</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+			<Dialog.Footer class="mt-4">
+				<Button type="button" onclick={closeResetPasswordDialog}>Close</Button>
+			</Dialog.Footer>
+		{:else}
+			<!-- Confirmation before reset -->
+			<form method="POST" action="?/resetPassword" use:enhanceResetPassword>
+				<div class="space-y-4">
+					<div class="rounded-md bg-amber-50 p-4 dark:bg-amber-950">
+						<div class="text-sm text-amber-800 dark:text-amber-200">
+							<strong>Warning:</strong> This will immediately invalidate the current password for {data
+								.member.name}.
+						</div>
+					</div>
+				</div>
+
+				<Dialog.Footer class="mt-4 flex gap-2">
+					<Button
+						type="button"
+						variant="outline"
+						onclick={closeResetPasswordDialog}
+						disabled={$isResettingPassword}
+					>
+						Cancel
+					</Button>
+					<Button type="submit" disabled={$isResettingPassword} class="flex items-center gap-2">
+						{#if $isResettingPassword}
+							<div
+								class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+							></div>
+							Resetting...
+						{:else}
+							<KeyRound class="size-4" />
+							Reset Password
+						{/if}
+					</Button>
+				</Dialog.Footer>
+			</form>
+		{/if}
 	</Dialog.Content>
 </Dialog.Root>
 

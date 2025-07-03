@@ -2,11 +2,12 @@
 	import type { PageData, ActionData } from './$types';
 	import { enhance } from '$app/forms';
 	import { page } from '$app/state';
-	import { Button } from '$lib/components/ui/button';
+	import * as Alert from '$lib/components/ui/alert';
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import * as Alert from '$lib/components/ui/alert';
+	import { Button } from '$lib/components/ui/button';
 	import { CheckIcon, ClockIcon, LinkIcon, Copy } from '@lucide/svelte/icons';
+	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
 	import { formatDate, formatDateTime } from '$lib/utils';
 
 	let { data }: { data: PageData } = $props();
@@ -96,12 +97,14 @@
 							>
 								View Gallery
 							</Button>
-							<Button
-								href="/admin/events"
-								class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
-							>
-								Manage Events
-							</Button>
+							{#if data.user.role === 'admin'}
+								<Button
+									href="/admin/members"
+									class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+								>
+									Manage Members
+								</Button>
+							{/if}
 							<Button
 								href="/members"
 								class="bg-accent text-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
