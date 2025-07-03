@@ -41,7 +41,7 @@
 					searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ''
 				}`
 			);
-		}, 300);
+		}, 3000);
 	}
 </script>
 

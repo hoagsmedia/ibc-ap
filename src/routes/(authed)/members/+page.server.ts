@@ -10,10 +10,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		throw redirect(302, '/login');
 	}
 
-	// if (locals.user.role !== 'admin') {
-	// 	throw error(403, 'Unauthorized');
-	// }
-
 	// Get pagination parameters from URL
 	const page = Number(url.searchParams.get('page') || '1');
 	const perPage = Number(url.searchParams.get('perPage') || '10');
