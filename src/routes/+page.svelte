@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as Card from '$lib/components/ui/card/index.js';
 	import { quotes } from '$lib/data/quotes.js';
+	import { founders } from '$lib/data/founders.js';
 
 	// Sort quotes by date descending, putting undated quotes last
 	function parseDate(date?: string): number {
@@ -82,60 +83,24 @@
 	</div>
 </section>
 
-<section class="bg-slate-50 py-12 text-center">
-	<h2 class="mb-6 text-2xl font-semibold">Meet The Founders</h2>
-	<div class="mb-8 flex flex-wrap justify-center gap-8">
-		<div>
-			<img
-				src="/JeffWilkens.jpg"
-				alt="Jeff Wilkens"
-				class="mx-auto mb-2 h-40 w-40 rounded-full object-cover shadow"
-			/>
-			<div class="font-medium">Jeff Wilkens</div>
-		</div>
-		<div>
-			<img
-				src="/Morton.jpg"
-				alt="John Morton"
-				class="mx-auto mb-2 h-40 w-40 rounded-full object-cover shadow"
-			/>
-			<div class="font-medium">John Morton</div>
-		</div>
-		<div>
-			<img
-				src="/Muncey.jpg"
-				alt="John Muncey"
-				class="mx-auto mb-2 h-40 w-40 rounded-full object-cover shadow"
-			/>
-			<div class="font-medium">John Muncey</div>
-		</div>
-		<div>
-			<img
-				src="/Oly.jpg"
-				alt="Wayne Oldendorph"
-				class="mx-auto mb-2 h-40 w-40 rounded-full object-cover shadow"
-			/>
-			<div class="font-medium">Wayne Oldendorph</div>
-		</div>
-		<div>
-			<img
-				src="/Rob.jpg"
-				alt="Rob Crenshaw"
-				class="mx-auto mb-2 h-40 w-40 rounded-full object-cover shadow"
-			/>
-			<div class="font-medium">Rob Crenshaw</div>
-		</div>
+<section class="bg-accent flex flex-col items-center overflow-scroll py-12">
+	<h2 class="mb-6 text-center text-2xl font-semibold">Meet The Founders</h2>
+	<div class="grid grid-cols-2 gap-4 md:grid-cols-5">
+		{#each founders as founder}
+			<div class="w-34">
+				<img
+					src={founder.photo}
+					alt={founder.name}
+					class="mx-auto mb-2 size-24 h-20 w-20 rounded-full object-cover shadow"
+				/>
+				<div class=" text-secondary-accent text-center">{founder.name}</div>
+			</div>
+		{/each}
 	</div>
 </section>
 
 <!-- Membership Callout Section -->
 <section class="callout-section relative flex min-h-[320px] flex-col items-center justify-end">
-	<!-- <img
-		src="/mug-table-ibc-logo.svg"
-		alt="IBC Beer Mug Logo"
-		class="pointer-events-none mx-auto h-full w-full max-w-3xl object-contain select-none"
-		draggable="false"
-	/> -->
 	<div
 		class="absolute top-6 left-6 max-w-xs bg-transparent p-4 text-left text-white shadow-md md:top-10 md:left-10"
 	>

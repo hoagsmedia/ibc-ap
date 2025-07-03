@@ -4,10 +4,11 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import Avatar from '$lib/components/Avatar.svelte';
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
+	import NavUser from './Nav-User.svelte';
 	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { toggleMode } from 'mode-watcher';
@@ -160,49 +161,7 @@
 						<Sheet.Header>
 							<div class="pt-6">
 								{#if isAuthenticated && user}
-									<a href="/dashboard">
-										<Avatar class="size-12" name={user.name} img={user.img} />
-										<span class="text-center text-[11px]">{user.name}</span>
-									</a>
-									<div class="mt-4 space-y-2">
-										<a
-											href="/dashboard"
-											class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
-										>
-											Dashboard
-										</a>
-										<a
-											href="/settings"
-											class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
-										>
-											Settings
-										</a>
-										{#if user.role === 'admin'}
-											<div class="mt-2 border-t pt-2">
-												<p class="text-muted-foreground mb-2 px-3 text-xs">Admin</p>
-												<a
-													href="/admin/events"
-													class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
-												>
-													Manage Events
-												</a>
-												<a
-													href="/members"
-													class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
-												>
-													Manage Members
-												</a>
-											</div>
-										{/if}
-										<form method="post" action="/logout" use:enhance class="w-full">
-											<button
-												type="submit"
-												class="text-foreground hover:bg-muted -mx-3 block w-full rounded-lg px-3 py-2 text-left text-base"
-											>
-												Logout
-											</button>
-										</form>
-									</div>
+									<NavUser {user} bind:isOpen />
 								{:else}
 									<a
 										href="/login"
@@ -215,7 +174,7 @@
 							<Separator class="my-2" />
 						</Sheet.Header>
 						<nav class="flex-grow pl-6">
-							<ScrollArea class="h-92 ">
+							<ScrollArea class=" h-2/3">
 								<div class="flex flex-col space-y-2">
 									{#each [...navLinks, ...dropdownLinks] as link}
 										<a
