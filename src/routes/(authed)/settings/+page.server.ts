@@ -8,7 +8,8 @@ import { existsSync } from 'fs';
 import path from 'path';
 import { superValidate, message } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
-import { settingsSchema } from './settings-form';
+import { hash } from 'argon2';
+import { profileSchema, updatePasswordSchema } from './settings-schema';
 
 export const load: PageServerLoad = async (event) => {
 	if (!event.locals.user) {
@@ -35,12 +36,15 @@ export const load: PageServerLoad = async (event) => {
 			hobbies: fullUser.hobbies || '',
 			likes: fullUser.likes || ''
 		},
-		zod(settingsSchema)
+		zod(profileSchema) // Use profileSchema for the form
 	);
+	// Initialize the update password form
+	const updatePasswordForm = await superValidate(zod(updatePasswordSchema));
 
 	return {
 		user: fullUser,
-		form
+		form,
+		updatePasswordForm
 	};
 };
 
@@ -107,7 +111,7 @@ export const actions: Actions = {
 			return fail(401, { message: 'Unauthorized' });
 		}
 
-		const form = await superValidate(event.request, zod(settingsSchema));
+		const form = await superValidate(event.request, zod(profileSchema));
 
 		if (!form.valid) {
 			return fail(400, { form });
@@ -131,6 +135,47 @@ export const actions: Actions = {
 		} catch (error) {
 			console.error('Error updating profile:', error);
 			return message(form, 'Failed to update profile. Please try again.', { status: 500 });
+		}
+	},
+	updatePassword: async (event) => {
+		if (!event.locals.user) {
+			return fail(401, { message: 'Unauthorized' });
+		}
+
+		const form = await superValidate(event.request, zod(updatePasswordSchema));
+
+		if (!form.valid) {
+			return fail(400, { form });
+		}
+
+		try {
+			const user = await db.query.users.findFirst({
+				where: eq(table.users.id, event.locals.user.id)
+			});
+
+			if (!user) {
+				return fail(404, { form, message: 'User not found' });
+			}
+
+			if (form.data.newPassword !== form.data.confirmPassword) {
+				return fail(400, { form, message: 'Passwords do not match' });
+			}
+
+			const passwordHash = await hash(form.data.newPassword);
+
+			await db
+				.update(table.users)
+				.set({
+					password_hash: passwordHash,
+					updated_at: new Date()
+				})
+				.where(eq(table.users.id, event.locals.user.id));
+
+			// return message(form, 'Password updated successfully!');
+			return message(form, 'Password updated successfully!');
+		} catch (error) {
+			console.error('Error updating password:', error);
+			return message(form, 'Failed to update password. Please try again.', { status: 500 });
 		}
 	}
 };
