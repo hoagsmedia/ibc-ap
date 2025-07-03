@@ -4,7 +4,7 @@
 	import { Button } from '$lib/components/ui/button/index.js';
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
@@ -109,10 +109,8 @@
 				{#if isAuthenticated && user}
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger>
-							<Avatar.Root class="size-8 outline-2 outline-offset-2 outline-solid">
-								<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
-								<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
-							</Avatar.Root>
+							<Avatar class="size-8" name={user.name} img={user.img} />
+							<span class="sr-only">Open user menu</span>
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content align="center" class="w-56">
 							<DropdownMenu.Label>My Account</DropdownMenu.Label>
@@ -141,7 +139,7 @@
 							</DropdownMenu.Item>
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
-					<span class="text-muted-foreground text-sm">{user.name}!</span>
+					<span class="text-muted-foreground text-sm">{user.name}</span>
 				{:else}
 					<Button variant="ghost">
 						<a href="/login">Login</a>
@@ -163,10 +161,7 @@
 							<div class="pt-6">
 								{#if isAuthenticated && user}
 									<a href="/dashboard">
-										<Avatar.Root class="mx-auto mt-4 mb-2 size-12">
-											<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
-											<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
-										</Avatar.Root>
+										<Avatar class="size-12" name={user.name} img={user.img} />
 										<span class="text-center text-[11px]">{user.name}</span>
 									</a>
 									<div class="mt-4 space-y-2">

@@ -8,7 +8,7 @@ export const memberSchema = z.object({
 	address: z.string().optional(),
 	password_hash: z.string(),
 	bio: z.string().optional(),
-	hobbies: z.null().optional(),
+	hobbies: z.string().optional(),
 	img: z.string().optional(),
 	role: z.string(),
 	likes: z.string().optional(),

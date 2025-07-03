@@ -6,14 +6,41 @@ import type { Actions, PageServerLoad } from './$types';
 import { writeFile, mkdir } from 'fs/promises';
 import { existsSync } from 'fs';
 import path from 'path';
+import { superValidate, message } from 'sveltekit-superforms';
+import { zod } from 'sveltekit-superforms/adapters';
+import { settingsSchema } from './settings-form';
 
 export const load: PageServerLoad = async (event) => {
 	if (!event.locals.user) {
 		return redirect(302, '/login');
 	}
 
+	// Fetch complete user data from database to get all fields
+	const [fullUser] = await db
+		.select()
+		.from(table.users)
+		.where(eq(table.users.id, event.locals.user.id));
+
+	if (!fullUser) {
+		return redirect(302, '/login');
+	}
+
+	// Initialize the form with current user data
+	const form = await superValidate(
+		{
+			name: fullUser.name,
+			phone: fullUser.phone || '',
+			address: fullUser.address || '',
+			bio: fullUser.bio || '',
+			hobbies: fullUser.hobbies || '',
+			likes: fullUser.likes || ''
+		},
+		zod(settingsSchema)
+	);
+
 	return {
-		user: event.locals.user
+		user: fullUser,
+		form
 	};
 };
 
@@ -80,27 +107,30 @@ export const actions: Actions = {
 			return fail(401, { message: 'Unauthorized' });
 		}
 
-		const formData = await event.request.formData();
-		const name = formData.get('name');
+		const form = await superValidate(event.request, zod(settingsSchema));
 
-		if (!name || typeof name !== 'string') {
-			return fail(400, { message: 'Name is required' });
-		}
-
-		if (name.length < 2 || name.length > 100) {
-			return fail(400, { message: 'Name must be between 2 and 100 characters' });
+		if (!form.valid) {
+			return fail(400, { form });
 		}
 
 		try {
-			await db.update(table.users).set({ name }).where(eq(table.users.id, event.locals.user.id));
+			await db
+				.update(table.users)
+				.set({
+					name: form.data.name,
+					phone: form.data.phone,
+					address: form.data.address,
+					bio: form.data.bio,
+					hobbies: form.data.hobbies,
+					likes: form.data.likes,
+					updated_at: new Date()
+				})
+				.where(eq(table.users.id, event.locals.user.id));
 
-			return {
-				success: true,
-				message: 'Profile updated successfully!'
-			};
+			return message(form, 'Profile updated successfully!');
 		} catch (error) {
 			console.error('Error updating profile:', error);
-			return fail(500, { message: 'Failed to update profile. Please try again.' });
+			return message(form, 'Failed to update profile. Please try again.', { status: 500 });
 		}
 	}
 };

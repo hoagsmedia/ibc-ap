@@ -1,10 +1,9 @@
 <script lang="ts">
-	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Card from '$lib/components/ui/card/index.js';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import { Badge } from '$lib/components/ui/badge/index.js';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { ArrowLeft, Mail, Calendar, User, Hash, Heart } from '@lucide/svelte';
-	import { generateUsername } from '$lib/utils';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -55,14 +54,7 @@
 		<Card.Root class="w-full max-w-sm lg:col-span-1">
 			<Card.Header class="text-center">
 				<div class="mx-auto mb-4">
-					<Avatar.Root class="size-24">
-						{#if data.member.img}
-							<Avatar.Image src={data.member.img} alt={data.member.name} />
-						{/if}
-						<Avatar.Fallback class="text-2xl">
-							{generateUsername(data.member.name)}
-						</Avatar.Fallback>
-					</Avatar.Root>
+					<Avatar class="size-24" name={data.member.name} img={data.member.img ?? undefined} />
 				</div>
 				<Card.Title class="text-2xl">{data.member.name}</Card.Title>
 				<Card.Description>

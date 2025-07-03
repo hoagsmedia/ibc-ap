@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form/index.js';
-	import * as Avatar from '$lib/components/ui/avatar/index.js';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import * as Card from '$lib/components/ui/card/index.js';
 	import * as Select from '$lib/components/ui/select/index.js';
 	import * as Dialog from '$lib/components/ui/dialog/index.js';
@@ -195,14 +195,7 @@
 	<Card.Content>
 		<div class="flex items-center space-x-6">
 			<!-- Current member image -->
-			<Avatar.Root class="size-24">
-				<Avatar.Image
-					class="size-24"
-					src={data.member?.img || $formData.img}
-					alt={$formData.name}
-				/>
-				<Avatar.Fallback>{generateUsername($formData.name)}</Avatar.Fallback>
-			</Avatar.Root>
+			<Avatar class="size-24" name={data.member?.name} img={data.member?.img || $formData.img} />
 
 			<div class="flex-1">
 				<div class="space-y-4">
@@ -388,19 +381,18 @@
 				<Form.Description>Things the member likes.</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
+			<!-- Admin Actions -->
+			{#if isAdmin}
+				<div class="flex flex-col gap-4 md:flex-row md:justify-between">
+					<div class="flex flex-col gap-4 md:flex-row">
+						<Button type="submit" disabled={$submitting}>
+							{$submitting ? 'Updating...' : 'Update Member'}
+						</Button>
+						<Button type="button" variant="outline" onclick={() => history.back()}
+							>{$message ? 'Close' : 'Cancel'}</Button
+						>
+					</div>
 
-			<div class="flex justify-between gap-4">
-				<div class="flex gap-4">
-					<Button type="submit" disabled={$submitting}>
-						{$submitting ? 'Updating...' : 'Update Member'}
-					</Button>
-					<Button type="button" variant="outline" onclick={() => history.back()}
-						>{$message ? 'Close' : 'Cancel'}</Button
-					>
-				</div>
-
-				<!-- Admin Actions -->
-				{#if isAdmin}
 					<div class="flex gap-2">
 						<Button
 							type="button"
@@ -421,8 +413,8 @@
 							Delete Member
 						</Button>
 					</div>
-				{/if}
-			</div>
+				</div>
+			{/if}
 		</form>
 	</Card.Content>
 </Card.Root>

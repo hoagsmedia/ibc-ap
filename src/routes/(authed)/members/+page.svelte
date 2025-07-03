@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Table from '$lib/components/ui/table/index.js';
 	import * as Pagination from '$lib/components/ui/pagination/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon, EllipsisVertical } from '@lucide/svelte';
 	import { Button } from '$lib/components/ui/button/index.js';
 	import { Input } from '$lib/components/ui/input/index.js';
@@ -11,7 +11,7 @@
 	import { goto } from '$app/navigation';
 	import type { PageProps } from './$types';
 	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
-	import { cn, generateUsername } from '$lib/utils';
+	import { cn } from '$lib/utils';
 
 	let { data }: PageProps = $props();
 
@@ -99,10 +99,7 @@
 					{#each data.members as member (member.id)}
 						<Table.Row>
 							<Table.Cell>
-								<Avatar.Root class="size-8">
-									<Avatar.Image src={member.img} alt={member.name ?? 'User Avatar'} />
-									<Avatar.Fallback>{generateUsername(member.name)}</Avatar.Fallback>
-								</Avatar.Root>
+								<Avatar class="size-8" name={member.name} img={member.img ?? undefined} />
 							</Table.Cell>
 							<Table.Cell>{member.name || 'N/A'}</Table.Cell>
 							<Table.Cell class={cn('', isMobile.current && 'text-center')}
@@ -115,7 +112,7 @@
 								{#if isAuthenticated && admin}
 									<DropdownMenu.Root>
 										<DropdownMenu.Trigger>
-											<EllipsisVertical class="text-muted-foreground size-5 cursor-pointer" />
+											<EllipsisVertical class="text-muted-foreground cursor-pointe mr-4 size-5" />
 										</DropdownMenu.Trigger>
 										<DropdownMenu.Content>
 											<DropdownMenu.Group>
