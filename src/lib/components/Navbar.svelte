@@ -1,20 +1,21 @@
 <script lang="ts">
 	import { page } from '$app/state';
-	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { enhance } from '$app/forms';
 	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import * as Avatar from '$lib/components/ui/avatar/index.js';
 	import * as Sheet from '$lib/components/ui/sheet/index.js';
+	import Avatar from '$lib/components/Avatar.svelte';
 	import SunIcon from '@lucide/svelte/icons/sun';
 	import MoonIcon from '@lucide/svelte/icons/moon';
+	import NavUser from './Nav-User.svelte';
 	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import { Separator } from '$lib/components/ui/separator/index.js';
 	import { toggleMode } from 'mode-watcher';
 	import { Menu } from '@lucide/svelte';
-	import { enhance } from '$app/forms';
 	import logo from '$lib/assets/ibc-logo.svg';
 	import { navLinks, dropdownLinks } from '$lib/config/navigation';
+	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
 
 	// --- Reactive State ---
 	const pageData = $state(page);
@@ -109,10 +110,8 @@
 				{#if isAuthenticated && user}
 					<DropdownMenu.Root>
 						<DropdownMenu.Trigger>
-							<Avatar.Root class="size-8 outline-2 outline-offset-2 outline-solid">
-								<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
-								<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
-							</Avatar.Root>
+							<Avatar class="size-8" name={user.name} img={user.img} />
+							<span class="sr-only">Open user menu</span>
 						</DropdownMenu.Trigger>
 						<DropdownMenu.Content align="center" class="w-56">
 							<DropdownMenu.Label>My Account</DropdownMenu.Label>
@@ -141,7 +140,7 @@
 							</DropdownMenu.Item>
 						</DropdownMenu.Content>
 					</DropdownMenu.Root>
-					<span class="text-muted-foreground text-sm">{user.name}!</span>
+					<span class="text-muted-foreground text-sm">{user.name}</span>
 				{:else}
 					<Button variant="ghost">
 						<a href="/login">Login</a>
@@ -160,54 +159,18 @@
 					</Sheet.Trigger>
 					<Sheet.Content preventScroll={false} side="right" class="flex w-[230px] sm:w-[220px]">
 						<Sheet.Header>
-							<div class="pt-6">
+							<div class="flex flex-col gap-2">
+								<Button onclick={toggleMode} variant="outline" class="-mt-2" size="icon">
+									<SunIcon
+										class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
+									/>
+									<MoonIcon
+										class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
+									/>
+									<span class="sr-only">Toggle theme</span>
+								</Button>
 								{#if isAuthenticated && user}
-									<a href="/dashboard">
-										<Avatar.Root class="mx-auto mt-4 mb-2 size-12">
-											<Avatar.Image src={user.img} alt={user.name ?? 'User Avatar'} />
-											<Avatar.Fallback>{generateUsername(user.name)}</Avatar.Fallback>
-										</Avatar.Root>
-										<span class="text-center text-[11px]">{user.name}</span>
-									</a>
-									<div class="mt-4 space-y-2">
-										<a
-											href="/dashboard"
-											class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
-										>
-											Dashboard
-										</a>
-										<a
-											href="/settings"
-											class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
-										>
-											Settings
-										</a>
-										{#if user.role === 'admin'}
-											<div class="mt-2 border-t pt-2">
-												<p class="text-muted-foreground mb-2 px-3 text-xs">Admin</p>
-												<a
-													href="/admin/events"
-													class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
-												>
-													Manage Events
-												</a>
-												<a
-													href="/members"
-													class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"
-												>
-													Manage Members
-												</a>
-											</div>
-										{/if}
-										<form method="post" action="/logout" use:enhance class="w-full">
-											<button
-												type="submit"
-												class="text-foreground hover:bg-muted -mx-3 block w-full rounded-lg px-3 py-2 text-left text-base"
-											>
-												Logout
-											</button>
-										</form>
-									</div>
+									<NavUser {user} bind:isOpen />
 								{:else}
 									<a
 										href="/login"
@@ -220,7 +183,7 @@
 							<Separator class="my-2" />
 						</Sheet.Header>
 						<nav class="flex-grow pl-6">
-							<ScrollArea class="h-92 ">
+							<ScrollArea class=" h-2/3">
 								<div class="flex flex-col space-y-2">
 									{#each [...navLinks, ...dropdownLinks] as link}
 										<a

@@ -85,7 +85,7 @@ export const actions: Actions = {
 			return fail(400, { message: 'Invalid email address' });
 		}
 		if (!validatePassword(password)) {
-			return fail(400, { message: 'Invalid password (min 6, max 255 characters)' });
+			return fail(400, { message: 'Invalid password (min 6, max 24 characters)' });
 		}
 
 		const userId = generateUserId();
@@ -131,5 +131,5 @@ function validateEmail(email: unknown): email is string {
 }
 
 function validatePassword(password: unknown): password is string {
-	return typeof password === 'string' && password.length >= 6 && password.length <= 255;
+	return typeof password === 'string' && password.length >= 6 && password.length <= 24;
 }

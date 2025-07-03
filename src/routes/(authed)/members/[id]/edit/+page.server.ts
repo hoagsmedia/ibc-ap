@@ -6,6 +6,8 @@ import { eq } from 'drizzle-orm';
 import { superValidate, message } from 'sveltekit-superforms';
 import { memberSchema } from './edit-member-schema';
 import { zod } from 'sveltekit-superforms/adapters';
+import { hash } from 'argon2';
+import { encodeBase32LowerCase } from '@oslojs/encoding';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	// Check if user is authenticated
@@ -38,8 +40,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		name: member.name,
 		email: member.email,
 		password_hash: member.password_hash,
+		phone: member.phone ?? '',
+		address: member.address ?? '',
 		bio: member.bio ?? '',
-		hobbies: null,
+		hobbies: member.hobbies ?? '',
 		img: member.img ?? '',
 		role: member.role,
 		likes: member.likes ?? '',
@@ -184,5 +188,71 @@ export const actions: Actions = {
 		}
 		// Redirect to members list after successful deletion
 		throw redirect(302, '/members');
+	},
+
+	resetPassword: async ({ locals, params }) => {
+		// Check authentication and authorization
+		if (!locals.user) {
+			throw redirect(302, '/login');
+		}
+
+		if (locals.user.role !== 'admin') {
+			throw error(403, 'Access denied. Admin role required.');
+		}
+
+		const { id } = params;
+		if (!id) {
+			throw error(400, 'User ID is required');
+		}
+
+		try {
+			// Verify the member exists before resetting password
+			const existingMember = await db.query.users.findFirst({
+				where: eq(users.id, id)
+			});
+
+			if (!existingMember) {
+				return fail(404, { message: 'Member not found' });
+			}
+
+			// Prevent resetting your own password through this method
+			if (existingMember.id === locals.user.id) {
+				return fail(400, {
+					message:
+						'You cannot reset your own password through this method. Use the settings page instead.'
+				});
+			}
+
+			// Generate a secure temporary password
+			const tempPassword = generateTemporaryPassword();
+			const passwordHash = await hash(tempPassword);
+
+			// Update the member's password
+			await db
+				.update(users)
+				.set({
+					password_hash: passwordHash,
+					updated_at: new Date()
+				})
+				.where(eq(users.id, id));
+
+			// Return success with the temporary password (should be shown once to admin)
+			return {
+				success: true,
+				message: 'Password reset successfully',
+				tempPassword: tempPassword,
+				memberName: existingMember.name,
+				memberEmail: existingMember.email
+			};
+		} catch (err) {
+			console.error('Error resetting password:', err);
+			return fail(500, { message: 'Failed to reset password' });
+		}
 	}
 };
+
+// Generate a secure temporary password
+function generateTemporaryPassword(): string {
+	const bytes = crypto.getRandomValues(new Uint8Array(12));
+	return encodeBase32LowerCase(bytes).slice(0, 16);
+}

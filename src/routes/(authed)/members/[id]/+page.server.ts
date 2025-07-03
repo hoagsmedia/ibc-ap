@@ -11,9 +11,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	}
 
 	// Check if user has admin role
-	if (locals.user.role !== 'admin') {
-		throw error(403, 'Access denied. Admin role required.');
-	}
+	// if (locals.user.role !== 'admin') {
+	// 	throw error(403, 'Access denied. Admin role required.');
+	// }
 
 	const { id } = params;
 
