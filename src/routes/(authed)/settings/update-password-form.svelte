@@ -32,7 +32,7 @@
 	const { form: formData, enhance, submitting } = form;
 </script>
 
-<!-- Update Password Seciton -->
+<!-- Update Password Section -->
 <Card.Root class="bg-card rounded-lg p-6 shadow">
 	<Card.Header class="text-card-foreground mb-4 text-lg font-medium">Update Password</Card.Header>
 	<Card.Content>

@@ -143,7 +143,6 @@ export const actions: Actions = {
 		}
 
 		const form = await superValidate(event.request, zod(updatePasswordSchema));
-		const passwordHash = await hash(form.data.newPassword);
 
 		if (!form.valid) {
 			return fail(400, { form });
@@ -162,6 +161,8 @@ export const actions: Actions = {
 				return fail(400, { form, message: 'Passwords do not match' });
 			}
 
+			const passwordHash = await hash(form.data.newPassword);
+
 			await db
 				.update(table.users)
 				.set({
@@ -171,11 +172,7 @@ export const actions: Actions = {
 				.where(eq(table.users.id, event.locals.user.id));
 
 			// return message(form, 'Password updated successfully!');
-			return {
-				form,
-				success: true,
-				message: 'Password updated successfully!'
-			};
+			return message(form, 'Password updated successfully!');
 		} catch (error) {
 			console.error('Error updating password:', error);
 			return message(form, 'Failed to update password. Please try again.', { status: 500 });

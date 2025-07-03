@@ -2,7 +2,7 @@
 	import { createUploadThing } from '$lib/utils';
 	import type { PageData } from './$types';
 	import Avatar from '$lib/components/Avatar.svelte';
-	import * as Card from '$lib/components/ui/card/index.js';
+	import * as Card from '$lib/components/ui/card';
 	import ProfileForm from './profile-form.svelte';
 	import UpdatePasswordForm from './update-password-form.svelte';
 
