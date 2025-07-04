@@ -3,6 +3,8 @@
 	import Navbar from '$lib/components/Navbar.svelte';
 	import { ModeWatcher } from 'mode-watcher';
 	import { Toaster } from '$lib/components/ui/sonner';
+	import { injectAnalytics } from '@vercel/analytics/sveltekit';
+
 	let { children } = $props();
 </script>
 

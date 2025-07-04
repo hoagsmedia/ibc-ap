@@ -76,6 +76,7 @@
 		"@oslojs/encoding": "^1.1.0",
 		"@types/pg": "^8.15.4",
 		"@uploadthing/svelte": "^7.3.2",
+		"@vercel/analytics": "^1.5.0",
 		"argon2": "^0.43.0",
 		"drizzle-orm": "^0.40.1",
 		"drizzle-seed": "^0.3.1",
