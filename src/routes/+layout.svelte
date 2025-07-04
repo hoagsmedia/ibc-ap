@@ -6,6 +6,7 @@
 	import { injectAnalytics } from '@vercel/analytics/sveltekit';
 
 	let { children } = $props();
+	injectAnalytics();
 </script>
 
 <div class="bg-background relative mx-auto flex min-h-dvh w-full flex-col">
