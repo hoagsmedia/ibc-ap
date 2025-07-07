@@ -1,21 +1,21 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { enhance } from '$app/forms';
-	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import * as Sheet from '$lib/components/ui/sheet/index.js';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import SunIcon from '@lucide/svelte/icons/sun';
-	import MoonIcon from '@lucide/svelte/icons/moon';
-	import NavUser from './Nav-User.svelte';
-	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Separator } from '$lib/components/ui/separator/index.js';
-	import { toggleMode } from 'mode-watcher';
-	import { Menu } from '@lucide/svelte';
-	import logo from '$lib/assets/ibc-logo.svg';
-	import { navLinks, dropdownLinks } from '$lib/config/navigation';
-	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
+	import { page } from "$app/state";
+	import { enhance } from "$app/forms";
+	import * as NavigationMenu from "$lib/components/ui/navigation-menu/index.js";
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+	import * as Sheet from "$lib/components/ui/sheet/index.js";
+	import Avatar from "$lib/components/Avatar.svelte";
+	import SunIcon from "@lucide/svelte/icons/sun";
+	import MoonIcon from "@lucide/svelte/icons/moon";
+	import NavUser from "./Nav-User.svelte";
+	import ScrollArea from "./ui/scroll-area/scroll-area.svelte";
+	import { Button } from "$lib/components/ui/button/index.js";
+	import { Separator } from "$lib/components/ui/separator/index.js";
+	import { toggleMode } from "mode-watcher";
+	import { Menu } from "@lucide/svelte";
+	import logo from "$lib/assets/ibc-logo.svg";
+	import { navLinks, dropdownLinks } from "$lib/config/navigation";
+	import { IsMobile } from "$lib/hooks/is-mobile.svelte";
 
 	// --- Reactive State ---
 	const pageData = $state(page);
@@ -33,18 +33,10 @@
 	});
 
 	// --- Helpers ---
-	function generateUsername(name: string | null | undefined): string {
-		if (!name) return '??';
-		const parts = name.trim().split(' ');
-		if (parts.length > 1) {
-			return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-		}
-		return name.substring(0, 2).toUpperCase();
-	}
 
 	function isActive(href: string): boolean {
-		if (href === '/') {
-			return currentPath === '/';
+		if (href === "/") {
+			return currentPath === "/";
 		}
 		return currentPath.startsWith(href);
 	}
@@ -122,7 +114,7 @@
 							<DropdownMenu.Item>
 								<a href="/settings" class="w-full">Settings</a>
 							</DropdownMenu.Item>
-							{#if user.role === 'admin'}
+							{#if user.role === "admin"}
 								<DropdownMenu.Separator />
 								<DropdownMenu.Label>Admin</DropdownMenu.Label>
 								<DropdownMenu.Item>
