@@ -25,6 +25,18 @@
 		gameComplete: false
 	});
 
+	// Create shuffled definitions for the game
+	let shuffledDefinitions = $derived(() => {
+		const definitions = matchGame.words.map((item) => item.definition);
+		// Fisher-Yates shuffle algorithm
+		const shuffled = [...definitions];
+		for (let i = shuffled.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+		}
+		return shuffled;
+	});
+
 	let selectedWord = $state<string | null>(null);
 	let selectedDefinition = $state<string | null>(null);
 
@@ -203,13 +215,13 @@
 						</div>
 						<div class="space-y-2">
 							<h4 class="text-center font-semibold">Definitions</h4>
-							{#each matchGame.words as item}
+							{#each shuffledDefinitions() as definition}
 								<Button
-									variant={selectedDefinition === item.definition ? "default" : "outline"}
-									onclick={() => selectDefinition(item.definition)}
+									variant={selectedDefinition === definition ? "default" : "outline"}
+									onclick={() => selectDefinition(definition)}
 									class="w-full text-left"
 								>
-									{item.definition}
+									{definition}
 								</Button>
 							{/each}
 						</div>
