@@ -1,23 +1,23 @@
-import { redirect, error } from '@sveltejs/kit';
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
-import { asc, or, ilike, sql, count } from 'drizzle-orm';
-import type { PageServerLoad } from './$types';
+import { redirect, error } from "@sveltejs/kit";
+import { db } from "$lib/server/db";
+import { users } from "$lib/server/db/schema";
+import { asc, or, ilike, sql } from "drizzle-orm";
+import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	// Authentication checks
 	if (!locals.user) {
-		throw redirect(302, '/login');
+		throw redirect(302, "/login");
 	}
 
 	// Get pagination parameters from URL
-	const page = Number(url.searchParams.get('page') || '1');
-	const perPage = Number(url.searchParams.get('perPage') || '10');
-	const searchTerm = url.searchParams.get('search') || '';
+	const page = Number(url.searchParams.get("page") || "1");
+	const perPage = Number(url.searchParams.get("perPage") || "10");
+	const searchTerm = url.searchParams.get("search") || "";
 
 	// Validate pagination parameters
-	if (isNaN(page) || page < 1) throw error(400, 'Invalid page number');
-	if (isNaN(perPage) || perPage < 1 || perPage > 100) throw error(400, 'Invalid items per page');
+	if (isNaN(page) || page < 1) throw error(400, "Invalid page number");
+	if (isNaN(perPage) || perPage < 1 || perPage > 100) throw error(400, "Invalid items per page");
 
 	// Calculate offset
 	const offset = (page - 1) * perPage;
@@ -48,18 +48,36 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		}
 	}
 
-	// Fetch members with pagination and search filter
-	const members = await db.query.users.findMany({
-		where: conditions,
-		orderBy: [asc(users.mbr)],
-		limit: perPage,
-		offset
-	});
+	// Fetch members with pagination and search filter, plus total count in a single query
+	const membersWithCount = await db
+		.select({
+			id: users.id,
+			name: users.name,
+			email: users.email,
+			mbr: users.mbr,
+			role: users.role,
+			created_at: users.created_at,
+			test_passed: users.test_passed,
+			img: users.img,
+			totalCount: sql<number>`COUNT(*) OVER()`.as("total_count")
+		})
+		.from(users)
+		.where(conditions)
+		.orderBy(asc(users.mbr))
+		.limit(perPage)
+		.offset(offset);
 
-	// Count total number of members for pagination with search filter applied
-	const totalCountResult = await db.select({ count: count() }).from(users).where(conditions);
-
-	const totalCount = Number(totalCountResult[0].count);
+	const members = membersWithCount.map((row) => ({
+		id: row.id,
+		name: row.name,
+		email: row.email,
+		mbr: row.mbr,
+		role: row.role,
+		created_at: row.created_at,
+		test_passed: row.test_passed,
+		img: row.img
+	}));
+	const totalCount = membersWithCount.length > 0 ? Number(membersWithCount[0].totalCount) : 0;
 
 	// Calculate total pages
 	const totalPages = Math.ceil(totalCount / perPage);

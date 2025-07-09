@@ -24,11 +24,20 @@
 	// Debounce timer for search
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
+	// Navigate to page with current search and pagination state
+	function navigateToPage(page: number) {
+		const params = new URLSearchParams();
+		params.set('page', page.toString());
+		params.set('perPage', data.pagination.perPage.toString());
+		if (searchTerm) {
+			params.set('search', searchTerm);
+		}
+		goto(`?${params.toString()}`);
+	}
+
 	// Handle page change
 	function handlePageChange(newPage: number) {
-		goto(
-			`?page=${newPage}&perPage=${data.pagination.perPage}${searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ''}`
-		);
+		navigateToPage(newPage);
 	}
 
 	// Handle search input
@@ -36,11 +45,7 @@
 		if (searchTimeout) clearTimeout(searchTimeout);
 
 		searchTimeout = setTimeout(() => {
-			goto(
-				`?page=1&perPage=${data.pagination.perPage}${
-					searchTerm ? `&search=${encodeURIComponent(searchTerm)}` : ''
-				}`
-			);
+			navigateToPage(1); // Reset to page 1 when searching
 		}, 3000);
 	}
 </script>
