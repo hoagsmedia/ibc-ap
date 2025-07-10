@@ -1,4 +1,4 @@
-import { ACCESS_TOKEN, WIKIMEDIA_EMAIL } from "$env/static/private";
+import { WIKIMEDIA_EMAIL, WIKIMEDIA_ACCESS_TOKEN } from "$env/static/private";
 import type { RequestHandler } from "@sveltejs/kit";
 
 interface WikimediaEvent {
@@ -27,7 +27,7 @@ export const GET: RequestHandler = async ({ fetch }) => {
 		`https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/events/${month}/${day}`,
 		{
 			headers: {
-				Authorization: `Bearer ${ACCESS_TOKEN}`,
+				Authorization: `Bearer ${WIKIMEDIA_ACCESS_TOKEN}`,
 				"Api-User-Agent": `Island Beer Club App (${WIKIMEDIA_EMAIL})`
 			}
 		}
