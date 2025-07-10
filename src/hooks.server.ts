@@ -1,8 +1,13 @@
-import type { Handle } from '@sveltejs/kit';
-import * as auth from '$lib/server/auth.js';
+import type { Handle } from "@sveltejs/kit";
+import * as auth from "$lib/server/auth.js";
 
 const handleAuth: Handle = async ({ event, resolve }) => {
 	const sessionToken = event.cookies.get(auth.sessionCookieName);
+
+	console.log("[IBC-LOG] [hooks.server] Incoming request", {
+		url: event.url.pathname,
+		hasSessionToken: !!sessionToken
+	});
 
 	if (!sessionToken) {
 		event.locals.user = null;
@@ -20,6 +25,10 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 
 	event.locals.user = user;
 	event.locals.session = session;
+	console.log("[IBC-LOG] [hooks.server] Session/user set", {
+		userId: user?.id,
+		sessionId: session?.id
+	});
 	return resolve(event);
 };
 

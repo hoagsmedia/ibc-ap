@@ -1,14 +1,19 @@
-import type { PageServerLoad, Actions } from './$types';
-import { createInvitationToken, getInvitationsByUser } from '$lib/server/invitations';
-import { fail, redirect } from '@sveltejs/kit';
+import type { PageServerLoad, Actions } from "./$types";
+import { createInvitationToken, getInvitationsByUser } from "$lib/server/invitations";
+import { fail, redirect } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
-		throw redirect(302, '/login');
+		throw redirect(302, "/login");
 	}
 
 	// Load user's invitation tokens
 	const invitations = await getInvitationsByUser(locals.user.id);
+
+	console.log("[IBC-LOG] [dashboard] Page loaded", {
+		userId: locals.user.id,
+		invitationCount: invitations.length
+	});
 
 	return {
 		user: locals.user,
@@ -20,14 +25,14 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 export const actions: Actions = {
 	createInvitation: async ({ locals, url }) => {
 		if (!locals.user) {
-			return fail(401, { message: 'Must be logged in to create invitations' });
+			return fail(401, { message: "Must be logged in to create invitations" });
 		}
 
 		// Check if user has passed the test
 		if (!locals.user.test_passed) {
 			return fail(403, {
 				message:
-					'You must pass the official IBC test before creating invitation links. Please visit the test page to complete it.'
+					"You must pass the official IBC test before creating invitation links. Please visit the test page to complete it."
 			});
 		}
 
@@ -35,15 +40,20 @@ export const actions: Actions = {
 			const invitation = await createInvitationToken(locals.user.id);
 			const inviteUrl = `${url.origin}/invite/${invitation.token}`;
 
+			console.log("[IBC-LOG] [dashboard] Invitation created", {
+				userId: locals.user.id,
+				invitationToken: invitation.token
+			});
+
 			return {
 				success: true,
 				invitation,
 				inviteUrl,
-				message: 'Invitation link created successfully!'
+				message: "Invitation link created successfully!"
 			};
 		} catch (error) {
-			console.error('Error creating invitation:', error);
-			return fail(500, { message: 'Failed to create invitation link' });
+			console.error("Error creating invitation:", error);
+			return fail(500, { message: "Failed to create invitation link" });
 		}
 	}
 };

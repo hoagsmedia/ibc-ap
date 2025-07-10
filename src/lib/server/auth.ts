@@ -1,13 +1,13 @@
-import type { RequestEvent } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
-import { sha256 } from '@oslojs/crypto/sha2';
-import { encodeBase64url, encodeHexLowerCase } from '@oslojs/encoding';
-import { db } from '$lib/server/db';
-import * as table from '$lib/server/db/schema';
+import type { RequestEvent } from "@sveltejs/kit";
+import { eq } from "drizzle-orm";
+import { sha256 } from "@oslojs/crypto/sha2";
+import { encodeBase64url, encodeHexLowerCase } from "@oslojs/encoding";
+import { db } from "$lib/server/db";
+import * as table from "$lib/server/db/schema";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
 
-export const sessionCookieName = 'auth-session';
+export const sessionCookieName = "auth-session";
 
 export function generateSessionToken() {
 	const bytes = crypto.getRandomValues(new Uint8Array(18));
@@ -23,6 +23,7 @@ export async function createSession(token: string, userId: string) {
 		expires_at: new Date(Date.now() + DAY_IN_MS * 30)
 	};
 	await db.insert(table.session).values(session);
+	console.log("[IBC-LOG] [auth] Session created", { userId, sessionId });
 	return session;
 }
 
@@ -32,6 +33,7 @@ export async function validateSessionToken(token: string) {
 	}
 
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
+	console.log("[IBC-LOG] [auth] Validating session token", { sessionId });
 
 	try {
 		const [result] = await db
@@ -76,8 +78,8 @@ export async function validateSessionToken(token: string) {
 
 		return { session, user };
 	} catch (err) {
-		console.error('Error validating session token:', err);
-		return { session: null, user: null, error: 'An error occurred' };
+		console.error("Error validating session token:", err);
+		return { session: null, user: null, error: "An error occurred" };
 	}
 }
 
@@ -90,18 +92,18 @@ export async function invalidateSession(sessionId: string) {
 export function setSessionTokenCookie(event: RequestEvent, token: string, expires_at: Date) {
 	event.cookies.set(sessionCookieName, token, {
 		expires: expires_at,
-		path: '/',
+		path: "/",
 		httpOnly: true,
-		secure: process.env.NODE_ENV === 'production',
-		sameSite: 'lax'
+		secure: process.env.NODE_ENV === "production",
+		sameSite: "lax"
 	});
 }
 
 export function deleteSessionTokenCookie(event: RequestEvent) {
 	event.cookies.delete(sessionCookieName, {
-		path: '/',
+		path: "/",
 		httpOnly: true,
-		secure: process.env.NODE_ENV === 'production',
-		sameSite: 'lax'
+		secure: process.env.NODE_ENV === "production",
+		sameSite: "lax"
 	});
 }

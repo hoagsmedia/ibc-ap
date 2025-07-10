@@ -13,6 +13,7 @@ export const GET: RequestHandler = async ({ fetch }) => {
 
 	// Use cached data if it's available
 	if (cachedEvent?.date === today) {
+		console.log("[IBC-LOG] [api/on-this-day] Returning cached event", { date: today });
 		return new Response(JSON.stringify(cachedEvent.data), {
 			headers: { "Content-Type": "application/json" }
 		});
@@ -32,6 +33,8 @@ export const GET: RequestHandler = async ({ fetch }) => {
 			}
 		}
 	);
+
+	console.log("[IBC-LOG] [api/on-this-day] Wikimedia API response", { status: response.status });
 
 	if (!response.ok) {
 		console.error("Failed to fetch data from Wikimedia API", response.statusText);
