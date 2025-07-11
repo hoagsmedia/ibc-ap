@@ -52,7 +52,7 @@
 
 		{#if !isMobile.current}
 			<!-- Desktop Navigation -->
-			<NavigationMenu.Root class="hidden md:flex">
+			<NavigationMenu.Root viewport={false} class="hidden md:flex">
 				<NavigationMenu.List>
 					{#each navLinks as link}
 						<NavigationMenu.Item>
@@ -65,19 +65,12 @@
 					<NavigationMenu.Item>
 						<NavigationMenu.Trigger>More</NavigationMenu.Trigger>
 						<NavigationMenu.Content>
-							<ul class="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+							<ul class="grid w-[300px] gap-3 p-2">
 								{#each dropdownLinks as link}
-									<li class="row-span-3">
-										<NavigationMenu.Link>
-											<a
-												href={link.href}
-												class="from-muted/50 to-muted flex size-full flex-col justify-end rounded-md bg-gradient-to-b p-6 no-underline outline-none select-none focus:shadow-md"
-											>
-												<div class="mt-4 mb-2 text-lg font-medium">{link.label}</div>
-												<p class="text-muted-foreground text-sm leading-tight">
-													{link.description}
-												</p>
-											</a>
+									<li>
+										<NavigationMenu.Link href={link.href} active={isActive(link.href)}>
+											<div class="font-medium">{link.label}</div>
+											<p class="text-muted-foreground">{link.description}</p>
 										</NavigationMenu.Link>
 									</li>
 								{/each}
