@@ -100,12 +100,24 @@
 								>
 									Manage Members
 								</Button>
+								<Button
+									href="/events"
+									class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+								>
+									Manage Events
+								</Button>
 							{:else}
 								<Button
 									href="/members"
 									class="bg-accent text-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
 								>
 									Member Directory
+								</Button>
+								<Button
+									href="/events"
+									class="bg-accent text-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+								>
+									View Events
 								</Button>
 							{/if}
 						</Card.Content>
