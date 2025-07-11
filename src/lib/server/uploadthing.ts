@@ -1,16 +1,16 @@
-import { createUploadthing, UTApi, UTFiles } from 'uploadthing/server';
-import type { FileRouter } from 'uploadthing/server';
-import { db } from './db';
-import { users, events } from './db/schema';
-import { eq } from 'drizzle-orm';
-import { sessionCookieName, validateSessionToken } from './auth';
-import { formatDateTime } from '$lib/utils';
+import { createUploadthing, UTApi, UTFiles } from "uploadthing/server";
+import type { FileRouter } from "uploadthing/server";
+import { db } from "./db";
+import { users, events } from "./db/schema";
+import { eq } from "drizzle-orm";
+import { sessionCookieName, validateSessionToken } from "./auth";
+import { formatDateTime } from "$lib/utils";
 
 const utapi = new UTApi();
 
 const f = createUploadthing({
 	errorFormatter: (err) => {
-		console.error('UploadThing error:', err.message, err.cause);
+		console.error("UploadThing error:", err.message, err.cause);
 		return { message: err.message };
 	}
 });
@@ -20,7 +20,7 @@ const getUserFromRequest = async (
 	req: Request
 ): Promise<{ id: string; mbr: number | null; img: string | null; role: string } | null> => {
 	try {
-		const cookies = req.headers.get('cookie');
+		const cookies = req.headers.get("cookie");
 		if (!cookies) return null;
 
 		// Extract session token from cookies
@@ -36,7 +36,7 @@ const getUserFromRequest = async (
 
 		return { id: user.id, img: user.img, mbr: user.mbr, role: user.role };
 	} catch (error) {
-		console.error('Failed to get user from request:', error);
+		console.error("Failed to get user from request:", error);
 		return null;
 	}
 };
@@ -46,17 +46,25 @@ export const ourFileRouter = {
 	// Profile image uploader - single image for user avatars
 	profileImageUploader: f({
 		image: {
-			maxFileSize: '4MB',
+			maxFileSize: "4MB",
 			maxFileCount: 1,
-			acl: 'public-read'
+			acl: "public-read"
 		}
 	})
 		.middleware(async ({ req, files }) => {
 			const user = await getUserFromRequest(req);
-			if (!user) throw new Error('Unauthorized');
+			if (!user) throw new Error("Unauthorized");
 
-			const currentImageKey = user.img?.split('/f/')[1];
-			console.log('Current user', user);
+			const currentImageKey = user.img?.split("/f/")[1] ?? null;
+			// Remove protocol (http:// or https://)
+			const currentImageUrl = user.img?.replace(/^https?:\/\//, "") ?? "";
+
+			// Debug logging (safe slicing if ID exists)
+			console.log(
+				"Current user",
+				(user.id?.slice(0, 5) ?? "???") + "...",
+				currentImageUrl.slice(0, 5) + "..."
+			);
 
 			// Label files with custom identifier for better organization
 			const filesWithCustomIds = files.map((file) => ({
@@ -67,7 +75,7 @@ export const ourFileRouter = {
 
 			return {
 				userId: user.id,
-				uploadType: 'profile' as const,
+				uploadType: "profile" as const,
 				currentImageKey: currentImageKey,
 				[UTFiles]: filesWithCustomIds
 			};
@@ -88,7 +96,7 @@ export const ourFileRouter = {
 					await utapi.deleteFiles(metadata.currentImageKey);
 				}
 			} catch (error) {
-				console.error('Failed to update user profile image:', error);
+				console.error("Failed to update user profile image:", error);
 				throw error;
 			}
 
@@ -96,22 +104,22 @@ export const ourFileRouter = {
 		}),
 
 	// Profile image migration route - server-only uploads for migrating existing profile images
-	'profile-images': f({
+	"profile-images": f({
 		image: {
-			maxFileSize: '4MB',
+			maxFileSize: "4MB",
 			maxFileCount: 1
 		}
 	})
 		.middleware(async ({ req }) => {
 			// Check for migration token or allow server-side requests
-			const userAgent = req.headers.get('user-agent');
-			if (userAgent?.includes('Node.js') || userAgent?.includes('tsx')) {
+			const userAgent = req.headers.get("user-agent");
+			if (userAgent?.includes("Node.js") || userAgent?.includes("tsx")) {
 				return {
-					uploadType: 'profile-migration' as const,
-					source: 'server-migration'
+					uploadType: "profile-migration" as const,
+					source: "server-migration"
 				};
 			}
-			throw new Error('Migration route only accessible from server');
+			throw new Error("Migration route only accessible from server");
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
 			return { source: metadata.source, imageUrl: file.ufsUrl };
@@ -120,18 +128,18 @@ export const ourFileRouter = {
 	// Gallery image uploader - multiple images for events, galleries, etc.
 	galleryImageUploader: f({
 		image: {
-			maxFileSize: '8MB',
+			maxFileSize: "8MB",
 			maxFileCount: 10,
-			acl: 'public-read'
+			acl: "public-read"
 		}
 	})
 		.middleware(async ({ req }) => {
 			const user = await getUserFromRequest(req);
-			if (!user) throw new Error('Unauthorized');
+			if (!user) throw new Error("Unauthorized");
 
 			return {
 				userId: user.id,
-				uploadType: 'gallery' as const
+				uploadType: "gallery" as const
 				// Don't set customId here for multiple files
 			};
 		})
@@ -142,29 +150,29 @@ export const ourFileRouter = {
 	// Update Member Image - single image for member profiles
 	updateMemberImage: f({
 		image: {
-			maxFileSize: '4MB',
+			maxFileSize: "4MB",
 			maxFileCount: 1,
-			acl: 'public-read'
+			acl: "public-read"
 		}
 	})
 		.middleware(async ({ req, files }) => {
 			const user = await getUserFromRequest(req);
-			if (!user) throw new Error('Unauthorized');
+			if (!user) throw new Error("Unauthorized");
 
 			// Check if user is admin
-			if (user.role !== 'admin') throw new Error('Admin access required');
+			if (user.role !== "admin") throw new Error("Admin access required");
 
 			if (files.length !== 1) {
-				throw new Error('Exactly one file must be uploaded');
+				throw new Error("Exactly one file must be uploaded");
 			}
 
 			// Extract the member ID from the referer URL - updated regex for UUID format
-			const referer = req.headers.get('referer');
+			const referer = req.headers.get("referer");
 			// Extract member ID from referer URL with flexible matching
 			const memberIdMatch = referer?.match(/\/members\/([a-zA-Z0-9_-]+)/);
 
 			if (!memberIdMatch || !memberIdMatch[1] || memberIdMatch[1].length < 8) {
-				throw new Error('Member ID not found in referer URL');
+				throw new Error("Member ID not found in referer URL");
 			}
 
 			const memberId = memberIdMatch[1];
@@ -176,10 +184,10 @@ export const ourFileRouter = {
 			});
 
 			if (!memberToUpdate) {
-				throw new Error('Member not found');
+				throw new Error("Member not found");
 			}
 
-			const currentImageKey = memberToUpdate.img?.split('/f/')[1];
+			const currentImageKey = memberToUpdate.img?.split("/f/")[1];
 			const file = files[0];
 
 			// Label file with custom identifier for better organization
@@ -188,7 +196,7 @@ export const ourFileRouter = {
 			return {
 				userId: user.id, // Admin user performing the action
 				memberId: memberToUpdate.id, // Member being updated
-				uploadType: 'member-image' as const,
+				uploadType: "member-image" as const,
 				currentImageKey: currentImageKey,
 				[UTFiles]: [{ ...file, customId }]
 			};
@@ -209,7 +217,7 @@ export const ourFileRouter = {
 					await utapi.deleteFiles(metadata.currentImageKey);
 				}
 			} catch (error) {
-				console.error('Failed to update member image:', error);
+				console.error("Failed to update member image:", error);
 				throw error;
 			}
 
@@ -218,24 +226,24 @@ export const ourFileRouter = {
 	// Event image uploader - single image for event banners
 	eventImageUploader: f({
 		image: {
-			maxFileSize: '8MB',
+			maxFileSize: "8MB",
 			maxFileCount: 1,
-			acl: 'public-read'
+			acl: "public-read"
 		}
 	})
 		.middleware(async ({ req, files }) => {
 			const user = await getUserFromRequest(req);
-			if (!user) throw new Error('Unauthorized');
+			if (!user) throw new Error("Unauthorized");
 			// Check if user is admin
-			if (user.role !== 'admin') throw new Error('Admin access required');
+			if (user.role !== "admin") throw new Error("Admin access required");
 			if (files.length !== 1) {
-				throw new Error('Exactly one file must be uploaded');
+				throw new Error("Exactly one file must be uploaded");
 			}
 			// Extract the event ID from the referer URL
-			const referer = req.headers.get('referer');
+			const referer = req.headers.get("referer");
 			const eventIdMatch = referer?.match(/\/events\/([a-zA-Z0-9_-]+)/);
 			if (!eventIdMatch || !eventIdMatch[1]) {
-				throw new Error('Event ID not found in referer URL');
+				throw new Error("Event ID not found in referer URL");
 			}
 			const eventId = eventIdMatch[1];
 
@@ -246,13 +254,13 @@ export const ourFileRouter = {
 				columns: { id: true, img: true }
 			});
 
-			const currentImageKey = eventToUpdate?.img?.split('/f/')[1];
+			const currentImageKey = eventToUpdate?.img?.split("/f/")[1];
 
 			// Label file with custom identifier for better organization
 			const customId = `event-${eventId}-${formatDateTime(new Date())}`;
 			return {
 				userId: user.id,
-				uploadType: 'event-image' as const,
+				uploadType: "event-image" as const,
 				eventId: eventId,
 				currentImageKey: currentImageKey,
 				[UTFiles]: files.map((file) => ({ ...file, customId }))
@@ -274,7 +282,7 @@ export const ourFileRouter = {
 					await utapi.deleteFiles(metadata.currentImageKey);
 				}
 			} catch (error) {
-				console.error('Failed to update event image:', error);
+				console.error("Failed to update event image:", error);
 				throw error;
 			}
 			return { uploadedBy: metadata.userId, eventId: metadata.eventId, imageUrl: file.ufsUrl };
