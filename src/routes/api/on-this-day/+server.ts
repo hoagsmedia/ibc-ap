@@ -14,8 +14,9 @@ export const GET: RequestHandler = async ({ fetch }) => {
 	// Use cached data if it's available
 	if (cachedEvent?.date === today) {
 		console.log("[IBC-LOG] [api/on-this-day] Returning cached event", { date: today });
-		return new Response(JSON.stringify(cachedEvent.data), {
-			headers: { "Content-Type": "application/json" }
+		const { text, year } = cachedEvent.data;
+		return new Response(JSON.stringify({ text, year }), {
+			headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" }
 		});
 	}
 

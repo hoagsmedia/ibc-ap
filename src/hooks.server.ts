@@ -26,8 +26,8 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 	event.locals.user = user;
 	event.locals.session = session;
 	console.log("[IBC-LOG] [hooks.server] Session/user set", {
-		userId: user?.id,
-		sessionId: session?.id
+		// only show the first 5 characters of the session ID for security
+		userId: user?.id.slice(0, 5) + "..." || "null"
 	});
 	return resolve(event);
 };

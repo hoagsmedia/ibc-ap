@@ -11,7 +11,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const invitations = await getInvitationsByUser(locals.user.id);
 
 	console.log("[IBC-LOG] [dashboard] Page loaded", {
-		userId: locals.user.id,
+		userId: locals.user.id.slice(0, 5) + "...", // Show only first 5 characters for security
 		invitationCount: invitations.length
 	});
 

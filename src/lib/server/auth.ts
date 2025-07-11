@@ -23,7 +23,10 @@ export async function createSession(token: string, userId: string) {
 		expires_at: new Date(Date.now() + DAY_IN_MS * 30)
 	};
 	await db.insert(table.session).values(session);
-	console.log("[IBC-LOG] [auth] Session created", { userId, sessionId });
+	console.log("[IBC-LOG] [auth] Session created", {
+		userId: userId.slice(0, 5) + "...",
+		sessionId: sessionId.slice(0, 5) + "..."
+	});
 	return session;
 }
 
@@ -33,7 +36,9 @@ export async function validateSessionToken(token: string) {
 	}
 
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-	console.log("[IBC-LOG] [auth] Validating session token", { sessionId });
+	console.log("[IBC-LOG] [auth] Validating session token", {
+		sessionId: sessionId.slice(0, 5) + "..."
+	});
 
 	try {
 		const [result] = await db

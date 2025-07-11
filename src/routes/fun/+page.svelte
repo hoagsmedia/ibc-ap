@@ -7,12 +7,6 @@
 
 	const { data }: PageProps = $props();
 
-	// Mock data for the fun activities - in a real app these could come from APIs
-	let dailyQuote = $state({
-		text: "Beer is proof that God loves us and wants us to be happy.",
-		author: "Benjamin Franklin (disputed)"
-	});
-
 	let matchGame = $state({
 		words: [
 			{ word: "Ale", definition: "Top-fermented beer" },
@@ -159,8 +153,8 @@
 			</Card.Header>
 			<Card.Content>
 				<blockquote class="space-y-2">
-					<p class="text-foreground italic">"{dailyQuote.text}"</p>
-					<footer class="text-muted-foreground text-sm">— {dailyQuote.author}</footer>
+					<p class="text-foreground italic">"{data.quoteOfTheDay.text}"</p>
+					<footer class="text-muted-foreground text-sm">— {data.quoteOfTheDay.author}</footer>
 				</blockquote>
 			</Card.Content>
 		</Card.Root>
