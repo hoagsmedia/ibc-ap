@@ -138,7 +138,7 @@ When he blows the damn whistle at 6 o'clock.`
 			</Card.Root>
 		</div>
 		<ul>
-			<li>
+			<li class="flex items-start gap-2">
 				<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
 				5 founder seats positioned on the line where Bones' tall chair normally sits, facing away from
 				beer club.

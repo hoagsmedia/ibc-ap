@@ -30,7 +30,8 @@
 					"John Sexton (Mbr 172)",
 					"Jason Anderson (Mbr 166)"
 				],
-				poeticSupport: 'Jim "Poem Stranger" Knox (Mbr 141)'
+				poeticSupport: 'Jim "Poem Stranger" Knox (Mbr 141)',
+				image: "/founders-day/founders-day-20MAR13.jpg"
 			},
 			{
 				year: 2014,
@@ -38,7 +39,8 @@
 				title: "Founders Day II",
 				description:
 					"Organized by the Ytterbium, Zirconium and other clans to continue the tradition.",
-				organizers: ["The Ytterbium Clan", "The Zirconium Clan", "Other participating clans"]
+				organizers: ["The Ytterbium Clan", "The Zirconium Clan", "Other participating clans"],
+				image: "/founders-day/founders-day-12MAR14.jpg"
 			}
 		]
 	};
@@ -122,46 +124,64 @@
 
 			{#each foundersData.foundersEvents as event, index}
 				<Card.Root>
-					<Card.Content class="p-8">
-						<div class="flex items-start gap-4">
-							<div class="flex-shrink-0">
-								<div class="bg-primary flex h-12 w-12 items-center justify-center rounded-full">
+					<!-- Event Header -->
+					{#if event.image}
+						<Card.Header class="relative -mt-6 p-0">
+							<img
+								src={event.image}
+								alt="{event.title} celebration photo"
+								class="h-64 w-full rounded-t-lg object-cover object-top md:h-80"
+							/>
+							<div class="absolute top-4 left-4">
+								<div
+									class="bg-primary/90 flex h-12 w-12 items-center justify-center rounded-full shadow-lg backdrop-blur-sm"
+								>
 									<span class="text-primary-foreground text-lg font-bold">{index + 1}</span>
 								</div>
 							</div>
-
-							<div class="flex-1">
+						</Card.Header>
+					{:else}
+						<div class="p-8 pb-0">
+							<div class="bg-primary mb-4 flex h-12 w-12 items-center justify-center rounded-full">
+								<span class="text-primary-foreground text-lg font-bold">{index + 1}</span>
+							</div>
+						</div>
+					{/if}
+					<Card.Content class="p-0">
+						<!-- Content Section -->
+						<div class="p-8">
+							<div class="mb-6">
 								<div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between">
-									<Card.Title class="text-2xl font-semibold">{event.title}</Card.Title>
-									<span class="text-primary font-medium">{event.date}</span>
+									<Card.Title class="text-2xl font-bold">{event.title}</Card.Title>
+									<span class="text-primary text-lg font-semibold">{event.date}</span>
 								</div>
 
-								<Card.Description class="mb-6 text-base leading-relaxed">
+								<Card.Description class="text-base leading-relaxed">
 									{event.description}
 								</Card.Description>
+							</div>
 
-								<div class="grid gap-6 md:grid-cols-2">
-									<div>
-										<h4 class="text-foreground mb-3 font-semibold">Organizers:</h4>
-										<ul class="space-y-1">
-											{#each event.organizers as organizer}
-												<li class="text-muted-foreground flex items-center gap-2 text-sm">
-													<div class="bg-primary h-1.5 w-1.5 rounded-full"></div>
-													{organizer}
-												</li>
-											{/each}
-										</ul>
-									</div>
-
-									{#if event.poeticSupport}
-										<div>
-											<h4 class="text-foreground mb-3 font-semibold">Poetic Support:</h4>
-											<p class="text-muted-foreground flex items-center gap-2 text-sm">
-												{event.poeticSupport}
-											</p>
-										</div>
-									{/if}
+							<div class="grid gap-6 md:grid-cols-2">
+								<div>
+									<h4 class="text-foreground mb-3 font-semibold">Organizers:</h4>
+									<ul class="space-y-2">
+										{#each event.organizers as organizer}
+											<li class="text-muted-foreground flex items-center gap-2 text-sm">
+												<div class="bg-primary h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
+												{organizer}
+											</li>
+										{/each}
+									</ul>
 								</div>
+
+								{#if event.poeticSupport}
+									<div>
+										<h4 class="text-foreground mb-3 font-semibold">Poetic Support:</h4>
+										<p class="text-muted-foreground text-sm leading-relaxed">
+											{event.poeticSupport}
+										</p>
+									</div>
+								{/if}
 							</div>
 						</div>
 					</Card.Content>
