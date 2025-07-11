@@ -1,7 +1,7 @@
 <script lang="ts">
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { quotes } from '$lib/data/quotes.js';
-	import { founders } from '$lib/data/founders.js';
+	import * as Card from "$lib/components/ui/card/index.js";
+	import { quotes } from "$lib/data/quotes.js";
+	import { founders } from "$lib/data/founders";
 
 	// Sort quotes by date descending, putting undated quotes last
 	function parseDate(date?: string): number {
@@ -22,11 +22,11 @@
 	});
 
 	const meta = {
-		title: 'Island Beer Club',
+		title: "Island Beer Club",
 		description:
-			'The official site of Island Beer Club. Learn about our members, events, and the spirit of craft beer on Coronado Island.',
-		image: '/the-founders.png',
-		url: 'https://islandbeerclub.com/'
+			"The official site of Island Beer Club. Learn about our members, events, and the spirit of craft beer on Coronado Island.",
+		image: "/the-founders.png",
+		url: "https://islandbeerclub.com/"
 	};
 </script>
 
@@ -295,7 +295,7 @@
 <style>
 	.callout-section {
 		background-color: black;
-		background-image: url('/mug-table-ibc-logo.svg');
+		background-image: url("/mug-table-ibc-logo.svg");
 		background-size: cover;
 		background-position: center;
 		background-repeat: no-repeat;

@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Label } from '$lib/components/ui/label';
-	import { Textarea } from '$lib/components/ui/textarea';
+	import { enhance } from "$app/forms";
+	import { Button } from "$lib/components/ui/button";
+	import { Input } from "$lib/components/ui/input";
+	import { Label } from "$lib/components/ui/label";
+	import { Textarea } from "$lib/components/ui/textarea";
 	import {
 		Card,
 		CardContent,
 		CardDescription,
 		CardHeader,
 		CardTitle
-	} from '$lib/components/ui/card';
-	import { UserPlus, Eye, EyeOff } from '@lucide/svelte';
+	} from "$lib/components/ui/card";
+	import { UserPlus, Eye, EyeOff } from "@lucide/svelte";
 
 	let { data, form } = $props();
 
@@ -88,7 +88,7 @@
 							<Input
 								id="password"
 								name="password"
-								type={showPassword ? 'text' : 'password'}
+								type={showPassword ? "text" : "password"}
 								placeholder="Enter your password"
 								required
 								disabled={loading}
@@ -116,7 +116,7 @@
 							<Input
 								id="confirmPassword"
 								name="confirmPassword"
-								type={showConfirmPassword ? 'text' : 'password'}
+								type={showConfirmPassword ? "text" : "password"}
 								placeholder="Confirm your password"
 								required
 								disabled={loading}
@@ -135,6 +135,32 @@
 								{/if}
 							</button>
 						</div>
+					</div>
+					<div class="space-y-2">
+						<Label for="phone"
+							>Phone Number <span class="text-muted-foreground">Only visible to Admins</span></Label
+						>
+						<Input
+							id="phone"
+							name="phone"
+							type="tel"
+							placeholder="Enter your phone number"
+							disabled={loading}
+							class="transition-colors"
+						/>
+					</div>
+					<div class="space-y-2">
+						<Label for="address"
+							>Address <span class="text-muted-foreground">Only visible to Admins</span></Label
+						>
+						<Input
+							id="address"
+							name="address"
+							type="text"
+							placeholder="Enter your address"
+							disabled={loading}
+							class="transition-colors"
+						/>
 					</div>
 
 					<div class="space-y-2">

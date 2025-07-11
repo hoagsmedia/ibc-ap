@@ -5,23 +5,23 @@ export interface Founder {
 
 export const founders: Founder[] = [
 	{
-		name: 'Jeff Wilkens',
-		photo: '/JeffWilkens.jpg'
+		name: "Jeff Wilkens",
+		photo: "founders/JeffWilkens.jpg"
 	},
 	{
-		name: 'John Morton',
-		photo: '/Morton.jpg'
+		name: "John Morton",
+		photo: "founders/Morton.jpg"
 	},
 	{
-		name: 'John Muncey',
-		photo: '/Muncey.jpg'
+		name: "John Muncey",
+		photo: "founders/Muncey.jpg"
 	},
 	{
-		name: 'Wayne Oldendorph',
-		photo: '/Oly.jpg'
+		name: "Wayne Oldendorph",
+		photo: "founders/Oly.jpg"
 	},
 	{
-		name: 'Rob Crenshaw',
-		photo: '/Rob.jpg'
+		name: "Rob Crenshaw",
+		photo: "founders/Rob.jpg"
 	}
 ];
