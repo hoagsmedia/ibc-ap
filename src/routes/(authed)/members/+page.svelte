@@ -1,24 +1,24 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import * as Table from '$lib/components/ui/table/index.js';
-	import * as Pagination from '$lib/components/ui/pagination/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon, EllipsisVertical } from '@lucide/svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Search } from '@lucide/svelte';
-	import { goto } from '$app/navigation';
-	import type { PageProps } from './$types';
-	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
-	import { cn } from '$lib/utils';
+	import { page } from "$app/state";
+	import * as Table from "$lib/components/ui/table/index.js";
+	import * as Pagination from "$lib/components/ui/pagination/index.js";
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+	import Avatar from "$lib/components/Avatar.svelte";
+	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon, EllipsisVertical } from "@lucide/svelte";
+	import { Button } from "$lib/components/ui/button/index.js";
+	import { Input } from "$lib/components/ui/input/index.js";
+	import { Search } from "@lucide/svelte";
+	import { goto } from "$app/navigation";
+	import type { PageProps } from "./$types";
+	import { IsMobile } from "$lib/hooks/is-mobile.svelte";
+	import { cn } from "$lib/utils";
 
 	let { data }: PageProps = $props();
 
 	// --- Reactive State ---
-	let searchTerm = $state(data.searchTerm || '');
+	let searchTerm = $state(data.searchTerm || "");
 	const pageData = $state(page);
-	const admin = $derived(pageData.data.user.role === 'admin');
+	const admin = $derived(pageData.data.user.role === "admin");
 	const isAuthenticated = $derived(!!admin);
 	const isMobile = new IsMobile();
 	// Debounce timer for search
@@ -27,10 +27,10 @@
 	// Navigate to page with current search and pagination state
 	function navigateToPage(page: number) {
 		const params = new URLSearchParams();
-		params.set('page', page.toString());
-		params.set('perPage', data.pagination.perPage.toString());
+		params.set("page", page.toString());
+		params.set("perPage", data.pagination.perPage.toString());
 		if (searchTerm) {
-			params.set('search', searchTerm);
+			params.set("search", searchTerm);
 		}
 		goto(`?${params.toString()}`);
 	}
@@ -57,7 +57,7 @@
 <div class="container py-8 md:w-full">
 	<!-- Header with back button -->
 	<div class="mb-6 flex flex-col items-center gap-4 md:flex-row">
-		<Button variant="outline" size="sm" onclick={() => history.back()}>
+		<Button variant="outline" size="sm" href="/dashboard" class="gap-2">
 			<ArrowLeft class="size-4" />
 			Back to Dashboard
 		</Button>
@@ -86,7 +86,7 @@
 				<Table.Row>
 					<Table.Head>Profile</Table.Head>
 					<Table.Head>Name</Table.Head>
-					<Table.Head class={cn('p-5', isMobile.current && 'text-center')}>Member #</Table.Head>
+					<Table.Head class={cn("p-5", isMobile.current && "text-center")}>Member #</Table.Head>
 					{#if !isMobile.current}
 						<Table.Head>Email</Table.Head>
 					{/if}
@@ -97,7 +97,7 @@
 				{#if data.members.length === 0}
 					<Table.Row>
 						<Table.Cell class="py-6 text-center">
-							{searchTerm ? 'No members found for your search' : 'No members found'}
+							{searchTerm ? "No members found for your search" : "No members found"}
 						</Table.Cell>
 					</Table.Row>
 				{:else}
@@ -106,12 +106,12 @@
 							<Table.Cell>
 								<Avatar class="size-8" name={member.name} img={member.img ?? undefined} />
 							</Table.Cell>
-							<Table.Cell>{member.name || 'N/A'}</Table.Cell>
-							<Table.Cell class={cn('', isMobile.current && 'text-center')}
-								>{member.mbr || 'N/A'}</Table.Cell
+							<Table.Cell>{member.name || "N/A"}</Table.Cell>
+							<Table.Cell class={cn("", isMobile.current && "text-center")}
+								>{member.mbr || "N/A"}</Table.Cell
 							>
 							{#if !isMobile.current}
-								<Table.Cell>{member.email || 'N/A'}</Table.Cell>
+								<Table.Cell>{member.email || "N/A"}</Table.Cell>
 							{/if}
 							<Table.Cell class="text-end">
 								{#if isAuthenticated && admin}
@@ -162,7 +162,7 @@
 						</Pagination.PrevButton>
 					</Pagination.Item>
 					{#each pages as page (page.key)}
-						{#if page.type === 'ellipsis'}
+						{#if page.type === "ellipsis"}
 							<Pagination.Item>
 								<Pagination.Ellipsis />
 							</Pagination.Item>
