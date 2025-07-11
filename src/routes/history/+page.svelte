@@ -8,14 +8,6 @@
 		image: "/groupGarage.jpg",
 		url: "https://islandbeerclub.com/history"
 	};
-
-	const foundingTitles = [
-		'Jeff "Bones" Wilkens - Member #1 • Founding Member',
-		'John "Old Doc" Morton - Member #2 • Founding Member',
-		'John "Cruncher" Muncy - Member #3 • Founding Member',
-		'Wayne "Big Oly" Oldendorph - Member #4 • Founding Member',
-		'Rob "Crenny" Crenshaw - Member #5 • Fifth Founder'
-	];
 </script>
 
 <svelte:head>

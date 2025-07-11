@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Card from "$lib/components/ui/card";
 	const meta = {
-		title: "IBCsScience Corner | Island Beer Club",
+		title: "IBCs Science Corner | Island Beer Club",
 		description:
 			"Explore the science of beer and life with Island Beer Club. Fun facts, physics, and more for the curious drinker. Have a science question or fun fact? Let us know and we'll add it here!"
 	};
