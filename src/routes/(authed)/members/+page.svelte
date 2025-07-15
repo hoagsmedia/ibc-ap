@@ -12,42 +12,145 @@
 	import type { PageProps } from "./$types";
 	import { IsMobile } from "$lib/hooks/is-mobile.svelte";
 	import { cn } from "$lib/utils";
+	import { LocalStorage } from "$lib/utils/local-storage.svelte";
 
 	let { data }: PageProps = $props();
 
+	// --- LocalStorage for caching search results ---
+	interface CachedMemberData {
+		members: typeof data.members;
+		searchTerm: string;
+		timestamp: number;
+		totalCount: number;
+	}
+
+	interface PaginationData {
+		page: number;
+		perPage: number;
+		totalCount: number;
+		totalPages: number;
+	}
+
+	const memberCache = new LocalStorage<Record<string, CachedMemberData>>("member-search-cache", {});
+	const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+
 	// --- Reactive State ---
 	let searchTerm = $state(data.searchTerm || "");
+	let currentMembers = $state<typeof data.members>(data.members);
+	let currentPagination = $state<PaginationData>(data.pagination);
 	const pageData = $state(page);
-	const admin = $derived(pageData.data.user.role === "admin");
+	const admin = $derived(pageData.data.user?.role === "admin");
 	const isAuthenticated = $derived(!!admin);
 	const isMobile = new IsMobile();
 	// Debounce timer for search
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	// Navigate to page with current search and pagination state
-	function navigateToPage(page: number) {
+	// Check if cached data is still valid
+	function isCacheValid(timestamp: number): boolean {
+		return Date.now() - timestamp < CACHE_EXPIRY;
+	}
+
+	// Get cached results for a search term
+	function getCachedResults(searchKey: string): CachedMemberData | null {
+		console.log("Checking cache for:", searchKey);
+		const cache = memberCache.value || {};
+		const cached = cache[searchKey];
+		if (cached && isCacheValid(cached.timestamp)) {
+			return cached;
+		}
+		return null;
+	}
+
+	// Cache search results
+	function cacheResults(
+		searchKey: string,
+		members: typeof data.members,
+		searchTerm: string,
+		totalCount: number
+	): void {
+		const cache = memberCache.value || {};
+		cache[searchKey] = {
+			members,
+			searchTerm,
+			timestamp: Date.now(),
+			totalCount
+		};
+		memberCache.value = cache;
+	}
+
+	// Perform search with caching
+	async function performSearch(term: string, pageNum: number = 1): Promise<void> {
+		const searchKey = `${term}-${pageNum}-${currentPagination.perPage}`;
+
+		// Check cache first
+		const cached = getCachedResults(searchKey);
+		if (cached && cached.members.length > 0) {
+			console.log("Using cached results for:", searchKey);
+			currentMembers = cached.members;
+			currentPagination = {
+				...currentPagination,
+				page: pageNum,
+				totalCount: cached.totalCount,
+				totalPages: Math.ceil(cached.totalCount / currentPagination.perPage)
+			};
+			return;
+		}
+
+		// If no cache or empty results, go to server
+		console.log("Fetching from server for:", searchKey);
+		navigateToServer(pageNum);
+	}
+
+	// Navigate to server (original behavior)
+	function navigateToServer(page: number): void {
 		const params = new URLSearchParams();
 		params.set("page", page.toString());
-		params.set("perPage", data.pagination.perPage.toString());
+		params.set("perPage", currentPagination.perPage.toString());
 		if (searchTerm) {
 			params.set("search", searchTerm);
+			// Check if we have any cached results for this search
+			const cacheKeys = Object.keys(memberCache.value || {});
+			const hasCache = cacheKeys.some((key) => {
+				const cacheData = memberCache.value![key];
+				return key.startsWith(searchTerm) && cacheData && isCacheValid(cacheData.timestamp);
+			});
+			if (hasCache) {
+				params.set("useCache", "true");
+			}
 		}
 		goto(`?${params.toString()}`);
 	}
 
 	// Handle page change
-	function handlePageChange(newPage: number) {
-		navigateToPage(newPage);
+	function handlePageChange(newPage: number): void {
+		performSearch(searchTerm, newPage);
 	}
 
 	// Handle search input
-	function handleSearch() {
+	function handleSearch(): void {
 		if (searchTimeout) clearTimeout(searchTimeout);
 
 		searchTimeout = setTimeout(() => {
-			navigateToPage(1); // Reset to page 1 when searching
-		}, 3000);
+			performSearch(searchTerm, 1); // Reset to page 1 when searching
+		}, 1000); // Reduced timeout for better UX
 	}
+
+	// Cache current results when data changes
+	$effect(() => {
+		// Only process server data if it's not a cached response
+		if (!("cached" in data) || (!data.cached && data.members.length > 0)) {
+			console.log("[Effect]:Processing server data:", data);
+			const searchKey = `${data.searchTerm}-${data.pagination.page}-${data.pagination.perPage}`;
+			cacheResults(searchKey, data.members, data.searchTerm, data.pagination.totalCount);
+		}
+
+		// Always update current state with fresh data
+		if (!("cached" in data) || !data.cached) {
+			console.log("[Effect]:Updating current members and pagination");
+			currentMembers = data.members;
+			currentPagination = data.pagination;
+		}
+	});
 </script>
 
 <svelte:head>
@@ -94,14 +197,14 @@
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
-				{#if data.members.length === 0}
+				{#if currentMembers.length === 0}
 					<Table.Row>
 						<Table.Cell class="py-6 text-center">
 							{searchTerm ? "No members found for your search" : "No members found"}
 						</Table.Cell>
 					</Table.Row>
 				{:else}
-					{#each data.members as member (member.id)}
+					{#each currentMembers as member (member.id)}
 						<Table.Row>
 							<Table.Cell>
 								<Avatar class="size-8" name={member.name} img={member.img ?? undefined} />
@@ -146,9 +249,9 @@
 	<!-- Pagination -->
 	<div class="mt-8 flex items-center justify-center">
 		<Pagination.Root
-			count={data.pagination.totalCount}
-			perPage={data.pagination.perPage}
-			page={data.pagination.page}
+			count={currentPagination.totalCount}
+			perPage={currentPagination.perPage}
+			page={currentPagination.page}
 		>
 			{#snippet children({ pages, currentPage })}
 				<Pagination.Content>
@@ -181,7 +284,7 @@
 					<Pagination.Item>
 						<Pagination.NextButton
 							onclick={() => handlePageChange(currentPage + 1)}
-							disabled={currentPage === data.pagination.totalPages}
+							disabled={currentPage === currentPagination.totalPages}
 						>
 							<span class="hidden sm:block">Next</span>
 							<ChevronRightIcon class="size-4" />

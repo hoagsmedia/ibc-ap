@@ -14,6 +14,23 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const page = Number(url.searchParams.get("page") || "1");
 	const perPage = Number(url.searchParams.get("perPage") || "10");
 	const searchTerm = url.searchParams.get("search") || "";
+	const useCache = url.searchParams.get("useCache") === "true"; // Client hint to use cache
+
+	// If client indicates it's using cache and has results, return minimal data
+	if (useCache && searchTerm) {
+		console.log("[IBC-LOG] [members] Using cached results for search term:", searchTerm);
+		return {
+			members: [],
+			searchTerm,
+			pagination: {
+				page: 1,
+				perPage,
+				totalCount: 0,
+				totalPages: 0
+			},
+			cached: true
+		};
+	}
 
 	// Validate pagination parameters
 	if (isNaN(page) || page < 1) throw error(400, "Invalid page number");
@@ -90,6 +107,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			perPage,
 			totalCount,
 			totalPages
-		}
+		},
+		cached: false
 	};
 };
