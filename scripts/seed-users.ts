@@ -6,7 +6,7 @@ const profilesPath = path.resolve('static/ibc-users.json');
 const profiles = JSON.parse(fs.readFileSync(profilesPath, 'utf-8'));
 import readline from 'readline';
 
-const maxUsers = 900;
+const maxUsers = 30;
 
 function confirmPrompt(prompt: string): Promise<boolean> {
 	const rl = readline.createInterface({

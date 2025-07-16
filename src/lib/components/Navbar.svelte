@@ -1,21 +1,21 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { enhance } from '$app/forms';
-	import * as NavigationMenu from '$lib/components/ui/navigation-menu/index.js';
-	import * as DropdownMenu from '$lib/components/ui/dropdown-menu/index.js';
-	import * as Sheet from '$lib/components/ui/sheet/index.js';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import SunIcon from '@lucide/svelte/icons/sun';
-	import MoonIcon from '@lucide/svelte/icons/moon';
-	import NavUser from './Nav-User.svelte';
-	import ScrollArea from './ui/scroll-area/scroll-area.svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { Separator } from '$lib/components/ui/separator/index.js';
-	import { toggleMode } from 'mode-watcher';
-	import { Menu } from '@lucide/svelte';
-	import logo from '$lib/assets/ibc-logo.svg';
-	import { navLinks, dropdownLinks } from '$lib/config/navigation';
-	import { IsMobile } from '$lib/hooks/is-mobile.svelte';
+	import { page } from "$app/state";
+	import { enhance } from "$app/forms";
+	import * as NavigationMenu from "$lib/components/ui/navigation-menu/index.js";
+	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
+	import * as Sheet from "$lib/components/ui/sheet/index.js";
+	import Avatar from "$lib/components/Avatar.svelte";
+	import SunIcon from "@lucide/svelte/icons/sun";
+	import MoonIcon from "@lucide/svelte/icons/moon";
+	import NavUser from "./Nav-User.svelte";
+	import ScrollArea from "./ui/scroll-area/scroll-area.svelte";
+	import { Button } from "$lib/components/ui/button/index.js";
+	import { Separator } from "$lib/components/ui/separator/index.js";
+	import { toggleMode } from "mode-watcher";
+	import { Menu } from "@lucide/svelte";
+	import logo from "$lib/assets/ibc-logo.svg";
+	import { navLinks, dropdownLinks } from "$lib/config/navigation";
+	import { IsMobile } from "$lib/hooks/is-mobile.svelte";
 
 	// --- Reactive State ---
 	const pageData = $state(page);
@@ -33,18 +33,10 @@
 	});
 
 	// --- Helpers ---
-	function generateUsername(name: string | null | undefined): string {
-		if (!name) return '??';
-		const parts = name.trim().split(' ');
-		if (parts.length > 1) {
-			return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-		}
-		return name.substring(0, 2).toUpperCase();
-	}
 
 	function isActive(href: string): boolean {
-		if (href === '/') {
-			return currentPath === '/';
+		if (href === "/") {
+			return currentPath === "/";
 		}
 		return currentPath.startsWith(href);
 	}
@@ -60,7 +52,7 @@
 
 		{#if !isMobile.current}
 			<!-- Desktop Navigation -->
-			<NavigationMenu.Root class="hidden md:flex">
+			<NavigationMenu.Root viewport={false} class="hidden md:flex">
 				<NavigationMenu.List>
 					{#each navLinks as link}
 						<NavigationMenu.Item>
@@ -73,19 +65,12 @@
 					<NavigationMenu.Item>
 						<NavigationMenu.Trigger>More</NavigationMenu.Trigger>
 						<NavigationMenu.Content>
-							<ul class="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
+							<ul class="grid w-[300px] gap-3 p-2">
 								{#each dropdownLinks as link}
-									<li class="row-span-3">
-										<NavigationMenu.Link>
-											<a
-												href={link.href}
-												class="from-muted/50 to-muted flex size-full flex-col justify-end rounded-md bg-gradient-to-b p-6 no-underline outline-none select-none focus:shadow-md"
-											>
-												<div class="mt-4 mb-2 text-lg font-medium">{link.label}</div>
-												<p class="text-muted-foreground text-sm leading-tight">
-													{link.description}
-												</p>
-											</a>
+									<li>
+										<NavigationMenu.Link href={link.href} active={isActive(link.href)}>
+											<div class="font-medium">{link.label}</div>
+											<p class="text-muted-foreground">{link.description}</p>
 										</NavigationMenu.Link>
 									</li>
 								{/each}
@@ -122,7 +107,7 @@
 							<DropdownMenu.Item>
 								<a href="/settings" class="w-full">Settings</a>
 							</DropdownMenu.Item>
-							{#if user.role === 'admin'}
+							{#if user.role === "admin"}
 								<DropdownMenu.Separator />
 								<DropdownMenu.Label>Admin</DropdownMenu.Label>
 								<DropdownMenu.Item>

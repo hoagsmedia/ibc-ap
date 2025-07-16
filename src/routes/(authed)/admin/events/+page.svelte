@@ -1,32 +1,32 @@
 <script lang="ts">
-	import { Button } from '$lib/components/ui/button/index.js';
+	import * as Dialog from "$lib/components/ui/dialog/index.js";
+	import { Button } from "$lib/components/ui/button/index.js";
 	import {
 		Card,
 		CardContent,
 		CardDescription,
 		CardHeader,
 		CardTitle
-	} from '$lib/components/ui/card/index.js';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import { Plus, Calendar, MapPin, Edit, Trash2, Eye, EyeOff, Loader2 } from '@lucide/svelte';
-	import { enhance } from '$app/forms';
-	import type { PageData } from './$types.js';
+	} from "$lib/components/ui/card/index.js";
+	import { Plus, Calendar, MapPin, Edit, Trash2, Eye, EyeOff, Loader2 } from "@lucide/svelte";
+	import { enhance } from "$app/forms";
+	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
 
 	// Track loading states for each event's publish/unpublish action
 	let loadingStates = $state<Record<string, boolean>>({});
 	let deleteLoadingStates = $state<Record<string, boolean>>({});
+	let eventToDelete = $state<string | null>(null);
 
 	function formatDate(date: Date | null) {
-		if (!date) return 'No date set';
-		return new Intl.DateTimeFormat('en-US', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
+		if (!date) return "No date set";
+		return new Intl.DateTimeFormat("en-US", {
+			year: "numeric",
+			month: "long",
+			day: "numeric",
+			hour: "2-digit",
+			minute: "2-digit"
 		}).format(date);
 	}
 </script>
@@ -102,7 +102,7 @@
 										>
 											{#if loadingStates[event.id]}
 												<Loader2 class="h-3 w-3 animate-spin" />
-												{event.is_published === 1 ? 'Unpublishing...' : 'Publishing...'}
+												{event.is_published === 1 ? "Unpublishing..." : "Publishing..."}
 											{:else if event.is_published === 1}
 												<EyeOff class="h-3 w-3" />
 												Unpublish
@@ -113,9 +113,18 @@
 										</Button>
 									</form>
 
-									<!-- Edit Button -->
+									<!-- Delete Button -->
 									<Button
-										href="/admin/events/{event.id}/edit"
+										variant="outline"
+										size="sm"
+										class="text-destructive hover:bg-destructive hover:text-primary-foreground gap-1"
+										onclick={() => (eventToDelete = event.id)}
+									>
+										<Trash2 class="h-3 w-3" />
+										Delete
+									</Button>
+									<Button
+										href={`/admin/events/${event.id}/edit`}
 										variant="outline"
 										size="sm"
 										class="gap-1"
@@ -123,57 +132,6 @@
 										<Edit class="h-3 w-3" />
 										Edit
 									</Button>
-
-									<!-- Delete Button with Dialog -->
-									<Dialog.Root>
-										<Dialog.Trigger
-											class="border-input bg-background hover:bg-destructive hover:text-destructive-foreground focus-visible:ring-ring/50 text-destructive inline-flex h-8 shrink-0 items-center justify-center gap-1 rounded-md border px-3 text-sm font-medium whitespace-nowrap shadow-xs transition-all outline-none focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4"
-										>
-											<Trash2 class="h-3 w-3" />
-											Delete
-										</Dialog.Trigger>
-										<Dialog.Content>
-											<Dialog.Header>
-												<Dialog.Title>Delete Event</Dialog.Title>
-												<Dialog.Description>
-													Are you sure you want to delete "{event.title}"? This action cannot be
-													undone and will permanently remove the event from the system.
-												</Dialog.Description>
-											</Dialog.Header>
-											<div class="flex justify-end gap-3 pt-6">
-												<Dialog.Close>
-													<Button variant="outline">Cancel</Button>
-												</Dialog.Close>
-												<form
-													method="POST"
-													action="?/delete"
-													class="inline"
-													use:enhance={() => {
-														deleteLoadingStates[event.id] = true;
-														return async ({ update }) => {
-															await update();
-															deleteLoadingStates[event.id] = false;
-														};
-													}}
-												>
-													<input type="hidden" name="eventId" value={event.id} />
-													<Button
-														type="submit"
-														variant="destructive"
-														disabled={deleteLoadingStates[event.id]}
-														class="gap-1"
-													>
-														{#if deleteLoadingStates[event.id]}
-															<Loader2 class="h-3 w-3 animate-spin" />
-															Deleting...
-														{:else}
-															Delete Event
-														{/if}
-													</Button>
-												</form>
-											</div>
-										</Dialog.Content>
-									</Dialog.Root>
 								</div>
 							</div>
 						</div>
@@ -184,7 +142,7 @@
 								<img
 									src={event.img}
 									alt={event.title}
-									class="h-32 w-full rounded-lg object-cover"
+									class="aspect-video w-full rounded-lg object-cover shadow-sm"
 								/>
 							</div>
 						{/if}
@@ -213,3 +171,54 @@
 		</div>
 	{/if}
 </div>
+
+<!-- Delete Confirmation Dialog -->
+{#if eventToDelete}
+	{@const eventTitle = data.events.find((e) => e.id === eventToDelete)?.title ?? "Unknown Event"}
+	<Dialog.Root open={true} onOpenChange={() => (eventToDelete = null)}>
+		<Dialog.Content>
+			<Dialog.Header>
+				<Dialog.Title>Delete Event</Dialog.Title>
+				<Dialog.Description>
+					Are you sure you want to delete "{eventTitle}"? This action cannot be undone and will
+					permanently remove the event from the system.
+				</Dialog.Description>
+			</Dialog.Header>
+			<div class="flex justify-end gap-3 pt-6">
+				<Button variant="outline" onclick={() => (eventToDelete = null)}>Cancel</Button>
+				<form
+					method="POST"
+					action="?/delete"
+					class="inline"
+					use:enhance={() => {
+						if (eventToDelete) {
+							deleteLoadingStates[eventToDelete] = true;
+						}
+						return async ({ update }) => {
+							await update();
+							if (eventToDelete) {
+								deleteLoadingStates[eventToDelete] = false;
+							}
+							eventToDelete = null;
+						};
+					}}
+				>
+					<input type="hidden" name="eventId" value={eventToDelete} />
+					<Button
+						type="submit"
+						variant="destructive"
+						disabled={eventToDelete ? deleteLoadingStates[eventToDelete] : false}
+						class="gap-1"
+					>
+						{#if eventToDelete && deleteLoadingStates[eventToDelete]}
+							<Loader2 class="h-3 w-3 animate-spin" />
+							Deleting...
+						{:else}
+							Delete Event
+						{/if}
+					</Button>
+				</form>
+			</div>
+		</Dialog.Content>
+	</Dialog.Root>
+{/if}

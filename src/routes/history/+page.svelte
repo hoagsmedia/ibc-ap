@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { founders } from "$lib/data/founders";
+
 	const meta = {
-		title: 'History | Island Beer Club',
+		title: "History | Island Beer Club",
 		description:
-			'Discover the rich history of Island Beer Club, founded in 2004 by four beer enthusiasts in Coronado, California. Learn about our founding members and evolution.',
-		image: '/groupGarage.jpg',
-		url: 'https://islandbeerclub.com/history'
+			"Discover the rich history of Island Beer Club, founded in 2004 by four beer enthusiasts in Coronado, California. Learn about our founding members and evolution.",
+		image: "/groupGarage.jpg",
+		url: "https://islandbeerclub.com/history"
 	};
 </script>
 
@@ -74,65 +76,22 @@
 		<div class="bg-card rounded-lg p-6 shadow-sm">
 			<h2 class="text-foreground mb-6 text-2xl font-semibold">The Founding Five</h2>
 			<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-				<div class="space-y-3">
-					<div class="flex items-center gap-3">
-						<div class="bg-primary flex size-12 items-center justify-center rounded-full">
-							<span class="text-primary-foreground font-bold">#1</span>
-						</div>
-						<div>
-							<h3 class="text-foreground font-semibold">Jeff "Bones" Wilkens</h3>
-							<p class="text-muted-foreground text-sm">Member #1 • Founding Member</p>
-						</div>
-					</div>
-				</div>
-
-				<div class="space-y-3">
-					<div class="flex items-center gap-3">
-						<div class="bg-primary flex size-12 items-center justify-center rounded-full">
-							<span class="text-primary-foreground font-bold">#2</span>
-						</div>
-						<div>
-							<h3 class="text-foreground font-semibold">John "Old Doc" Morton</h3>
-							<p class="text-muted-foreground text-sm">Member #2 • Founding Member</p>
+				{#each founders as founder, index}
+					<div class="space-y-3">
+						<div class="flex items-center gap-3">
+							<div class="relative size-12 overflow-hidden rounded-full">
+								<img src="/{founder.photo}" alt={founder.name} class="size-full object-cover" />
+								<div class="bg-primary/20 absolute inset-0 flex items-center justify-center"></div>
+							</div>
+							<div class="flex flex-1">
+								<p class="text-foreground font-bold">
+									#{index + 1} -
+									<span class="text-muted-foreground font-light">{founder.name}</span>
+								</p>
+							</div>
 						</div>
 					</div>
-				</div>
-
-				<div class="space-y-3">
-					<div class="flex items-center gap-3">
-						<div class="bg-primary flex size-12 items-center justify-center rounded-full">
-							<span class="text-primary-foreground font-bold">#3</span>
-						</div>
-						<div>
-							<h3 class="text-foreground font-semibold">John "Cruncher" Muncy</h3>
-							<p class="text-muted-foreground text-sm">Member #3 • Founding Member</p>
-						</div>
-					</div>
-				</div>
-
-				<div class="space-y-3">
-					<div class="flex items-center gap-3">
-						<div class="bg-primary flex size-12 items-center justify-center rounded-full">
-							<span class="text-primary-foreground font-bold">#4</span>
-						</div>
-						<div>
-							<h3 class="text-foreground font-semibold">Wayne "Big Oly" Oldendorph</h3>
-							<p class="text-muted-foreground text-sm">Member #4 • Founding Member</p>
-						</div>
-					</div>
-				</div>
-
-				<div class="space-y-3">
-					<div class="flex items-center gap-3">
-						<div class="bg-primary flex size-12 items-center justify-center rounded-full">
-							<span class="text-primary-foreground font-bold">#5</span>
-						</div>
-						<div>
-							<h3 class="text-foreground font-semibold">Rob "Crenny" Crenshaw</h3>
-							<p class="text-muted-foreground text-sm">Member #5 • Fifth Founder</p>
-						</div>
-					</div>
-				</div>
+				{/each}
 			</div>
 		</div>
 

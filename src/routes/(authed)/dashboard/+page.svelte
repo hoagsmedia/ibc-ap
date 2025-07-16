@@ -1,14 +1,14 @@
 <script lang="ts">
-	import type { PageData, ActionData } from './$types';
-	import { enhance } from '$app/forms';
-	import { page } from '$app/state';
-	import * as Alert from '$lib/components/ui/alert';
-	import * as Card from '$lib/components/ui/card';
-	import { Badge } from '$lib/components/ui/badge';
-	import { Button } from '$lib/components/ui/button';
-	import { CheckIcon, ClockIcon, LinkIcon } from '@lucide/svelte/icons';
-	import { formatDate, formatDateTime } from '$lib/utils';
-	import CustomCopy from '$lib/components/Custom-Copy.svelte';
+	import type { PageData, ActionData } from "./$types";
+	import { enhance } from "$app/forms";
+	import { page } from "$app/state";
+	import * as Alert from "$lib/components/ui/alert";
+	import * as Card from "$lib/components/ui/card";
+	import { Badge } from "$lib/components/ui/badge";
+	import { Button } from "$lib/components/ui/button";
+	import { CheckIcon, ClockIcon, LinkIcon } from "@lucide/svelte/icons";
+	import { formatDate, formatDateTime } from "$lib/utils";
+	import CustomCopy from "$lib/components/Custom-Copy.svelte";
 
 	let { data }: { data: PageData } = $props();
 
@@ -17,14 +17,14 @@
 
 	function getRoleBadgeVariant(role: string) {
 		switch (role) {
-			case 'admin':
-				return 'destructive';
-			case 'moderator':
-				return 'secondary';
-			case 'member':
-				return 'default';
+			case "admin":
+				return "destructive";
+			case "moderator":
+				return "secondary";
+			case "member":
+				return "default";
 			default:
-				return 'outline';
+				return "outline";
 		}
 	}
 </script>
@@ -69,7 +69,7 @@
 							<div>
 								<dt class="text-muted-foreground text-sm font-medium">Member Since</dt>
 								<dd class="text-card-foreground text-sm">
-									{data.user.msd ? formatDate(new Date(data.user.msd)) : 'Unknown'}
+									{data.user.msd ? formatDate(new Date(data.user.msd)) : "Unknown"}
 								</dd>
 							</div>
 						</Card.Content>
@@ -93,20 +93,33 @@
 							>
 								View Gallery
 							</Button>
-							{#if data.user.role === 'admin'}
+							{#if data.user.role === "admin"}
 								<Button
-									href="/admin/members"
+									href="/members"
 									class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
 								>
 									Manage Members
 								</Button>
+								<Button
+									href="/events"
+									class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+								>
+									Manage Events
+								</Button>
+							{:else}
+								<Button
+									href="/members"
+									class="bg-accent text-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+								>
+									Member Directory
+								</Button>
+								<Button
+									href="/events"
+									class="bg-accent text-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+								>
+									View Events
+								</Button>
 							{/if}
-							<Button
-								href="/members"
-								class="bg-accent text-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
-							>
-								Member Directory
-							</Button>
 						</Card.Content>
 					</Card.Root>
 
@@ -212,7 +225,7 @@
 										}}
 									>
 										<Button type="submit" disabled={creating}>
-											{creating ? 'Creating...' : 'Create Invite Link'}
+											{creating ? "Creating..." : "Create Invite Link"}
 										</Button>
 									</form>
 								</div>
