@@ -80,93 +80,84 @@ When he blows the damn whistle at 6 o'clock.`
 </svelte:head>
 
 <div class="from-background via-background to-muted/20 min-h-screen bg-gradient-to-br">
-	<div class="mx-auto max-w-4xl px-4 py-12">
-		<!-- Header -->
-		<div class="mb-8 text-center">
-			<a
-				href="/founders-day"
-				class="text-primary hover:text-primary/80 mb-4 inline-flex items-center gap-2 text-sm font-medium transition-colors"
-			>
-				← Back to Founders Day
-			</a>
-			<h1 class="text-foreground mb-4 text-4xl font-bold md:text-5xl">
-				Original Founders Day Script
-			</h1>
-			<p class="text-muted-foreground mx-auto max-w-2xl text-xl">
-				The complete ceremony script from the first IBC Founders Day celebration
-			</p>
-		</div>
-
-		<!-- Pre-Stage & Setup -->
-		<div class="mb-8">
-			<Card.Root>
-				<Card.Header>
-					<Card.Title class="flex items-center gap-3 text-2xl font-bold">
-						<Badge
-							variant="default"
-							class="flex h-8 w-8 items-center justify-center rounded-full p-0">1</Badge
-						>
-						1700 - 1715: Pre-Stage & Setup
-					</Card.Title>
-				</Card.Header>
-				<Card.Content>
-					<div class="bg-muted/50 mb-6 rounded-lg p-6">
-						<p class="text-foreground mb-4 font-semibold">
-							1700 - 1715: Participants pre-stage, position for ceremony.
-						</p>
-						<ul class="text-card-foreground space-y-2">
-							<li class="flex items-start gap-2">
-								<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
-								Pre-stage cake in Rod's garage with candles in place, lighter on-hand.
-							</li>
-							<li class="flex items-start gap-2">
-								<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
-								5 founder seats positioned on the line where Bones' tall chair normally sits, facing
-								away from beer club.
-							</li>
-							<li class="flex items-start gap-2">
-								<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
-								1710 - Give founders 5-minute warning to top-off and get near their seats.
-							</li>
-							<li class="flex items-start gap-2">
-								<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
-								EMCEE & presenters stand along fence where banner usually hangs, facing founders.
-							</li>
-						</ul>
-					</div>
-				</Card.Content>
-			</Card.Root>
-		</div>
-		<ul>
-			<li class="flex items-start gap-2">
-				<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
-				5 founder seats positioned on the line where Bones' tall chair normally sits, facing away from
-				beer club.
-			</li>
-			<li class="flex items-start gap-2">
-				<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
-				1710 - Give founders 5-minute warning to top-off and get near their seats.
-			</li>
-			<li class="flex items-start gap-2">
-				<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
-				EMCEE & presenters stand along fence where banner usually hangs, facing founders.
-			</li>
-		</ul>
+	<!-- Header -->
+	<div class="mb-8 text-center">
+		<a
+			href="/founders-day"
+			class="text-primary hover:text-primary/80 mb-4 inline-flex items-center gap-2 text-sm font-medium transition-colors"
+		>
+			← Back to Founders Day
+		</a>
+		<h1 class="text-foreground mb-4 text-4xl font-bold md:text-5xl">
+			Original Founders Day Script
+		</h1>
+		<p class="text-muted-foreground mx-auto max-w-2xl text-xl">
+			The complete ceremony script from the first IBC Founders Day celebration
+		</p>
 	</div>
-</div>
 
-<!-- Ceremony Begins -->
-<div class="mb-8">
-	<div class="bg-card rounded-lg border p-8 shadow-md">
-		<h2 class="text-foreground mb-6 flex items-center gap-3 text-2xl font-bold">
+	<!-- Pre-Stage & Setup -->
+
+	<Card.Root>
+		<Card.Header>
+			<Card.Title class="flex items-center gap-3 text-2xl font-bold">
+				<Badge variant="default" class="flex h-8 w-8 items-center justify-center rounded-full p-0"
+					>1</Badge
+				>
+				1700 - 1715: Pre-Stage & Setup
+			</Card.Title>
+		</Card.Header>
+		<Card.Content>
+			<div class="bg-muted/50 mb-6 rounded-lg p-6">
+				<p class="text-foreground mb-4 font-semibold">
+					1700 - 1715: Participants pre-stage, position for ceremony.
+				</p>
+				<ul class="text-card-foreground space-y-2">
+					<li class="flex items-start gap-2">
+						<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
+						Pre-stage cake in Rod's garage with candles in place, lighter on-hand.
+					</li>
+					<li class="flex items-start gap-2">
+						<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
+						5 founder seats positioned on the line where Bones' tall chair normally sits, facing away
+						from beer club.
+					</li>
+					<li class="flex items-start gap-2">
+						<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
+						1710 - Give founders 5-minute warning to top-off and get near their seats.
+					</li>
+					<li class="flex items-start gap-2">
+						<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
+						EMCEE & presenters stand along fence where banner usually hangs, facing founders.
+					</li>
+					<li class="flex items-start gap-2">
+						<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
+						5 founder seats positioned on the line where Bones' tall chair normally sits, facing away
+						from beer club.
+					</li>
+					<li class="flex items-start gap-2">
+						<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
+						1710 - Give founders 5-minute warning to top-off and get near their seats.
+					</li>
+					<li class="flex items-start gap-2">
+						<div class="bg-primary mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
+						EMCEE & presenters stand along fence where banner usually hangs, facing founders.
+					</li>
+				</ul>
+			</div>
+		</Card.Content>
+	</Card.Root>
+	<!-- Ceremony Begins -->
+	<Card.Root class="bg-card rounded-lg border p-8 shadow-md">
+		<Card.Header class="text-foreground mb-6 flex items-center gap-3 text-2xl font-bold">
 			<span
 				class="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold"
 				>2</span
 			>
 			1715: Ceremony Begins
-		</h2>
+		</Card.Header>
 
-		<div class="space-y-6">
+		<Card.Content class="space-y-6">
 			<div class="bg-primary/10 border-primary/20 rounded-lg border p-6">
 				<h3 class="text-primary mb-3 font-bold">EMCEE:</h3>
 				<blockquote class="text-card-foreground border-primary border-l-4 pl-4 text-lg italic">
@@ -189,22 +180,21 @@ When he blows the damn whistle at 6 o'clock.`
 					founders and the wonderful Rock tradition that is and hopefully forever shall be the IBC!
 				</blockquote>
 			</div>
-		</div>
-	</div>
-</div>
+		</Card.Content>
+	</Card.Root>
 
-<!-- IBC History Reading -->
-<div class="mb-8">
-	<div class="bg-card rounded-lg border p-8 shadow-md">
-		<h2 class="text-foreground mb-6 flex items-center gap-3 text-2xl font-bold">
+	<!-- IBC History Reading -->
+
+	<Card.Root class="bg-card rounded-lg border p-8 shadow-md">
+		<Card.Header class="text-foreground mb-6 flex items-center gap-3 text-2xl font-bold">
 			<span
 				class="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold"
 				>📜</span
 			>
 			IBC History Reading
-		</h2>
+		</Card.Header>
 
-		<div class="prose prose-lg dark:prose-invert max-w-none">
+		<Card.Content class="prose prose-lg dark:prose-invert max-w-none">
 			<blockquote
 				class="border-primary bg-primary/5 text-card-foreground space-y-4 rounded-r-lg border-l-4 p-6"
 			>
@@ -257,23 +247,21 @@ When he blows the damn whistle at 6 o'clock.`
 					</div>
 				</div>
 			</blockquote>
-		</div>
+			<div class="bg-muted/50 mt-6 rounded-lg p-4">
+				<p class="text-card-foreground">
+					In recognition of our founders and their establishment of this august body some of our
+					newest members, will now recognize the founders.
+				</p>
+			</div>
+		</Card.Content>
+	</Card.Root>
 
-		<div class="bg-muted/50 mt-6 rounded-lg p-4">
-			<p class="text-card-foreground">
-				In recognition of our founders and their establishment of this august body some of our
-				newest members, will now recognize the founders.
-			</p>
-		</div>
-	</div>
-</div>
+	<!-- Limerick Introduction -->
+	<Card.Root class="bg-card rounded-lg border p-8 shadow-md">
+		<Card.Header class="text-foreground mb-6 text-2xl font-bold">The Limerick Tradition</Card.Header
+		>
 
-<!-- Limerick Introduction -->
-<div class="mb-8">
-	<div class="bg-card rounded-lg border p-8 shadow-md">
-		<h2 class="text-foreground mb-6 text-2xl font-bold">The Limerick Tradition</h2>
-
-		<div class="space-y-6">
+		<Card.Content class="space-y-6">
 			<p class="text-card-foreground leading-relaxed">
 				In recognition of our founders and their establishment of this august body, some of our
 				newest members will now recognize the founders. We don't know if this was by plan,
@@ -298,79 +286,82 @@ When he blows the damn whistle at 6 o'clock.`
 					</p>
 				</div>
 			</div>
-		</div>
-	</div>
-</div>
+		</Card.Content>
+	</Card.Root>
 
-<!-- Limericks for Each Founder -->
-<div class="mb-8 space-y-6">
-	<h2 class="text-foreground text-3xl font-bold">Founder Limericks</h2>
+	<!-- Limericks for Each Founder -->
+	<Card.Root class="mb-8 space-y-6">
+		<Card.Header class="text-foreground text-3xl font-bold">Founder Limericks</Card.Header>
+		<Card.Content>
+			{#each limericks as limerick, index}
+				<div class="bg-card rounded-lg border p-8 shadow-md">
+					<h3 class="text-foreground mb-4 flex items-center gap-3 text-xl font-bold">
+						<span
+							class="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm"
+							>🍺</span
+						>
+						Limerick to {limerick.founder} ({limerick.presenter})
+					</h3>
 
-	{#each limericks as limerick, index}
-		<div class="bg-card rounded-lg border p-8 shadow-md">
-			<h3 class="text-foreground mb-4 flex items-center gap-3 text-xl font-bold">
-				<span
-					class="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm"
-					>🍺</span
-				>
-				Limerick to {limerick.founder} ({limerick.presenter})
-			</h3>
+					<div class="bg-muted/50 rounded-lg p-6">
+						<blockquote class="text-card-foreground font-mono text-lg whitespace-pre-line">
+							{limerick.text}
+						</blockquote>
 
-			<div class="bg-muted/50 rounded-lg p-6">
-				<blockquote class="text-card-foreground font-mono text-lg whitespace-pre-line">
-					{limerick.text}
-				</blockquote>
-
-				<div class="mt-6 space-y-2">
-					<div
-						class="text-muted-foreground bg-background border-primary rounded border-l-4 p-3 text-sm italic"
-					>
-						Note: Step forward after reading and drop Founder's Bell in mug
-					</div>
-					<div class="text-center">
-						<span class="text-primary text-xl font-bold">SLAINTE</span>
+						<div class="mt-6 space-y-2">
+							<div
+								class="text-muted-foreground bg-background border-primary rounded border-l-4 p-3 text-sm italic"
+							>
+								Note: Step forward after reading and drop Founder's Bell in mug
+							</div>
+							<div class="text-center">
+								<span class="text-primary text-xl font-bold">SLAINTE</span>
+							</div>
+						</div>
 					</div>
 				</div>
-			</div>
-		</div>
-	{/each}
+			{/each}
+		</Card.Content>
+	</Card.Root>
 
 	<!-- Missing Limericks Note -->
-	<div class="bg-muted/50 rounded-lg border border-dashed p-6">
-		<h3 class="text-foreground mb-2 text-lg font-semibold">Missing Limericks</h3>
-		<p class="text-muted-foreground">
-			Limericks for <strong>Oly (Jason)</strong> and <strong>Doc Morton (John S)</strong> were noted
-			in the original script but the text was not included.
-		</p>
-		<div class="text-muted-foreground mt-3 text-sm italic">
-			Note: At this point, two presenters break off to light the candles and move the cake into
-			position.
-		</div>
-	</div>
-</div>
+	<Card.Root class="bg-muted/50 rounded-lg border border-dashed p-6">
+		<Card.Header class="text-foreground mb-2 text-lg font-semibold">Missing Limericks</Card.Header>
+		<Card.Content>
+			<p class="text-card-foreground">
+				Limericks for <strong>Oly (Jason)</strong> and <strong>Doc Morton (John S)</strong> were noted
+				in the original script but the text was not included.
+			</p>
+			<p class="text-muted-foreground mt-3 text-sm italic">
+				Note: At this point, two presenters break off to light the candles and move the cake into
+				position.
+			</p>
+		</Card.Content>
+	</Card.Root>
 
-<!-- Founder's Bell Explanation -->
-<div class="mb-8">
-	<div class="bg-card rounded-lg border p-8 shadow-md">
-		<h2 class="text-foreground mb-6 text-2xl font-bold">The Founder's Bell</h2>
+	<!-- Founder's Bell Explanation -->
 
-		<div class="bg-primary/10 border-primary/20 rounded-lg border p-6">
+	<Card.Root class="bg-card rounded-lg border p-8 shadow-md">
+		<Card.Header class="text-foreground mb-6 text-2xl font-bold">The Founder's Bell</Card.Header>
+
+		<Card.Content class="bg-primary/10 border-primary/20 rounded-lg border p-6">
 			<h3 class="text-primary mb-3 font-bold">EMCEE:</h3>
 			<blockquote class="text-card-foreground border-primary border-l-4 pl-4 text-lg">
 				The Founder's Bell is a symbolic representation of our reverence for these fine gentlemen.
 				Upon its ringing, any of the 5 newest members shall immediately present themselves to
 				address the Founder's need ... or just get them a fresh pull from the keg.
 			</blockquote>
-		</div>
-	</div>
-</div>
+		</Card.Content>
+	</Card.Root>
 
-<!-- Final Limerick & Closing -->
-<div class="mb-8">
-	<div class="bg-card rounded-lg border p-8 shadow-md">
-		<h2 class="text-foreground mb-6 text-2xl font-bold">Final Limerick & Closing</h2>
+	<!-- Final Limerick & Closing -->
 
-		<div class="space-y-6">
+	<Card.Root class="bg-card rounded-lg border p-8 shadow-md">
+		<Card.Header class="text-foreground mb-6 text-2xl font-bold"
+			>Final Limerick & Closing</Card.Header
+		>
+
+		<Card.Content class="space-y-6">
 			<div class="bg-primary/10 border-primary/20 rounded-lg border p-6">
 				<h3 class="text-primary mb-3 font-bold">🍺 Final Limerick</h3>
 				<blockquote class="text-card-foreground space-y-1 font-mono text-lg">
@@ -396,49 +387,53 @@ When he blows the damn whistle at 6 o'clock.`
 					commemorative IBC Founder's Day coasters.
 				</p>
 			</div>
-		</div>
-	</div>
-</div>
+		</Card.Content>
+	</Card.Root>
 
-<!-- Cake & Closing Checklist -->
-<div class="mb-8">
-	<div class="bg-card rounded-lg border p-8 shadow-md">
-		<h2 class="text-foreground mb-6 flex items-center gap-3 text-2xl font-bold">
+	<div class="mb-8"></div>
+
+	<!-- Cake & Closing Checklist -->
+
+	<Card.Root class="bg-card rounded-lg border p-8 shadow-md">
+		<Card.Header class="text-foreground mb-6 flex items-center gap-3 text-2xl font-bold">
 			<span
 				class="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-full text-sm"
 				>🎂</span
 			>
 			Cake & Closing
-		</h2>
+		</Card.Header>
+		<Card.Content class="space-y-6">
+			<ul class="space-y-3">
+				<li class="flex items-center gap-3">
+					<div class="border-primary h-4 w-4 rounded border-2"></div>
+					<span class="text-card-foreground">Light candles and move cake into position.</span>
+				</li>
+				<li class="flex items-center gap-3">
+					<div class="border-primary h-4 w-4 rounded border-2"></div>
+					<span class="text-card-foreground">Final limerick & ringing of the Founder's Bell.</span>
+				</li>
+				<li class="flex items-center gap-3">
+					<div class="border-primary h-4 w-4 rounded border-2"></div>
+					<span class="text-card-foreground">Sing Happy Birthday.</span>
+				</li>
+				<li class="flex items-center gap-3">
+					<div class="border-primary h-4 w-4 rounded border-2"></div>
+					<span class="text-card-foreground">Invite to cake and coasters (Founders first!).</span>
+				</li>
+			</ul>
 
-		<ul class="space-y-3">
-			<li class="flex items-center gap-3">
-				<div class="border-primary h-4 w-4 rounded border-2"></div>
-				<span class="text-card-foreground">Light candles and move cake into position.</span>
-			</li>
-			<li class="flex items-center gap-3">
-				<div class="border-primary h-4 w-4 rounded border-2"></div>
-				<span class="text-card-foreground">Final limerick & ringing of the Founder's Bell.</span>
-			</li>
-			<li class="flex items-center gap-3">
-				<div class="border-primary h-4 w-4 rounded border-2"></div>
-				<span class="text-card-foreground">Sing Happy Birthday.</span>
-			</li>
-			<li class="flex items-center gap-3">
-				<div class="border-primary h-4 w-4 rounded border-2"></div>
-				<span class="text-card-foreground">Invite to cake and coasters (Founders first!).</span>
-			</li>
-		</ul>
+			<div class="mt-6 text-center">
+				<span class="text-primary text-2xl font-bold">FINEX.</span>
+			</div>
+		</Card.Content>
+	</Card.Root>
 
-		<div class="mt-6 text-center">
-			<span class="text-primary text-2xl font-bold">FINEX.</span>
-		</div>
+	<div class="mb-8"></div>
+
+	<!-- Back Navigation -->
+	<div class="text-center">
+		<Button variant="outline">
+			<a href="/founders-day">← Back to Founders Day</a>
+		</Button>
 	</div>
-</div>
-
-<!-- Back Navigation -->
-<div class="text-center">
-	<Button variant="outline">
-		<a href="/founders-day">← Back to Founders Day</a>
-	</Button>
 </div>

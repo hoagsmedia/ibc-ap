@@ -1,16 +1,15 @@
 <script lang="ts">
-	import type { PageData } from './$types';
-	import * as Card from '$lib/components/ui/card';
-	import { Field, Control, Label, FieldErrors, Description } from 'formsnap';
-	import { Button } from '$lib/components/ui/button';
-	import { Input } from '$lib/components/ui/input';
-	import { Textarea } from '$lib/components/ui/textarea';
-	import { toast } from 'svelte-sonner';
-	import { zodClient } from 'sveltekit-superforms/adapters';
-	import { superForm } from 'sveltekit-superforms';
-	import { contactSchema } from './contact-schema';
-	import logo from '$lib/assets/ibc-logo.svg';
-	import SuperDebug from 'sveltekit-superforms';
+	import type { PageData } from "./$types";
+	import * as Card from "$lib/components/ui/card";
+	import { Field, Control, Label, FieldErrors, Description } from "formsnap";
+	import { Button } from "$lib/components/ui/button";
+	import { Input } from "$lib/components/ui/input";
+	import { Textarea } from "$lib/components/ui/textarea";
+	import { toast } from "svelte-sonner";
+	import { zodClient } from "sveltekit-superforms/adapters";
+	import { superForm } from "sveltekit-superforms";
+	import { contactSchema } from "./contact-schema";
+	import logo from "$lib/assets/ibc-logo.svg";
 
 	let { data }: { data: PageData } = $props();
 
@@ -21,7 +20,7 @@
 			if (f.valid) {
 				toast.success(`You submitted ${JSON.stringify(f.data, null, 2)}`);
 			} else {
-				toast.error('Please fix the errors in the form.');
+				toast.error("Please fix the errors in the form.");
 			}
 		}
 	});
