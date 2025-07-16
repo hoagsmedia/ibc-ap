@@ -1,29 +1,29 @@
-import type { Actions, PageServerLoad } from './$types';
-import { error, redirect, fail } from '@sveltejs/kit';
-import { db } from '$lib/server/db';
-import { users } from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
-import { superValidate, message } from 'sveltekit-superforms';
-import { memberSchema } from './edit-member-schema';
-import { zod } from 'sveltekit-superforms/adapters';
-import { hash } from 'argon2';
-import { encodeBase32LowerCase } from '@oslojs/encoding';
+import type { Actions, PageServerLoad } from "./$types";
+import { error, redirect, fail } from "@sveltejs/kit";
+import { db } from "$lib/server/db";
+import { users } from "$lib/server/db/schema";
+import { eq } from "drizzle-orm";
+import { superValidate, message } from "sveltekit-superforms";
+import { memberSchema } from "./edit-member-schema";
+import { zod } from "sveltekit-superforms/adapters";
+import { hash } from "argon2";
+import { encodeBase32LowerCase } from "@oslojs/encoding";
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	// Check if user is authenticated
 	if (!locals.user) {
-		throw redirect(302, '/login');
+		throw redirect(302, "/login");
 	}
 
 	// Check if user has admin role
-	if (locals.user.role !== 'admin') {
-		throw error(403, 'Access denied. Admin role required.');
+	if (locals.user.role !== "admin") {
+		throw error(403, "Access denied. Admin role required.");
 	}
 
 	const { id } = params;
 
 	if (!id) {
-		throw error(400, 'User ID is required');
+		throw error(400, "User ID is required");
 	}
 
 	// Fetch the member details
@@ -31,7 +31,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		where: eq(users.id, id)
 	});
 	if (!member) {
-		throw error(404, 'Member not found');
+		throw error(404, "Member not found");
 	}
 
 	// Transform member data to match schema expectations
@@ -40,17 +40,18 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		name: member.name,
 		email: member.email,
 		password_hash: member.password_hash,
-		phone: member.phone ?? '',
-		address: member.address ?? '',
-		bio: member.bio ?? '',
-		hobbies: member.hobbies ?? '',
-		img: member.img ?? '',
+		phone: member.phone ?? "",
+		address: member.address ?? "",
+		bio: member.bio ?? "",
+		hobbies: member.hobbies ?? "",
+		img: member.img ?? "",
 		role: member.role,
-		likes: member.likes ?? '',
+		likes: member.likes ?? "",
 		mbr: member.mbr ?? 0,
-		msd: member.msd ?? '',
-		sponsor: member.sponsor ?? '',
-		test_passed: member.test_passed?.toISOString() ?? '',
+		msd: member.msd ?? "",
+		dops: member.dops ?? "", // Date of Permanent Sobriety
+		sponsor: member.sponsor ?? "",
+		test_passed: member.test_passed?.toISOString() ?? "",
 		created_at: member.created_at?.toISOString(),
 		updated_at: member.updated_at?.toISOString()
 	};
@@ -66,11 +67,11 @@ export const actions: Actions = {
 	update: async ({ request, locals, params }) => {
 		// Check authentication and authorization
 		if (!locals.user) {
-			throw redirect(302, '/login');
+			throw redirect(302, "/login");
 		}
 
-		if (locals.user.role !== 'admin') {
-			throw error(403, 'Access denied. Admin role required.');
+		if (locals.user.role !== "admin") {
+			throw error(403, "Access denied. Admin role required.");
 		}
 
 		const form = await superValidate(request, zod(memberSchema));
@@ -81,7 +82,7 @@ export const actions: Actions = {
 
 		const { id } = params;
 		if (!id) {
-			throw error(400, 'User ID is required');
+			throw error(400, "User ID is required");
 		}
 
 		try {
@@ -97,6 +98,7 @@ export const actions: Actions = {
 				likes,
 				mbr,
 				msd,
+				dops,
 				sponsor,
 				test_passed
 			} = form.data;
@@ -107,23 +109,24 @@ export const actions: Actions = {
 			});
 
 			if (!existingMember) {
-				return fail(404, { form, message: 'Member not found' });
+				return fail(404, { form, message: "Member not found" });
 			}
 
 			// Update the member in the database
 			const updatedMember = await db
 				.update(users)
 				.set({
-					name: name || '',
-					email: email || '',
+					name: name || "",
+					email: email || "",
 					phone: phone || null,
 					address: address || null,
-					bio: bio || '',
+					bio: bio || "",
 					hobbies: hobbies || null,
-					role: (role as 'guest' | 'member' | 'admin') || 'member',
+					role: (role as "guest" | "member" | "admin") || "member",
 					likes: likes || null,
 					mbr: mbr || 0,
-					msd: msd || new Date().toISOString().split('T')[0],
+					msd: msd || new Date().toISOString().split("T")[0],
+					dops: dops ? new Date(dops).toISOString().split("T")[0] : null,
 					sponsor: sponsor || null,
 					test_passed: test_passed ? new Date(test_passed) : null,
 					updated_at: new Date()
@@ -132,37 +135,37 @@ export const actions: Actions = {
 				.returning();
 
 			if (!updatedMember.length) {
-				return fail(500, { form, message: 'Failed to update member' });
+				return fail(500, { form, message: "Failed to update member" });
 			}
 
-			return message(form, 'Member updated successfully!');
+			return message(form, "Member updated successfully!");
 		} catch (err) {
-			console.error('Error updating member:', err);
-			return fail(500, { form, message: 'An error occurred while updating the member' });
+			console.error("Error updating member:", err);
+			return fail(500, { form, message: "An error occurred while updating the member" });
 		}
 	},
 
 	delete: async ({ request, locals, params }) => {
 		// Check authentication and authorization
 		if (!locals.user) {
-			throw redirect(302, '/login');
+			throw redirect(302, "/login");
 		}
 
-		if (locals.user.role !== 'admin') {
-			throw error(403, 'Access denied. Admin role required.');
+		if (locals.user.role !== "admin") {
+			throw error(403, "Access denied. Admin role required.");
 		}
 
 		const formData = await request.formData();
-		const confirmText = formData.get('confirmText');
+		const confirmText = formData.get("confirmText");
 
 		// Validate confirmation text
-		if (confirmText !== 'DELETE') {
-			return fail(400, { message: 'Incorrect confirmation text' });
+		if (confirmText !== "DELETE") {
+			return fail(400, { message: "Incorrect confirmation text" });
 		}
 
 		const { id } = params;
 		if (!id) {
-			throw error(400, 'User ID is required');
+			throw error(400, "User ID is required");
 		}
 
 		try {
@@ -172,37 +175,37 @@ export const actions: Actions = {
 			});
 
 			if (!existingMember) {
-				return fail(404, { message: 'Member not found' });
+				return fail(404, { message: "Member not found" });
 			}
 
 			// Prevent deleting yourself
 			if (existingMember.id === locals.user.id) {
-				return fail(400, { message: 'You cannot delete your own account' });
+				return fail(400, { message: "You cannot delete your own account" });
 			}
 
 			// Delete the member
 			await db.delete(users).where(eq(users.id, id));
 		} catch (err) {
-			console.error('Error deleting member:', err);
-			return fail(500, { message: 'Failed to delete member' });
+			console.error("Error deleting member:", err);
+			return fail(500, { message: "Failed to delete member" });
 		}
 		// Redirect to members list after successful deletion
-		throw redirect(302, '/members');
+		throw redirect(302, "/members");
 	},
 
 	resetPassword: async ({ locals, params }) => {
 		// Check authentication and authorization
 		if (!locals.user) {
-			throw redirect(302, '/login');
+			throw redirect(302, "/login");
 		}
 
-		if (locals.user.role !== 'admin') {
-			throw error(403, 'Access denied. Admin role required.');
+		if (locals.user.role !== "admin") {
+			throw error(403, "Access denied. Admin role required.");
 		}
 
 		const { id } = params;
 		if (!id) {
-			throw error(400, 'User ID is required');
+			throw error(400, "User ID is required");
 		}
 
 		try {
@@ -212,14 +215,14 @@ export const actions: Actions = {
 			});
 
 			if (!existingMember) {
-				return fail(404, { message: 'Member not found' });
+				return fail(404, { message: "Member not found" });
 			}
 
 			// Prevent resetting your own password through this method
 			if (existingMember.id === locals.user.id) {
 				return fail(400, {
 					message:
-						'You cannot reset your own password through this method. Use the settings page instead.'
+						"You cannot reset your own password through this method. Use the settings page instead."
 				});
 			}
 
@@ -239,14 +242,14 @@ export const actions: Actions = {
 			// Return success with the temporary password (should be shown once to admin)
 			return {
 				success: true,
-				message: 'Password reset successfully',
+				message: "Password reset successfully",
 				tempPassword: tempPassword,
 				memberName: existingMember.name,
 				memberEmail: existingMember.email
 			};
 		} catch (err) {
-			console.error('Error resetting password:', err);
-			return fail(500, { message: 'Failed to reset password' });
+			console.error("Error resetting password:", err);
+			return fail(500, { message: "Failed to reset password" });
 		}
 	}
 };

@@ -207,7 +207,12 @@
 					{#each currentMembers as member (member.id)}
 						<Table.Row>
 							<Table.Cell>
-								<Avatar class="size-8" name={member.name} img={member.img ?? undefined} />
+								<Avatar
+									class="size-8"
+									name={member.name}
+									img={member.img ?? undefined}
+									dops={member.dops ?? undefined}
+								/>
 							</Table.Cell>
 							<Table.Cell>{member.name || "N/A"}</Table.Cell>
 							<Table.Cell class={cn("", isMobile.current && "text-center")}
