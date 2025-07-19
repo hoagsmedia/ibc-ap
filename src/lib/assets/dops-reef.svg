@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_2" data-name="Layer 2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96.41 84.4">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: #231f20;
+        stroke: #231f20;
+        stroke-miterlimit: 10;
+        stroke-width: .5px;
+      }
+    </style>
+  </defs>
+  <g id="Layer_1-2" data-name="Layer 1">
+    <g>
+      <ellipse class="cls-1" cx="24.66" cy="7.13" rx="8.59" ry="1.7" transform="translate(3.95 22.3) rotate(-52.34)"/>
+      <ellipse class="cls-1" cx="20.79" cy="18.13" rx="8.59" ry="1.7" transform="translate(-6.61 21.37) rotate(-47.83)"/>
+      <ellipse class="cls-1" cx="14.89" cy="32.09" rx="8.59" ry="1.7" transform="translate(-20.3 35.66) rotate(-70.9)"/>
+      <ellipse class="cls-1" cx="16.89" cy="46.65" rx="1.7" ry="8.59" transform="translate(-4.45 1.86) rotate(-5.57)"/>
+      <ellipse class="cls-1" cx="24.81" cy="59.42" rx="1.7" ry="8.59" transform="translate(-27.13 21.36) rotate(-31.11)"/>
+      <ellipse class="cls-1" cx="14.89" cy="58.39" rx="1.7" ry="8.59" transform="translate(-42.77 40.89) rotate(-58.8)"/>
+      <ellipse class="cls-1" cx="16.89" cy="65.76" rx="1.7" ry="8.59" transform="translate(-50.61 73.01) rotate(-81.73)"/>
+      <ellipse class="cls-1" cx="26.69" cy="72.13" rx="8.59" ry="1.7" transform="translate(-4.89 2) rotate(-3.94)"/>
+      <ellipse class="cls-1" cx="39.46" cy="67.99" rx="1.7" ry="8.59" transform="translate(-37.32 51.12) rotate(-47.47)"/>
+      <ellipse class="cls-1" cx="36.46" cy="76.52" rx="8.59" ry="1.7" transform="translate(-12.11 7.06) rotate(-9.49)"/>
+      <ellipse class="cls-1" cx="16.73" cy="10.21" rx="8.59" ry="1.7" transform="translate(4.36 25.41) rotate(-82.27)"/>
+      <ellipse class="cls-1" cx="11.22" cy="18.13" rx="1.7" ry="8.59"/>
+      <ellipse class="cls-1" cx="6.9" cy="26.01" rx="1.7" ry="8.59" transform="translate(-9.97 5.05) rotate(-23.97)"/>
+      <ellipse class="cls-1" cx="7.4" cy="38.1" rx="1.7" ry="8.59" transform="translate(-16.76 7.72) rotate(-27.5)"/>
+      <ellipse class="cls-1" cx="6.9" cy="47.43" rx="1.7" ry="8.59" transform="translate(-33.79 22.1) rotate(-49.82)"/>
+      <ellipse class="cls-1" cx="71.75" cy="7.13" rx="1.7" ry="8.59" transform="translate(10.59 45.32) rotate(-37.66)"/>
+      <ellipse class="cls-1" cx="75.62" cy="18.13" rx="1.7" ry="8.59" transform="translate(7.4 55.46) rotate(-42.17)"/>
+      <ellipse class="cls-1" cx="81.52" cy="32.09" rx="1.7" ry="8.59" transform="translate(-6.01 28.44) rotate(-19.1)"/>
+      <ellipse class="cls-1" cx="79.53" cy="46.65" rx="8.59" ry="1.7" transform="translate(25.38 121.27) rotate(-84.43)"/>
+      <ellipse class="cls-1" cx="71.61" cy="59.42" rx="8.59" ry="1.7" transform="translate(-16.26 90.03) rotate(-58.89)"/>
+      <ellipse class="cls-1" cx="81.52" cy="58.39" rx="8.59" ry="1.7" transform="translate(-18.46 50.67) rotate(-31.2)"/>
+      <ellipse class="cls-1" cx="79.53" cy="65.76" rx="8.59" ry="1.7" transform="translate(-8.63 12.12) rotate(-8.27)"/>
+      <ellipse class="cls-1" cx="69.72" cy="72.13" rx="1.7" ry="8.59" transform="translate(-7.03 136.73) rotate(-86.06)"/>
+      <ellipse class="cls-1" cx="56.95" cy="67.99" rx="8.59" ry="1.7" transform="translate(-30.98 56.38) rotate(-42.53)"/>
+      <ellipse class="cls-1" cx="59.95" cy="76.52" rx="1.7" ry="8.59" transform="translate(-25.41 123.04) rotate(-80.51)"/>
+      <ellipse class="cls-1" cx="79.68" cy="10.21" rx="1.7" ry="8.59" transform="translate(-.65 10.82) rotate(-7.73)"/>
+      <ellipse class="cls-1" cx="85.2" cy="18.13" rx="1.7" ry="8.59"/>
+      <ellipse class="cls-1" cx="89.51" cy="26.01" rx="8.59" ry="1.7" transform="translate(29.38 97.24) rotate(-66.03)"/>
+      <ellipse class="cls-1" cx="89.02" cy="38.1" rx="8.59" ry="1.7" transform="translate(14.12 99.47) rotate(-62.5)"/>
+      <ellipse class="cls-1" cx="89.51" cy="47.43" rx="8.59" ry="1.7" transform="translate(-9.48 68.94) rotate(-40.18)"/>
+      <path class="cls-1" d="M46.62,75.63c-2.03,1.93-7.16,5.8-7.16,5.8l1.93,2.13,5.9-7.05h1.46l6.38,7.53,2.23-1.84-7.84-6.58h-2.9Z"/>
+    </g>
+  </g>
+</svg>

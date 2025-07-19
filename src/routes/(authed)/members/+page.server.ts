@@ -73,6 +73,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			email: users.email,
 			mbr: users.mbr,
 			role: users.role,
+			dops: users.dops,
 			created_at: users.created_at,
 			test_passed: users.test_passed,
 			img: users.img,
@@ -90,6 +91,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		email: row.email,
 		mbr: row.mbr,
 		role: row.role,
+		dops: row.dops,
 		created_at: row.created_at,
 		test_passed: row.test_passed,
 		img: row.img
