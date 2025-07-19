@@ -2,7 +2,7 @@
 	import * as Avatar from "$lib/components/ui/avatar";
 	import { generateUsername } from "$lib/utils";
 	import reef from "$lib/assets/dops-reef.svg";
-	import { cn, type WithElementRef } from "$lib/utils";
+	import { cn } from "$lib/utils";
 
 	const {
 		name,
