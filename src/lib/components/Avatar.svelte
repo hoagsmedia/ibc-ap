@@ -9,7 +9,12 @@
 		img,
 		class: className,
 		dops
-	}: { name: string; img?: string; class?: string; dops?: string } = $props();
+	}: {
+		name: string;
+		img?: string;
+		class?: string;
+		dops?: string;
+	} & WithElementRef<HTMLImageElement> = $props();
 </script>
 
 {#if dops}
