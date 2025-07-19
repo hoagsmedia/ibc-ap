@@ -152,7 +152,7 @@
 				<div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
 					{#each pastEvents as event}
 						<Card.Root
-							class={"flex h-full min-h-[250px] flex-col opacity-90 transition-shadow hover:shadow-lg"}
+							class="flex h-full min-h-[250px] flex-col opacity-90 transition-shadow hover:shadow-lg"
 						>
 							{#if event.img}
 								<div class="-mt-6 overflow-hidden rounded-t-lg">
