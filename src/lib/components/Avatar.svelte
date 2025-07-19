@@ -14,7 +14,7 @@
 		img?: string;
 		class?: string;
 		dops?: string;
-	} & WithElementRef<HTMLImageElement> = $props();
+	} = $props();
 </script>
 
 {#if dops}
