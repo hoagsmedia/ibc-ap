@@ -74,6 +74,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			mbr: users.mbr,
 			role: users.role,
 			dops: users.dops,
+			dops_date: users.dops_date,
 			created_at: users.created_at,
 			test_passed: users.test_passed,
 			img: users.img,
@@ -92,6 +93,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		mbr: row.mbr,
 		role: row.role,
 		dops: row.dops,
+		dops_date: row.dops_date,
 		created_at: row.created_at,
 		test_passed: row.test_passed,
 		img: row.img

@@ -1,4 +1,4 @@
-import { pgTable, integer, text, timestamp, date } from "drizzle-orm/pg-core";
+import { pgTable, integer, text, timestamp, date, boolean } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -29,7 +29,8 @@ export const users = pgTable("users", {
 	mbr: integer("mbr"),
 	msd: date("msd"), // member since date
 	sponsor: text("sponsor"),
-	dops: date("dops"), // date of permanent sobriety
+	dops: boolean("dops").notNull().default(false),
+	dops_date: date("dops_date"), // date of permanent sobriety
 	bio: text("bio"),
 	hobbies: text("hobbies"),
 	likes: text("likes"),
