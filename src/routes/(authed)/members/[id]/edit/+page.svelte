@@ -5,11 +5,12 @@
 	import * as Select from "$lib/components/ui/select/index.js";
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
-	import { ArrowLeft, Check, Trash2, KeyRound, Copy } from "@lucide/svelte";
-	import { toast } from "svelte-sonner";
+	import { Checkbox } from "$lib/components/ui/checkbox/index.js";
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
+	import { ArrowLeft, Check, Trash2, KeyRound, Copy } from "@lucide/svelte";
+	import { toast } from "svelte-sonner";
 	import { memberSchema, type MemberSchema } from "./edit-member-schema";
 	import { type SuperValidated, type Infer, superForm } from "sveltekit-superforms";
 	import { createUploadThing } from "$lib/utils";
@@ -198,7 +199,7 @@
 				class="size-24"
 				name={data.member?.name}
 				img={data.member?.img || $formData.img}
-				dops={data.member?.dops || $formData.dops}
+				dops={$formData.dops}
 			/>
 
 			<div class="flex-1">
@@ -293,17 +294,6 @@
 					<Form.FieldErrors />
 				</Form.Field>
 
-				<Form.Field {form} name="dops">
-					<Form.Control>
-						{#snippet children({ props })}
-							<Form.Label>DOPS</Form.Label>
-							<Input type="date" {...props} bind:value={$formData.dops} />
-						{/snippet}
-					</Form.Control>
-					<Form.Description>Date of Permanent Sobriety.</Form.Description>
-					<Form.FieldErrors />
-				</Form.Field>
-
 				<Form.Field {form} name="phone">
 					<Form.Control>
 						{#snippet children({ props })}
@@ -338,6 +328,26 @@
 					<Form.Description
 						>Changing this status will update member site privileges.</Form.Description
 					>
+					<Form.FieldErrors />
+				</Form.Field>
+				<Form.Field {form} name="dops_date">
+					<Form.Control>
+						{#snippet children({ props })}
+							<Form.Label>DOPS</Form.Label>
+							<Input type="date" {...props} bind:value={$formData.dops_date} />
+						{/snippet}
+					</Form.Control>
+					<Form.Description>Date of Permanent Sobriety.</Form.Description>
+					<Form.FieldErrors />
+				</Form.Field>
+				<Form.Field {form} name="dops">
+					<Form.Control>
+						{#snippet children({ props })}
+							<Form.Label>DOPS</Form.Label>
+							<Checkbox {...props} bind:checked={$formData.dops} />
+						{/snippet}
+					</Form.Control>
+					<Form.Description>Check if member is DOPS.</Form.Description>
 					<Form.FieldErrors />
 				</Form.Field>
 			</div>

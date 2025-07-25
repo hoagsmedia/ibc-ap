@@ -49,7 +49,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		likes: member.likes ?? "",
 		mbr: member.mbr ?? 0,
 		msd: member.msd ?? "",
-		dops: member.dops ?? "", // Date of Permanent Sobriety
+		dops: member.dops ?? false, // Default to false if not set
+		dops_date: member.dops_date ?? "", // Date of Permanent Sobriety
 		sponsor: member.sponsor ?? "",
 		test_passed: member.test_passed?.toISOString() ?? "",
 		created_at: member.created_at?.toISOString(),
@@ -99,6 +100,7 @@ export const actions: Actions = {
 				mbr,
 				msd,
 				dops,
+				dops_date,
 				sponsor,
 				test_passed
 			} = form.data;
@@ -126,7 +128,8 @@ export const actions: Actions = {
 					likes: likes || null,
 					mbr: mbr || 0,
 					msd: msd || new Date().toISOString().split("T")[0],
-					dops: dops ? new Date(dops).toISOString().split("T")[0] : null,
+					dops: dops,
+					dops_date: dops_date ? new Date(dops_date).toISOString().split("T")[0] : null,
 					sponsor: sponsor || null,
 					test_passed: test_passed ? new Date(test_passed) : null,
 					updated_at: new Date()

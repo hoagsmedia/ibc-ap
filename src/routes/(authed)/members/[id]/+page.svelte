@@ -85,6 +85,12 @@
 						Member since {formatDate(data.member.msd)}
 					</div>
 				{/if}
+				{#if data.member.dops_date}
+					<div class="text-muted-foreground flex items-center gap-2 text-sm">
+						<Calendar class="size-4" />
+						Date of Permanent Sobriety: {formatDate(data.member.dops_date)}
+					</div>
+				{/if}
 			</Card.Content>
 		</Card.Root>
 

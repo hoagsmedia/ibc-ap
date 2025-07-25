@@ -13,7 +13,7 @@
 		name: string;
 		img?: string;
 		class?: string;
-		dops?: string;
+		dops?: boolean;
 	} = $props();
 </script>
 

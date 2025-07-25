@@ -7,7 +7,8 @@ export const memberSchema = z.object({
 	phone: z.string().optional(),
 	address: z.string().optional(),
 	password_hash: z.string(),
-	dops: z.string().optional(), // Date of Permanent Sobriety
+	dops: z.boolean(),
+	dops_date: z.string().optional(), // Date of Permanent Sobriety
 	bio: z.string().optional(),
 	hobbies: z.string().optional(),
 	img: z.string().optional(),
