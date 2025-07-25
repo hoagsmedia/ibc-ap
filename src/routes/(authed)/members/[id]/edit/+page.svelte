@@ -199,7 +199,7 @@
 				class="size-24"
 				name={data.member?.name}
 				img={data.member?.img || $formData.img}
-				dops={data.member?.dops || $formData.dops}
+				dops={$formData.dops}
 			/>
 
 			<div class="flex-1">
@@ -344,7 +344,6 @@
 					<Form.Control>
 						{#snippet children({ props })}
 							<Form.Label>DOPS</Form.Label>
-							<!-- <Input type="checkbox" {...props} bind:checked={$formData.dops} /> -->
 							<Checkbox {...props} bind:checked={$formData.dops} />
 						{/snippet}
 					</Form.Control>
