@@ -128,7 +128,7 @@ export const actions: Actions = {
 					likes: likes || null,
 					mbr: mbr || 0,
 					msd: msd || new Date().toISOString().split("T")[0],
-					dops: dops ? true : false,
+					dops: dops,
 					dops_date: dops_date ? new Date(dops_date).toISOString().split("T")[0] : null,
 					sponsor: sponsor || null,
 					test_passed: test_passed ? new Date(test_passed) : null,
