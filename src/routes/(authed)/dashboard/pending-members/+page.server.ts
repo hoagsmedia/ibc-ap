@@ -17,6 +17,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 	const rows = await db
 		.select({
 			id: users.id,
+			username: users.username,
 			name: users.name,
 			email: users.email,
 			test_passed: users.test_passed
@@ -29,6 +30,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 		.filter((r) => r.test_passed != null)
 		.map((r) => ({
 			id: r.id,
+			username: r.username,
 			name: r.name,
 			email: r.email,
 			test_passed: r.test_passed as Date
@@ -48,7 +50,8 @@ export const actions: Actions = {
 
 		if (!userId) return fail(400, { message: "Missing user" });
 		const mbr = mbrRaw != null && mbrRaw !== "" ? parseInt(String(mbrRaw), 10) : NaN;
-		if (Number.isNaN(mbr) || mbr < 1) return fail(400, { message: "Enter a valid member number (1 or higher)" });
+		if (Number.isNaN(mbr) || mbr < 1)
+			return fail(400, { message: "Enter a valid member number (1 or higher)" });
 
 		const [member] = await db.select().from(users).where(eq(users.id, userId));
 		if (!member) return fail(404, { message: "Member not found" });
@@ -58,7 +61,8 @@ export const actions: Actions = {
 			.select({ id: users.id })
 			.from(users)
 			.where(and(eq(users.mbr, mbr), ne(users.id, userId)));
-		if (existing) return fail(400, { message: `Member #${mbr} is already assigned to another member.` });
+		if (existing)
+			return fail(400, { message: `Member #${mbr} is already assigned to another member.` });
 
 		const username = await getUsernameForMemberWithMbr(member.name, mbr, userId);
 

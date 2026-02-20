@@ -166,22 +166,16 @@ export const ourFileRouter = {
 				throw new Error("Exactly one file must be uploaded");
 			}
 
-			// Extract the member ID from the referer URL - updated regex for UUID format
+			// Extract member identifier (username or id) from the referer URL
 			const referer = req.headers.get("referer");
-			// Extract member ID from referer URL with flexible matching
-			const memberIdMatch = referer?.match(/\/members\/([a-zA-Z0-9_-]+)/);
+			const memberSlugMatch = referer?.match(/\/members\/([a-zA-Z0-9_.-]+)/);
 
-			if (!memberIdMatch || !memberIdMatch[1] || memberIdMatch[1].length < 8) {
-				throw new Error("Member ID not found in referer URL");
+			if (!memberSlugMatch?.[1]) {
+				throw new Error("Member not found in referer URL");
 			}
 
-			const memberId = memberIdMatch[1];
-
-			// Get the member being edited to check their current image
-			const memberToUpdate = await db.query.users.findFirst({
-				where: eq(users.id, memberId),
-				columns: { id: true, img: true, mbr: true }
-			});
+			const { getMemberByUsernameOrId } = await import("$lib/server/member-lookup");
+			const memberToUpdate = await getMemberByUsernameOrId(memberSlugMatch[1]);
 
 			if (!memberToUpdate) {
 				throw new Error("Member not found");

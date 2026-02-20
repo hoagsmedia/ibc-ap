@@ -32,7 +32,8 @@
 				New potential members
 			</Card.Title>
 			<Card.Description>
-				People who passed the test and don’t have a member number yet. Open a profile to accept them and assign a member number (MBR).
+				People who passed the test and don’t have a member number yet. Open a profile to accept them
+				and assign a member number (MBR).
 			</Card.Description>
 		</Card.Header>
 		<Card.Content>
@@ -42,7 +43,9 @@
 				</p>
 			{:else}
 				{#if form?.success}
-					<p class="bg-muted text-muted-foreground mb-4 flex items-center gap-2 rounded-md px-3 py-2 text-sm">
+					<p
+						class="bg-muted text-muted-foreground mb-4 flex items-center gap-2 rounded-md px-3 py-2 text-sm"
+					>
 						<CheckIcon class="size-4" />
 						{form.message}
 					</p>
@@ -53,20 +56,21 @@
 				{/if}
 				<ul class="space-y-2">
 					{#each data.pendingMembers as pending (pending.id)}
-						<li
-							class="flex flex-wrap items-center gap-3 rounded-lg border p-4 sm:flex-nowrap"
-						>
+						<li class="flex flex-wrap items-center gap-3 rounded-lg border p-4 sm:flex-nowrap">
 							<a
-								href="/members/{pending.id}/edit"
+								href="/members/{pending.username ?? pending.id}/edit"
 								class="text-primary hover:bg-muted/50 flex min-w-0 flex-1 items-center gap-3 rounded transition-colors"
 							>
-								<div class="bg-muted flex size-10 shrink-0 items-center justify-center rounded-full">
+								<div
+									class="bg-muted flex size-10 shrink-0 items-center justify-center rounded-full"
+								>
 									<UserCogIcon class="text-muted-foreground size-5" />
 								</div>
 								<div class="min-w-0 flex-1">
 									<span class="font-medium">{pending.name}</span>
 									{#if pending.email}
-										<span class="text-muted-foreground block truncate text-sm">{pending.email}</span>
+										<span class="text-muted-foreground block truncate text-sm">{pending.email}</span
+										>
 									{/if}
 								</div>
 								<span class="text-muted-foreground shrink-0 text-sm">
@@ -79,10 +83,21 @@
 								use:enhance={() => {
 									return async ({ result, update }) => {
 										await update();
-										if (result.type === "success" && result.data && "success" in result.data && result.data.success) {
-											toast.success((result.data as { message?: string }).message ?? "Member assigned");
+										if (
+											result.type === "success" &&
+											result.data &&
+											"success" in result.data &&
+											result.data.success
+										) {
+											toast.success(
+												(result.data as { message?: string }).message ?? "Member assigned"
+											);
 											await invalidateAll();
-										} else if (result.type === "failure" && result.data && "message" in result.data) {
+										} else if (
+											result.type === "failure" &&
+											result.data &&
+											"message" in result.data
+										) {
 											toast.error((result.data as { message: string }).message);
 										}
 									};
@@ -106,7 +121,8 @@
 					{/each}
 				</ul>
 				<p class="text-muted-foreground mt-4 text-sm">
-					Enter a member number and click Assign to accept them (role is set to Member automatically). You can still open their profile to edit other details.
+					Enter a member number and click Assign to accept them (role is set to Member
+					automatically). You can still open their profile to edit other details.
 				</p>
 			{/if}
 		</Card.Content>
