@@ -6,7 +6,7 @@
 	import * as Card from "$lib/components/ui/card";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
-	import { CheckIcon, ClockIcon, LinkIcon } from "@lucide/svelte/icons";
+	import { CheckIcon, ClockIcon, LinkIcon, UserPlusIcon } from "@lucide/svelte/icons";
 	import { formatDate, formatDateTime } from "$lib/utils";
 	import CustomCopy from "$lib/components/Custom-Copy.svelte";
 
@@ -145,6 +145,43 @@
 								<span class="text-muted-foreground text-sm">Kegs Consumed</span>
 								<span class="text-card-foreground text-sm font-medium">147</span>
 							</div>
+						</Card.Content>
+					</Card.Root>
+				</div>
+			{/if}
+
+			<!-- IBC-20: Pending members (guests who passed test) - admin only -->
+			{#if data.user?.role === "admin" && data.pendingMembers && data.pendingMembers.length > 0}
+				<div class="mt-8">
+					<Card.Root>
+						<Card.Header>
+							<Card.Title class="flex items-center gap-2">
+								<UserPlusIcon class="size-5" />
+								Pending acceptance ({data.pendingMembers.length})
+							</Card.Title>
+							<Card.Description>
+								Guests who passed the test. Accept and assign a member number from their profile.
+							</Card.Description>
+						</Card.Header>
+						<Card.Content>
+							<ul class="space-y-2">
+								{#each data.pendingMembers as pending}
+									<li>
+										<a
+											href="/members/{pending.id}/edit"
+											class="text-primary hover:underline flex items-center justify-between rounded-md border p-3 transition-colors hover:bg-muted/50"
+										>
+											<span class="font-medium">{pending.name}</span>
+											<span class="text-muted-foreground text-sm">
+												{pending.email ?? "—"} · Passed {formatDate(pending.test_passed)}
+											</span>
+										</a>
+									</li>
+								{/each}
+							</ul>
+							<p class="text-muted-foreground mt-3 text-sm">
+								Open a profile to set role to Member and assign an MBR number.
+							</p>
 						</Card.Content>
 					</Card.Root>
 				</div>

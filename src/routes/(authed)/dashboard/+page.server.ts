@@ -1,6 +1,9 @@
 import type { PageServerLoad, Actions } from "./$types";
 import { createInvitationToken, getInvitationsByUser } from "$lib/server/invitations";
 import { fail, redirect } from "@sveltejs/kit";
+import { db } from "$lib/server/db";
+import { users } from "$lib/server/db/schema";
+import { and, asc, eq, isNotNull } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
@@ -10,6 +13,29 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// Load user's invitation tokens
 	const invitations = await getInvitationsByUser(locals.user.id);
 
+	// IBC-20: For admins, load guests who passed the test (pending acceptance / MBR assignment)
+	let pendingMembers: { id: string; name: string; email: string | null; test_passed: Date }[] = [];
+	if (locals.user.role === "admin") {
+		const rows = await db
+			.select({
+				id: users.id,
+				name: users.name,
+				email: users.email,
+				test_passed: users.test_passed
+			})
+			.from(users)
+			.where(and(eq(users.role, "guest"), isNotNull(users.test_passed)))
+			.orderBy(asc(users.test_passed));
+		pendingMembers = rows
+			.filter((r) => r.test_passed != null)
+			.map((r) => ({
+				id: r.id,
+				name: r.name,
+				email: r.email,
+				test_passed: r.test_passed as Date
+			}));
+	}
+
 	console.log("[IBC-LOG] [dashboard] Page loaded", {
 		userId: locals.user.id.slice(0, 5) + "...", // Show only first 5 characters for security
 		invitationCount: invitations.length
@@ -18,6 +44,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	return {
 		user: locals.user,
 		invitations,
+		pendingMembers,
 		baseUrl: url.origin
 	};
 };
