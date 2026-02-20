@@ -114,6 +114,11 @@ export const actions: Actions = {
 				return fail(404, { form, message: "Member not found" });
 			}
 
+			// When promoting to admin, set test_passed to now (IBC-51)
+			const newRole = (role as "guest" | "member" | "admin") || "member";
+			const testPassedValue =
+				newRole === "admin" ? new Date() : test_passed ? new Date(test_passed) : null;
+
 			// Update the member in the database
 			const updatedMember = await db
 				.update(users)
@@ -124,14 +129,14 @@ export const actions: Actions = {
 					address: address || null,
 					bio: bio || "",
 					hobbies: hobbies || null,
-					role: (role as "guest" | "member" | "admin") || "member",
+					role: newRole,
 					likes: likes || null,
 					mbr: mbr || 0,
 					msd: msd || new Date().toISOString().split("T")[0],
 					dops: dops,
 					dops_date: dops_date ? new Date(dops_date).toISOString().split("T")[0] : null,
 					sponsor: sponsor || null,
-					test_passed: test_passed ? new Date(test_passed) : null,
+					test_passed: testPassedValue,
 					updated_at: new Date()
 				})
 				.where(eq(users.id, id))
