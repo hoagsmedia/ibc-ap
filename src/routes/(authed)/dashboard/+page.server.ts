@@ -1,9 +1,14 @@
 import type { PageServerLoad, Actions } from "./$types";
-import { createInvitationToken, getInvitationsByUser } from "$lib/server/invitations";
+import {
+	createInvitationToken,
+	getInvitationsByUser,
+	getLastInvitationCreatedAt,
+	INVITATION_COOLDOWN_DAYS
+} from "$lib/server/invitations";
 import { fail, redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
-import { and, asc, eq, isNotNull } from "drizzle-orm";
+import { and, asc, isNotNull, isNull } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
@@ -13,8 +18,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// Load user's invitation tokens
 	const invitations = await getInvitationsByUser(locals.user.id);
 
-	// IBC-20: For admins, load guests who passed the test (pending acceptance / MBR assignment)
-	let pendingMembers: { id: string; name: string; email: string | null; test_passed: Date }[] = [];
+	// IBC-20: For admins only, load users who passed the test but have no member number yet
+	let pendingMembers: { id: string; name: string; email: string | null; test_passed: Date }[] | undefined;
 	if (locals.user.role === "admin") {
 		const rows = await db
 			.select({
@@ -24,7 +29,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 				test_passed: users.test_passed
 			})
 			.from(users)
-			.where(and(eq(users.role, "guest"), isNotNull(users.test_passed)))
+			.where(and(isNotNull(users.test_passed), isNull(users.mbr)))
 			.orderBy(asc(users.test_passed));
 		pendingMembers = rows
 			.filter((r) => r.test_passed != null)
@@ -44,7 +49,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	return {
 		user: locals.user,
 		invitations,
-		pendingMembers,
+		...(pendingMembers !== undefined && { pendingMembers }),
 		baseUrl: url.origin
 	};
 };
@@ -55,12 +60,36 @@ export const actions: Actions = {
 			return fail(401, { message: "Must be logged in to create invitations" });
 		}
 
-		// Check if user has passed the test
+		// Only full members (role + test passed + MBR assigned) can create invite links
+		if (locals.user.role !== "member" && locals.user.role !== "admin") {
+			return fail(403, {
+				message:
+					"You must be an accepted member with a member number before you can create invitation links. An admin will review your profile after you pass the test."
+			});
+		}
 		if (!locals.user.test_passed) {
 			return fail(403, {
 				message:
 					"You must pass the official IBC test before creating invitation links. Please visit the test page to complete it."
 			});
+		}
+		if (locals.user.role === "member" && locals.user.mbr == null) {
+			return fail(403, {
+				message:
+					"You must be assigned a member number by an admin before you can create invitation links."
+			});
+		}
+
+		// One invitation link per week per member (admins are exempt)
+		if (locals.user.role !== "admin") {
+			const lastCreated = await getLastInvitationCreatedAt(locals.user.id);
+			const cooldownMs = INVITATION_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
+			if (lastCreated && Date.now() - lastCreated.getTime() < cooldownMs) {
+				const nextAllowed = new Date(lastCreated.getTime() + cooldownMs);
+				return fail(429, {
+					message: `You can only create one invitation link per week. You can create another on ${nextAllowed.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}.`
+				});
+			}
 		}
 
 		try {

@@ -51,13 +51,29 @@
 							<Card.Title>Member Information</Card.Title>
 						</Card.Header>
 						<Card.Content class="space-y-2">
+							<div class="border-border bg-muted/30 rounded-md border p-3">
+								<dt class="text-muted-foreground text-xs font-medium tracking-wide uppercase">
+									Member number
+								</dt>
+								<dd class="text-card-foreground mt-0.5 text-2xl font-bold tabular-nums">
+									{#if data.user.mbr != null}
+										{data.user.mbr}
+									{:else if data.user.test_passed}
+										<span class="text-amber-600 dark:text-amber-400">Pending</span>
+									{:else}
+										—
+									{/if}
+								</dd>
+							</div>
 							<div>
 								<dt class="text-muted-foreground text-sm font-medium">Name</dt>
 								<dd class="text-card-foreground text-sm">{data.user.name}</dd>
 							</div>
 							<div>
 								<dt class="text-muted-foreground text-sm font-medium">Email or username</dt>
-								<dd class="text-card-foreground text-sm">{data.user.email ?? data.user.username ?? '—'}</dd>
+								<dd class="text-card-foreground text-sm">
+									{data.user.email ?? data.user.username ?? "—"}
+								</dd>
 							</div>
 							<div>
 								<dt class="text-muted-foreground text-sm font-medium">Role</dt>
@@ -94,6 +110,12 @@
 								View Gallery
 							</Button>
 							{#if data.user.role === "admin"}
+								<Button
+									href="/dashboard/pending-members"
+									class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+								>
+									New members
+								</Button>
 								<Button
 									href="/members"
 									class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
@@ -150,38 +172,30 @@
 				</div>
 			{/if}
 
-			<!-- IBC-20: Pending members (guests who passed test) - admin only -->
-			{#if data.user?.role === "admin" && data.pendingMembers && data.pendingMembers.length > 0}
+			<!-- IBC-20: Link to dedicated new-members page for admins -->
+			{#if data.user?.role === "admin"}
 				<div class="mt-8">
 					<Card.Root>
 						<Card.Header>
 							<Card.Title class="flex items-center gap-2">
 								<UserPlusIcon class="size-5" />
-								Pending acceptance ({data.pendingMembers.length})
+								New potential members
 							</Card.Title>
 							<Card.Description>
-								Guests who passed the test. Accept and assign a member number from their profile.
+								People who passed the test but don’t have a member number yet. Manage them and
+								assign member numbers.
 							</Card.Description>
 						</Card.Header>
 						<Card.Content>
-							<ul class="space-y-2">
-								{#each data.pendingMembers as pending}
-									<li>
-										<a
-											href="/members/{pending.id}/edit"
-											class="text-primary hover:underline flex items-center justify-between rounded-md border p-3 transition-colors hover:bg-muted/50"
-										>
-											<span class="font-medium">{pending.name}</span>
-											<span class="text-muted-foreground text-sm">
-												{pending.email ?? "—"} · Passed {formatDate(pending.test_passed)}
-											</span>
-										</a>
-									</li>
-								{/each}
-							</ul>
-							<p class="text-muted-foreground mt-3 text-sm">
-								Open a profile to set role to Member and assign an MBR number.
-							</p>
+							{#if data.pendingMembers && data.pendingMembers.length > 0}
+								<p class="text-muted-foreground mb-3 text-sm">
+									{data.pendingMembers.length} waiting for acceptance.
+								</p>
+							{/if}
+							<Button href="/dashboard/pending-members" class="gap-2">
+								<UserPlusIcon class="size-4" />
+								{data.pendingMembers?.length ? "View and manage" : "Manage new members"}
+							</Button>
 						</Card.Content>
 					</Card.Root>
 				</div>
@@ -244,8 +258,23 @@
 										<a href="/test">Take Test</a>
 									</Button>
 								</div>
+							{:else if data.user?.role !== "admin" && (data.user?.role !== "member" || data.user?.mbr == null)}
+								<!-- Passed test but not yet accepted as member (no MBR) -->
+								<Alert.Root class="mb-4" variant="default">
+									<ClockIcon class="size-4" />
+									<Alert.Title>Member acceptance required</Alert.Title>
+									<Alert.Description>
+										You must be accepted as a member and assigned a member number before you can
+										create invitation links. An admin will review your profile after you pass the
+										test.
+									</Alert.Description>
+								</Alert.Root>
+								<p class="text-muted-foreground text-sm">
+									Once an admin assigns you a member number, you’ll be able to create invite links
+									here.
+								</p>
 							{:else}
-								<!-- User has passed the test -->
+								<!-- User can create invites (admin, or member with test_passed + MBR) -->
 								<div class="flex flex-col items-center justify-between gap-4 md:flex-row">
 									<p class="text-muted-foreground text-sm">
 										Create secure, one-time signup links to invite new members.

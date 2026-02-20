@@ -1,5 +1,5 @@
 import { fail, redirect } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
 import type { Actions, PageServerLoad } from './$types';
@@ -30,6 +30,7 @@ export const load: PageServerLoad = async (event) => {
 	const form = await superValidate(
 		{
 			name: fullUser.name,
+			username: fullUser.username || '',
 			phone: fullUser.phone || '',
 			address: fullUser.address || '',
 			bio: fullUser.bio || '',
@@ -118,17 +119,32 @@ export const actions: Actions = {
 		}
 
 		try {
+			const set: Record<string, unknown> = {
+				name: form.data.name,
+				phone: form.data.phone,
+				address: form.data.address,
+				bio: form.data.bio,
+				hobbies: form.data.hobbies,
+				likes: form.data.likes,
+				updated_at: new Date()
+			};
+
+			// Only admins can change their own username
+			if (event.locals.user.role === 'admin' && form.data.username != null && form.data.username.trim() !== '') {
+				const newUsername = form.data.username.trim().toLowerCase();
+				const [taken] = await db
+					.select({ id: table.users.id })
+					.from(table.users)
+					.where(and(eq(table.users.username, newUsername), ne(table.users.id, event.locals.user.id)));
+				if (taken) {
+					return message(form, 'That username is already in use.', { status: 400 });
+				}
+				set.username = newUsername;
+			}
+
 			await db
 				.update(table.users)
-				.set({
-					name: form.data.name,
-					phone: form.data.phone,
-					address: form.data.address,
-					bio: form.data.bio,
-					hobbies: form.data.hobbies,
-					likes: form.data.likes,
-					updated_at: new Date()
-				})
+				.set(set)
 				.where(eq(table.users.id, event.locals.user.id));
 
 			return message(form, 'Profile updated successfully!');

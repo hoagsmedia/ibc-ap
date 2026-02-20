@@ -250,17 +250,15 @@
 	<Dialog open={showPassDialog}>
 		<DialogContent>
 			<DialogHeader>
-				<DialogTitle>🎉 Welcome to the Island Beer Club!</DialogTitle>
+				<DialogTitle>🎉 You passed the test!</DialogTitle>
 			</DialogHeader>
 			<div class="space-y-4">
 				<p class="text-muted-foreground">
-					Congratulations! You have successfully passed the Island Beer Club test and are now an
-					official member.
+					Congratulations! You have successfully passed the Island Beer Club test.
 				</p>
-				<div class="rounded-md bg-green-50 p-3 dark:bg-green-950">
-					<p class="text-sm text-green-800 dark:text-green-200">
-						✅ <strong>Member privileges unlocked:</strong> You can now create invitation links and access
-						all member features.
+				<div class="rounded-md bg-muted p-3">
+					<p class="text-muted-foreground text-sm">
+						An admin will review your profile and assign you a member number. After that, you’ll be able to create invitation links and use all member features.
 					</p>
 				</div>
 			</div>
