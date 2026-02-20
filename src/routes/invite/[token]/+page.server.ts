@@ -93,21 +93,24 @@ export const actions: Actions = {
 
 			// Create user
 			const userId = crypto.randomUUID();
-			const newUser: table.User = {
+			const newUser = {
 				id: userId,
 				name,
+				username: null as string | null,
 				email,
-				password_hash: passwordHash, // Using bcrypt for password hashing
+				password_hash: passwordHash,
 				phone: phone || null,
 				address: address || null,
 				bio: bio || null,
 				hobbies: hobbies || null,
 				img: null,
-				role: "guest", // Users invited get guest role by default
+				role: "guest" as const,
 				likes: likes || null,
 				mbr: null,
 				msd: null,
 				sponsor: sponsor || null,
+				dops: false,
+				dops_date: null,
 				test_passed: null,
 				created_at: new Date(),
 				updated_at: new Date()

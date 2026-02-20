@@ -56,8 +56,8 @@
 								<dd class="text-card-foreground text-sm">{data.user.name}</dd>
 							</div>
 							<div>
-								<dt class="text-muted-foreground text-sm font-medium">Email</dt>
-								<dd class="text-card-foreground text-sm">{data.user.email}</dd>
+								<dt class="text-muted-foreground text-sm font-medium">Email or username</dt>
+								<dd class="text-card-foreground text-sm">{data.user.email ?? data.user.username ?? '—'}</dd>
 							</div>
 							<div>
 								<dt class="text-muted-foreground text-sm font-medium">Role</dt>

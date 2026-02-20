@@ -1,7 +1,7 @@
 import { hash, verify } from 'argon2';
 import { encodeBase32LowerCase } from '@oslojs/encoding';
 import { fail, redirect } from '@sveltejs/kit';
-import { eq } from 'drizzle-orm';
+import { eq, or } from 'drizzle-orm';
 import * as auth from '$lib/server/auth';
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
@@ -17,19 +17,27 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
 	login: async (event) => {
 		const formData = await event.request.formData();
-		const email = formData.get('email');
+		const emailOrUsername = formData.get('email');
 		const password = formData.get('password');
 
-		if (!validateEmail(email)) {
+		if (!validateEmailOrUsername(emailOrUsername)) {
 			return fail(400, {
-				message: 'Invalid email address'
+				message: 'Invalid email or username'
 			});
 		}
 		if (!validatePassword(password)) {
 			return fail(400, { message: 'Invalid password (min 6, max 255 characters)' });
 		}
 
-		const results = await db.select().from(table.users).where(eq(table.users.email, email));
+		const results = await db
+			.select()
+			.from(table.users)
+			.where(
+				or(
+					eq(table.users.email, emailOrUsername as string),
+					eq(table.users.username, emailOrUsername as string)
+				)
+			);
 
 		const existingUser = results.at(0);
 		if (!existingUser) {
@@ -128,6 +136,13 @@ function validateEmail(email: unknown): email is string {
 		email.length <= 255 &&
 		/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 	);
+}
+
+function validateEmailOrUsername(input: unknown): input is string {
+	if (typeof input !== 'string' || input.length < 1 || input.length > 255) return false;
+	if (input.includes('@')) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
+	// Username: alphanumeric, underscore, 1–64 chars
+	return /^[a-zA-Z0-9_]{1,64}$/.test(input.trim());
 }
 
 function validatePassword(password: unknown): password is string {

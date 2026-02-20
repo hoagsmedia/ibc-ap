@@ -48,6 +48,7 @@ export async function validateSessionToken(token: string) {
 					id: table.users.id,
 					name: table.users.name,
 					email: table.users.email,
+					username: table.users.username,
 					role: table.users.role,
 					img: table.users.img,
 					mbr: table.users.mbr,

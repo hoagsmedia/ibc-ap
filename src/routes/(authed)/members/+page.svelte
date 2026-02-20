@@ -219,7 +219,7 @@
 								>{member.mbr || "N/A"}</Table.Cell
 							>
 							{#if !isMobile.current}
-								<Table.Cell>{member.email || "N/A"}</Table.Cell>
+								<Table.Cell>{member.email ?? member.username ?? "N/A"}</Table.Cell>
 							{/if}
 							<Table.Cell class="text-end">
 								{#if isAuthenticated && admin}

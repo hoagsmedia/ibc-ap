@@ -38,7 +38,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const memberData = {
 		id: member.id,
 		name: member.name,
-		email: member.email,
+		email: member.email ?? "",
 		password_hash: member.password_hash,
 		phone: member.phone ?? "",
 		address: member.address ?? "",
@@ -119,7 +119,7 @@ export const actions: Actions = {
 				.update(users)
 				.set({
 					name: name || "",
-					email: email || "",
+					email: (email && email.trim()) || null,
 					phone: phone || null,
 					address: address || null,
 					bio: bio || "",

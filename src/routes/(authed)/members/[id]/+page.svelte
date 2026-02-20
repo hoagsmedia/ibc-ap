@@ -71,7 +71,7 @@
 			<Card.Content class="space-y-4">
 				<div class="text-muted-foreground flex items-center gap-2 text-sm">
 					<Mail class="size-4" />
-					{data.member.email}
+					{data.member.email ?? data.member.username ?? 'N/A'}
 				</div>
 				{#if data.member.mbr}
 					<div class="text-muted-foreground flex items-center gap-2 text-sm">

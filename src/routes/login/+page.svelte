@@ -19,7 +19,7 @@
 		<div class="bg-accent mt-4 rounded-md p-4">
 			<div class="text-center">
 				<p class="text-accent-foreground text-sm">
-					<strong>Members:</strong> Use your email and the password:
+					<strong>Members:</strong> Use your email or username and the password:
 					<code class="bg-secondary rounded px-1">CHANGE_ME_DEV_ONLY</code>
 				</p>
 				<p class="text-muted-foreground mt-1 text-xs">
@@ -34,14 +34,14 @@
 			<form method="post" action="?/login" use:enhance class="space-y-6">
 				<div>
 					<label for="email" class="text-card-foreground block text-sm font-medium">
-						Email address
+						Email or username
 					</label>
 					<div class="mt-1">
 						<input
 							id="email"
 							name="email"
-							type="email"
-							autocomplete="email"
+							type="text"
+							autocomplete="username"
 							required
 							class="border-input bg-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full appearance-none rounded-md border px-3 py-2 focus:outline-none sm:text-sm"
 						/>

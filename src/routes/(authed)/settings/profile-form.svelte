@@ -12,7 +12,7 @@
 	let {
 		data
 	}: {
-		data: { form: SuperValidated<Infer<ProfileSchema>>; user: { email: string; role: string } };
+		data: { form: SuperValidated<Infer<ProfileSchema>>; user: { email?: string | null; username?: string | null; role: string } };
 	} = $props();
 
 	const form = superForm(data.form, {
@@ -129,9 +129,9 @@
 			</Form.Field>
 
 			<div>
-				<label for="email" class="text-card-foreground block text-sm font-medium">Email</label>
-				<Input id="email" value={data.user.email} disabled class="bg-muted text-muted-foreground" />
-				<p class="text-muted-foreground mt-1 text-xs">Email cannot be changed</p>
+				<label for="email" class="text-card-foreground block text-sm font-medium">Email or username</label>
+				<Input id="email" value={data.user.email ?? data.user.username ?? ''} disabled class="bg-muted text-muted-foreground" />
+				<p class="text-muted-foreground mt-1 text-xs">Contact identifier cannot be changed here</p>
 			</div>
 
 			<div>

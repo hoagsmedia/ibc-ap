@@ -52,6 +52,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			conditions = or(
 				ilike(users.name, `%${searchTerm}%`),
 				ilike(users.email, `%${searchTerm}%`),
+				ilike(users.username, `%${searchTerm}%`),
 				sql`CAST(${users.mbr} AS TEXT) LIKE ${`%${searchTerm}%`}`,
 				sql`${users.mbr} = ${numericSearchTerm}`
 			);
@@ -60,6 +61,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			conditions = or(
 				ilike(users.name, `%${searchTerm}%`),
 				ilike(users.email, `%${searchTerm}%`),
+				ilike(users.username, `%${searchTerm}%`),
 				sql`CAST(${users.mbr} AS TEXT) LIKE ${`%${searchTerm}%`}`
 			);
 		}
@@ -71,6 +73,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			id: users.id,
 			name: users.name,
 			email: users.email,
+			username: users.username,
 			mbr: users.mbr,
 			role: users.role,
 			dops: users.dops,
@@ -90,6 +93,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		id: row.id,
 		name: row.name,
 		email: row.email,
+		username: row.username,
 		mbr: row.mbr,
 		role: row.role,
 		dops: row.dops,
