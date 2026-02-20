@@ -2,6 +2,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { error, redirect, fail } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
+import { getUsernameForMemberWithMbr } from "$lib/server/username";
 import { eq } from "drizzle-orm";
 import { superValidate, message } from "sveltekit-superforms";
 import { memberSchema } from "./edit-member-schema";
@@ -117,28 +118,45 @@ export const actions: Actions = {
 			// When promoting to admin, set test_passed to now (IBC-51)
 			const newRole = (role as "guest" | "member" | "admin") || "member";
 			const testPassedValue =
-				newRole === "admin" ? new Date() : test_passed ? new Date(test_passed) : null;
+				newRole === "admin"
+					? new Date()
+					: test_passed && test_passed.trim() !== ""
+						? new Date(test_passed)
+						: existingMember.test_passed ?? null;
+
+			const mbrNum = mbr || 0;
+
+			// When assigning a member number, set username to lastname + mbr (same format as seed)
+			let setUsername: string | undefined;
+			if (mbrNum > 0) {
+				setUsername = await getUsernameForMemberWithMbr(name || existingMember.name, mbrNum, id);
+			}
 
 			// Update the member in the database
+			const updatePayload: Record<string, unknown> = {
+				name: name || "",
+				email: (email && email.trim()) || null,
+				phone: phone || null,
+				address: address || null,
+				bio: bio || "",
+				hobbies: hobbies || null,
+				role: newRole,
+				likes: likes || null,
+				mbr: mbrNum,
+				msd: msd || new Date().toISOString().split("T")[0],
+				dops: dops,
+				dops_date: dops_date ? new Date(dops_date).toISOString().split("T")[0] : null,
+				sponsor: sponsor || null,
+				test_passed: testPassedValue,
+				updated_at: new Date()
+			};
+			if (setUsername != null) {
+				updatePayload.username = setUsername;
+			}
+
 			const updatedMember = await db
 				.update(users)
-				.set({
-					name: name || "",
-					email: (email && email.trim()) || null,
-					phone: phone || null,
-					address: address || null,
-					bio: bio || "",
-					hobbies: hobbies || null,
-					role: newRole,
-					likes: likes || null,
-					mbr: mbr || 0,
-					msd: msd || new Date().toISOString().split("T")[0],
-					dops: dops,
-					dops_date: dops_date ? new Date(dops_date).toISOString().split("T")[0] : null,
-					sponsor: sponsor || null,
-					test_passed: testPassedValue,
-					updated_at: new Date()
-				})
+				.set(updatePayload)
 				.where(eq(users.id, id))
 				.returning();
 

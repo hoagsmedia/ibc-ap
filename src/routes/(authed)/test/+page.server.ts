@@ -80,16 +80,13 @@ export const actions: Actions = {
 		const scorePercentage = Math.round((correctAnswers / testQuestions.length) * 100);
 		const passed = scorePercentage === 100; // Must be 100% to pass
 
-		// If passed, update user record
+		// If passed, update user record (keep role as guest until admin assigns MBR)
 		if (passed) {
 			try {
 				const testPassedDate = new Date();
 				await db
 					.update(users)
-					.set({
-						test_passed: testPassedDate,
-						role: 'member'
-					})
+					.set({ test_passed: testPassedDate })
 					.where(eq(users.id, locals.user.id));
 
 				// Update the locals.user for immediate reflection

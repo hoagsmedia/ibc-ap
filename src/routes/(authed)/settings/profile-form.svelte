@@ -15,12 +15,17 @@
 		data: { form: SuperValidated<Infer<ProfileSchema>>; user: { email?: string | null; username?: string | null; role: string } };
 	} = $props();
 
+	const canEditUsername = $derived(data.user?.role === 'admin');
+
 	const form = superForm(data.form, {
 		validators: zodClient(profileSchema),
 		resetForm: false,
 		onUpdated: ({ form: f }) => {
 			if (f.message) {
-				toast.success(f.message);
+				// Username duplicate returns 400; show error toast
+				const isError = f.message.includes('already in use') || f.message.includes('Failed to update');
+				if (isError) toast.error(f.message);
+				else toast.success(f.message);
 			}
 		},
 		onError: ({ result }) => {
@@ -129,8 +134,38 @@
 			</Form.Field>
 
 			<div>
-				<label for="email" class="text-card-foreground block text-sm font-medium">Email or username</label>
-				<Input id="email" value={data.user.email ?? data.user.username ?? ''} disabled class="bg-muted text-muted-foreground" />
+				<label for="username" class="text-card-foreground block text-sm font-medium">Username</label>
+				{#if canEditUsername}
+					<Form.Field {form} name="username">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Input
+									{...props}
+									id="username"
+									bind:value={$formData.username}
+									disabled={$submitting}
+									placeholder="Lowercase letters, numbers, underscores"
+									class={$formData.username?.trim() ? '' : 'bg-muted text-muted-foreground'}
+								/>
+							{/snippet}
+						</Form.Control>
+						<Form.FieldErrors />
+						<p class="text-muted-foreground mt-1 text-xs">Admins can change their login username here.</p>
+					</Form.Field>
+				{:else}
+					<Input
+						id="username"
+						value={data.user.username ?? ''}
+						disabled
+						class="bg-muted text-muted-foreground"
+					/>
+					<p class="text-muted-foreground mt-1 text-xs">Username cannot be changed for guests and members.</p>
+				{/if}
+			</div>
+
+			<div>
+				<label for="email" class="text-card-foreground block text-sm font-medium">Email</label>
+				<Input id="email" value={data.user.email ?? ''} disabled class="bg-muted text-muted-foreground" />
 				<p class="text-muted-foreground mt-1 text-xs">Contact identifier cannot be changed here</p>
 			</div>
 

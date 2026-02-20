@@ -1,5 +1,6 @@
 import type { PageServerLoad, Actions } from "./$types";
 import { validateInvitationToken, markInvitationTokenAsUsed } from "$lib/server/invitations";
+import { getUniqueUsernameForNewUser } from "$lib/server/username";
 import { error, redirect, fail } from "@sveltejs/kit";
 import { generateSessionToken, createSession, setSessionTokenCookie } from "$lib/server/auth";
 import { hash } from "argon2";
@@ -91,12 +92,15 @@ export const actions: Actions = {
 			// Hash password
 			const passwordHash = await hash(password);
 
+			// Assign username (same format as rest: last name base, unique suffix)
+			const username = await getUniqueUsernameForNewUser(name);
+
 			// Create user
 			const userId = crypto.randomUUID();
 			const newUser = {
 				id: userId,
 				name,
-				username: null as string | null,
+				username,
 				email,
 				password_hash: passwordHash,
 				phone: phone || null,
