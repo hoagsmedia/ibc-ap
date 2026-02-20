@@ -8,6 +8,9 @@
 
 	let { data }: { data: PageData } = $props();
 
+	// Slug for member links (username when set, else id for pending users)
+	const memberSlug = $derived(data.member.username ?? data.member.id);
+
 	// Format date helper
 	function formatDate(date: Date | string | null): string {
 		if (!date) return "Not set";
@@ -71,7 +74,7 @@
 			<Card.Content class="space-y-4">
 				<div class="text-muted-foreground flex items-center gap-2 text-sm">
 					<Mail class="size-4" />
-					{data.member.email ?? data.member.username ?? 'N/A'}
+					{data.member.email ?? data.member.username ?? "N/A"}
 				</div>
 				{#if data.member.mbr}
 					<div class="text-muted-foreground flex items-center gap-2 text-sm">
@@ -167,7 +170,7 @@
 				</Card.Content>
 			</Card.Root>
 
-			{#if data.user.role === "admin"}
+			{#if data.user?.role === "admin"}
 				<!-- Actions -->
 				<Card.Root class="w-full max-w-sm md:max-w-full">
 					<Card.Header>
@@ -175,8 +178,7 @@
 					</Card.Header>
 					<Card.Content>
 						<div class="flex flex-col gap-2 md:flex-row">
-							<Button variant="outline" href={`/members/${data.member.id}/edit`}>Edit Member</Button
-							>
+							<Button variant="outline" href={`/members/${memberSlug}/edit`}>Edit Member</Button>
 							<!-- <Button disabled variant="outline">Send Message</Button> -->
 						</div>
 					</Card.Content>

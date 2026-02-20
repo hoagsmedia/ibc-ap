@@ -2,6 +2,7 @@ import type { Actions, PageServerLoad } from "./$types";
 import { error, redirect, fail } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
+import { getMemberByUsernameOrId } from "$lib/server/member-lookup";
 import { getUsernameForMemberWithMbr } from "$lib/server/username";
 import { eq } from "drizzle-orm";
 import { superValidate, message } from "sveltekit-superforms";
@@ -10,32 +11,32 @@ import { zod } from "sveltekit-superforms/adapters";
 import { hash } from "argon2";
 import { encodeBase32LowerCase } from "@oslojs/encoding";
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 export const load: PageServerLoad = async ({ locals, params }) => {
-	// Check if user is authenticated
 	if (!locals.user) {
 		throw redirect(302, "/login");
 	}
-
-	// Check if user has admin role
 	if (locals.user.role !== "admin") {
 		throw error(403, "Access denied. Admin role required.");
 	}
 
-	const { id } = params;
-
-	if (!id) {
-		throw error(400, "User ID is required");
+	const identifier = params.username;
+	if (!identifier) {
+		throw error(400, "Member identifier is required");
 	}
 
-	// Fetch the member details
-	const member = await db.query.users.findFirst({
-		where: eq(users.id, id)
-	});
+	const member = await getMemberByUsernameOrId(identifier);
 	if (!member) {
 		throw error(404, "Member not found");
 	}
 
-	// Transform member data to match schema expectations
+	// Canonical URL: if they used id but member has username, redirect to username URL
+	const isUuid = UUID_REGEX.test(identifier);
+	if (isUuid && member.username) {
+		throw redirect(302, `/members/${member.username}/edit`);
+	}
+
 	const memberData = {
 		id: member.id,
 		name: member.name,
@@ -50,8 +51,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		likes: member.likes ?? "",
 		mbr: member.mbr ?? 0,
 		msd: member.msd ?? "",
-		dops: member.dops ?? false, // Default to false if not set
-		dops_date: member.dops_date ?? "", // Date of Permanent Sobriety
+		dops: member.dops ?? false,
+		dops_date: member.dops_date ?? "",
 		sponsor: member.sponsor ?? "",
 		test_passed: member.test_passed?.toISOString() ?? "",
 		created_at: member.created_at?.toISOString(),
@@ -67,28 +68,17 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 export const actions: Actions = {
 	update: async ({ request, locals, params }) => {
-		// Check authentication and authorization
-		if (!locals.user) {
-			throw redirect(302, "/login");
-		}
-
-		if (locals.user.role !== "admin") {
-			throw error(403, "Access denied. Admin role required.");
-		}
+		if (!locals.user) throw redirect(302, "/login");
+		if (locals.user.role !== "admin") throw error(403, "Access denied. Admin role required.");
 
 		const form = await superValidate(request, zod(memberSchema));
+		if (!form.valid) return fail(400, { form });
 
-		if (!form.valid) {
-			return fail(400, { form });
-		}
-
-		const { id } = params;
-		if (!id) {
-			throw error(400, "User ID is required");
-		}
+		const member = await getMemberByUsernameOrId(params.username);
+		if (!member) return fail(404, { form, message: "Member not found" });
+		const id = member.id;
 
 		try {
-			// Extract the form data
 			const {
 				name,
 				email,
@@ -106,33 +96,20 @@ export const actions: Actions = {
 				test_passed
 			} = form.data;
 
-			// Verify the member exists before updating
-			const existingMember = await db.query.users.findFirst({
-				where: eq(users.id, id)
-			});
-
-			if (!existingMember) {
-				return fail(404, { form, message: "Member not found" });
-			}
-
-			// When promoting to admin, set test_passed to now (IBC-51)
 			const newRole = (role as "guest" | "member" | "admin") || "member";
 			const testPassedValue =
 				newRole === "admin"
 					? new Date()
 					: test_passed && test_passed.trim() !== ""
 						? new Date(test_passed)
-						: existingMember.test_passed ?? null;
+						: (member.test_passed ?? null);
 
 			const mbrNum = mbr || 0;
-
-			// When assigning a member number, set username to lastname + mbr (same format as seed)
 			let setUsername: string | undefined;
 			if (mbrNum > 0) {
-				setUsername = await getUsernameForMemberWithMbr(name || existingMember.name, mbrNum, id);
+				setUsername = await getUsernameForMemberWithMbr(name || member.name, mbrNum, id);
 			}
 
-			// Update the member in the database
 			const updatePayload: Record<string, unknown> = {
 				name: name || "",
 				email: (email && email.trim()) || null,
@@ -150,20 +127,11 @@ export const actions: Actions = {
 				test_passed: testPassedValue,
 				updated_at: new Date()
 			};
-			if (setUsername != null) {
-				updatePayload.username = setUsername;
-			}
+			if (setUsername != null) updatePayload.username = setUsername;
 
-			const updatedMember = await db
-				.update(users)
-				.set(updatePayload)
-				.where(eq(users.id, id))
-				.returning();
+			const updated = await db.update(users).set(updatePayload).where(eq(users.id, id)).returning();
 
-			if (!updatedMember.length) {
-				return fail(500, { form, message: "Failed to update member" });
-			}
-
+			if (!updated.length) return fail(500, { form, message: "Failed to update member" });
 			return message(form, "Member updated successfully!");
 		} catch (err) {
 			console.error("Error updating member:", err);
@@ -172,106 +140,56 @@ export const actions: Actions = {
 	},
 
 	delete: async ({ request, locals, params }) => {
-		// Check authentication and authorization
-		if (!locals.user) {
-			throw redirect(302, "/login");
-		}
-
-		if (locals.user.role !== "admin") {
-			throw error(403, "Access denied. Admin role required.");
-		}
+		if (!locals.user) throw redirect(302, "/login");
+		if (locals.user.role !== "admin") throw error(403, "Access denied. Admin role required.");
 
 		const formData = await request.formData();
-		const confirmText = formData.get("confirmText");
-
-		// Validate confirmation text
-		if (confirmText !== "DELETE") {
+		if (formData.get("confirmText") !== "DELETE") {
 			return fail(400, { message: "Incorrect confirmation text" });
 		}
 
-		const { id } = params;
-		if (!id) {
-			throw error(400, "User ID is required");
+		const member = await getMemberByUsernameOrId(params.username);
+		if (!member) return fail(404, { message: "Member not found" });
+		if (member.id === locals.user.id) {
+			return fail(400, { message: "You cannot delete your own account" });
 		}
 
 		try {
-			// Verify the member exists before deleting
-			const existingMember = await db.query.users.findFirst({
-				where: eq(users.id, id)
-			});
-
-			if (!existingMember) {
-				return fail(404, { message: "Member not found" });
-			}
-
-			// Prevent deleting yourself
-			if (existingMember.id === locals.user.id) {
-				return fail(400, { message: "You cannot delete your own account" });
-			}
-
-			// Delete the member
-			await db.delete(users).where(eq(users.id, id));
+			await db.delete(users).where(eq(users.id, member.id));
 		} catch (err) {
 			console.error("Error deleting member:", err);
 			return fail(500, { message: "Failed to delete member" });
 		}
-		// Redirect to members list after successful deletion
 		throw redirect(302, "/members");
 	},
 
 	resetPassword: async ({ locals, params }) => {
-		// Check authentication and authorization
-		if (!locals.user) {
-			throw redirect(302, "/login");
-		}
+		if (!locals.user) throw redirect(302, "/login");
+		if (locals.user.role !== "admin") throw error(403, "Access denied. Admin role required.");
 
-		if (locals.user.role !== "admin") {
-			throw error(403, "Access denied. Admin role required.");
-		}
-
-		const { id } = params;
-		if (!id) {
-			throw error(400, "User ID is required");
+		const member = await getMemberByUsernameOrId(params.username);
+		if (!member) return fail(404, { message: "Member not found" });
+		if (member.id === locals.user.id) {
+			return fail(400, {
+				message:
+					"You cannot reset your own password through this method. Use the settings page instead."
+			});
 		}
 
 		try {
-			// Verify the member exists before resetting password
-			const existingMember = await db.query.users.findFirst({
-				where: eq(users.id, id)
-			});
-
-			if (!existingMember) {
-				return fail(404, { message: "Member not found" });
-			}
-
-			// Prevent resetting your own password through this method
-			if (existingMember.id === locals.user.id) {
-				return fail(400, {
-					message:
-						"You cannot reset your own password through this method. Use the settings page instead."
-				});
-			}
-
-			// Generate a secure temporary password
 			const tempPassword = generateTemporaryPassword();
 			const passwordHash = await hash(tempPassword);
-
-			// Update the member's password
 			await db
 				.update(users)
-				.set({
-					password_hash: passwordHash,
-					updated_at: new Date()
-				})
-				.where(eq(users.id, id));
+				.set({ password_hash: passwordHash, updated_at: new Date() })
+				.where(eq(users.id, member.id));
 
-			// Return success with the temporary password (should be shown once to admin)
 			return {
 				success: true,
 				message: "Password reset successfully",
-				tempPassword: tempPassword,
-				memberName: existingMember.name,
-				memberEmail: existingMember.email
+				tempPassword,
+				memberName: member.name,
+				memberEmail: member.email
 			};
 		} catch (err) {
 			console.error("Error resetting password:", err);
@@ -280,7 +198,6 @@ export const actions: Actions = {
 	}
 };
 
-// Generate a secure temporary password
 function generateTemporaryPassword(): string {
 	const bytes = crypto.getRandomValues(new Uint8Array(12));
 	return encodeBase32LowerCase(bytes).slice(0, 16);

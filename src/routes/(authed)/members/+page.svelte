@@ -232,16 +232,22 @@
 												<DropdownMenu.Label>Actions</DropdownMenu.Label>
 												<DropdownMenu.Separator />
 												<DropdownMenu.Item>
-													<a href={`/members/${member.id}`}> View Profile </a>
+													<a href={`/members/${member.username ?? member.id}`}> View Profile </a>
 												</DropdownMenu.Item>
 												<DropdownMenu.Item>
-													<a href={`/members/${member.id}/edit`}> Edit Profile </a>
+													<a href={`/members/${member.username ?? member.id}/edit`}>
+														Edit Profile
+													</a>
 												</DropdownMenu.Item>
 											</DropdownMenu.Group>
 										</DropdownMenu.Content>
 									</DropdownMenu.Root>
 								{:else}
-									<Button variant="ghost" href={`/members/${member.id}`} size="sm">View</Button>
+									<Button
+										variant="ghost"
+										href={`/members/${member.username ?? member.id}`}
+										size="sm">View</Button
+									>
 								{/if}
 							</Table.Cell>
 						</Table.Row>
