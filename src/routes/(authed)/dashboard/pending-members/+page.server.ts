@@ -1,8 +1,9 @@
-import type { PageServerLoad } from "./$types";
-import { error, redirect } from "@sveltejs/kit";
+import type { Actions, PageServerLoad } from "./$types";
+import { error, fail, redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
-import { and, asc, isNotNull, isNull } from "drizzle-orm";
+import { getUsernameForMemberWithMbr } from "$lib/server/username";
+import { and, asc, eq, isNotNull, isNull, ne } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -34,4 +35,43 @@ export const load: PageServerLoad = async ({ locals }) => {
 		}));
 
 	return { pendingMembers };
+};
+
+export const actions: Actions = {
+	assignMember: async ({ request, locals }) => {
+		if (!locals.user) throw redirect(302, "/login");
+		if (locals.user.role !== "admin") return fail(403, { message: "Admin required" });
+
+		const formData = await request.formData();
+		const userId = formData.get("userId") as string | null;
+		const mbrRaw = formData.get("mbr");
+
+		if (!userId) return fail(400, { message: "Missing user" });
+		const mbr = mbrRaw != null && mbrRaw !== "" ? parseInt(String(mbrRaw), 10) : NaN;
+		if (Number.isNaN(mbr) || mbr < 1) return fail(400, { message: "Enter a valid member number (1 or higher)" });
+
+		const [member] = await db.select().from(users).where(eq(users.id, userId));
+		if (!member) return fail(404, { message: "Member not found" });
+
+		// MBR must be unique (no other user already has this number)
+		const [existing] = await db
+			.select({ id: users.id })
+			.from(users)
+			.where(and(eq(users.mbr, mbr), ne(users.id, userId)));
+		if (existing) return fail(400, { message: `Member #${mbr} is already assigned to another member.` });
+
+		const username = await getUsernameForMemberWithMbr(member.name, mbr, userId);
+
+		await db
+			.update(users)
+			.set({
+				mbr,
+				role: "member",
+				username,
+				updated_at: new Date()
+			})
+			.where(eq(users.id, userId));
+
+		return { success: true, message: `Member #${mbr} assigned.`, assignedId: userId };
+	}
 };
