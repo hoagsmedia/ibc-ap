@@ -65,8 +65,12 @@ export const actions: Actions = {
 		// 	return redirect(302, '/dashboard');
 		// }
 
-		// Normal password verification for users with proper hashes
-		const validPassword = await verify(existingUser.password_hash, password);
+		// Argon2 hashes are in PHC format and must start with $
+		const hash = existingUser.password_hash?.trim() ?? '';
+		if (!hash.startsWith('$')) {
+			return fail(400, { message: 'Incorrect email or password' });
+		}
+		const validPassword = await verify(hash, password);
 		if (!validPassword) {
 			return fail(400, { message: 'Incorrect email or password' });
 		}

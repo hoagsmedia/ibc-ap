@@ -186,6 +186,8 @@ async function seedFromCsv() {
 				const base = lastnamembr(lastName, mbrRaw);
 				if (base.length <= 64) set.username = ensureUniqueUsernameSync(base, usedUsernames, existingUsernameToId, id);
 			}
+			// Reseed password so everyone has valid Argon2 hash for CHANGE_ME_DEV_ONLY (fixes manual/legacy plain text)
+			set.password_hash = defaultPasswordHash;
 
 			const keys = Object.keys(set).filter((k) => k !== "updated_at");
 			if (keys.length > 0) updates.push({ id, set });
