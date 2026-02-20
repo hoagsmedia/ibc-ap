@@ -1,0 +1,74 @@
+/**
+ * Idempotent schema sync for `users` table: adds username, dops, dops_date,
+ * makes email nullable, and adds users_username_unique if missing.
+ * Safe to run on every Vercel build (no prompts, no truncation).
+ * Run with: tsx scripts/ensure-users-schema.ts
+ */
+import dotenv from 'dotenv';
+import path from 'path';
+import postgres from 'postgres';
+
+dotenv.config({ path: path.resolve(process.cwd(), '.env') });
+dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+
+const url = process.env.DATABASE_URL;
+if (!url) {
+	console.error('DATABASE_URL is not set. Skipping schema ensure.');
+	process.exit(0);
+}
+
+const sql = postgres(url, { max: 1 });
+
+const statements = [
+	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS username text`,
+	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS dops boolean NOT NULL DEFAULT false`,
+	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS dops_date date`,
+	// Add unique constraint on username only if none exists (avoids truncate prompt)
+	`DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint c
+    JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey) AND a.attname = 'username' AND NOT a.attisdropped
+    WHERE c.conrelid = 'public.users'::regclass AND c.contype = 'u'
+  ) THEN
+    ALTER TABLE public.users ADD CONSTRAINT users_username_unique UNIQUE (username);
+  END IF;
+END $$`,
+	// Make email nullable (no-op if already nullable)
+	`ALTER TABLE public.users ALTER COLUMN email DROP NOT NULL`
+];
+
+async function main() {
+	for (const statement of statements) {
+		try {
+			await sql.unsafe(statement);
+		} catch (err: unknown) {
+			const msg = err instanceof Error ? err.message : String(err);
+			// Skip if users table does not exist (e.g. fresh DB)
+			if (msg.includes('does not exist') && msg.includes('users')) {
+				console.log('Users table not found; skipping schema ensure.');
+				await sql.end();
+				process.exit(0);
+			}
+			// Ignore "column already exists" / "constraint already exists" / "column is already nullable"
+			if (
+				msg.includes('already exists') ||
+				msg.includes('duplicate key value') ||
+				msg.includes('already nullable')
+			) {
+				// no-op
+			} else {
+				console.error('Schema ensure failed:', msg);
+				process.exit(1);
+			}
+		}
+	}
+	console.log('Users table schema ensured.');
+}
+
+main()
+	.then(() => sql.end())
+	.catch((err) => {
+		console.error(err);
+		process.exit(1);
+	});
