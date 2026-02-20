@@ -17,7 +17,7 @@ if (!url) {
 	process.exit(0);
 }
 
-const sql = postgres(url, { max: 1 });
+const sql = postgres(url, { max: 1, onnotice: () => {} });
 
 const statements = [
 	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS username text`,

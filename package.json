@@ -100,7 +100,10 @@
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
-			"esbuild"
+			"@tailwindcss/oxide",
+			"argon2",
+			"esbuild",
+			"msgpackr-extract"
 		]
 	}
 }
