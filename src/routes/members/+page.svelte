@@ -2,10 +2,9 @@
 	import { page } from "$app/state";
 	import * as Table from "$lib/components/ui/table/index.js";
 	import * as Pagination from "$lib/components/ui/pagination/index.js";
-	import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index.js";
 	import * as Card from "$lib/components/ui/card/index.js";
 	import Avatar from "$lib/components/Avatar.svelte";
-	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon, EllipsisVertical } from "@lucide/svelte";
+	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon } from "@lucide/svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Search } from "@lucide/svelte";
@@ -283,25 +282,22 @@
 								{/if}
 								<Table.Cell class="text-end">
 									{#if isAdmin}
-										<DropdownMenu.Root>
-											<DropdownMenu.Trigger>
-												<EllipsisVertical class="text-muted-foreground cursor-pointe mr-4 size-5" />
-											</DropdownMenu.Trigger>
-											<DropdownMenu.Content>
-												<DropdownMenu.Group>
-													<DropdownMenu.Label>Actions</DropdownMenu.Label>
-													<DropdownMenu.Separator />
-													<DropdownMenu.Item>
-														<a href={`/members/${member.username ?? member.id}`}> View Profile </a>
-													</DropdownMenu.Item>
-													<DropdownMenu.Item>
-														<a href={`/members/${member.username ?? member.id}/edit`}>
-															Edit Profile
-														</a>
-													</DropdownMenu.Item>
-												</DropdownMenu.Group>
-											</DropdownMenu.Content>
-										</DropdownMenu.Root>
+										<div class="flex flex-wrap items-center justify-end gap-1">
+											<Button
+												variant="ghost"
+												size="sm"
+												href={`/members/${member.username ?? member.id}`}
+											>
+												View
+											</Button>
+											<Button
+												variant="ghost"
+												size="sm"
+												href={`/members/${member.username ?? member.id}/edit`}
+											>
+												Edit
+											</Button>
+										</div>
 									{:else}
 										<Button
 											variant="ghost"

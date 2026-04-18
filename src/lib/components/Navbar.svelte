@@ -115,7 +115,7 @@
 									<Avatar class="size-8" name={user.name} img={user.img} />
 									<span class="sr-only">Open user menu</span>
 								</DropdownMenu.Trigger>
-							<DropdownMenu.Content align="center" class="w-56">
+							<DropdownMenu.Content align="center" class="w-56" preventScroll={false}>
 								<DropdownMenu.Label>My Account</DropdownMenu.Label>
 								<DropdownMenu.Separator />
 								<DropdownMenu.Item>
