@@ -1,29 +1,48 @@
 import { dev } from "$app/environment";
-import { redirect, error } from "@sveltejs/kit";
+import { error } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
 import { ibcDebugEnabled } from "$lib/server/ibc-debug";
-import { asc, or, ilike, sql } from "drizzle-orm";
+import { and, asc, count, inArray, isNotNull, or, ilike, sql } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	// Authentication checks
 	if (!locals.user) {
-		throw redirect(302, "/login");
+		const memberRole = inArray(users.role, ["member", "admin"]);
+
+		const [memberRow] = await db.select({ n: count() }).from(users).where(memberRole);
+
+		const [numberedRow] = await db
+			.select({ n: count() })
+			.from(users)
+			.where(and(memberRole, isNotNull(users.mbr)));
+
+		const [testRow] = await db
+			.select({ n: count() })
+			.from(users)
+			.where(and(memberRole, isNotNull(users.test_passed)));
+
+		return {
+			isAuthenticated: false as const,
+			publicStats: {
+				totalMembers: Number(memberRow?.n ?? 0),
+				withMemberNumber: Number(numberedRow?.n ?? 0),
+				withBeerTest: Number(testRow?.n ?? 0)
+			}
+		};
 	}
 
-	// Get pagination parameters from URL
 	const page = Number(url.searchParams.get("page") || "1");
 	const perPage = Number(url.searchParams.get("perPage") || "10");
 	const searchTerm = url.searchParams.get("search") || "";
-	const useCache = url.searchParams.get("useCache") === "true"; // Client hint to use cache
+	const useCache = url.searchParams.get("useCache") === "true";
 
-	// If client indicates it's using cache and has results, return minimal data
 	if (useCache && searchTerm) {
 		if (dev && ibcDebugEnabled()) {
 			console.log("[IBC-LOG] [members] Using cached results for search term:", searchTerm);
 		}
 		return {
+			isAuthenticated: true as const,
 			members: [],
 			searchTerm,
 			pagination: {
@@ -36,23 +55,17 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		};
 	}
 
-	// Validate pagination parameters
 	if (isNaN(page) || page < 1) throw error(400, "Invalid page number");
 	if (isNaN(perPage) || perPage < 1 || perPage > 100) throw error(400, "Invalid items per page");
 
-	// Calculate offset
 	const offset = (page - 1) * perPage;
 
-	// Build query conditions
 	let conditions = undefined;
 
 	if (searchTerm) {
-		// Convert searchTerm to number for potential member number comparison
 		const numericSearchTerm = !isNaN(Number(searchTerm)) ? Number(searchTerm) : null;
 
 		if (numericSearchTerm !== null) {
-			// If searchTerm is a valid number, we can search directly in the numeric field
-			// and also in text fields with the string version
 			conditions = or(
 				ilike(users.name, `%${searchTerm}%`),
 				ilike(users.email, `%${searchTerm}%`),
@@ -61,7 +74,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 				sql`${users.mbr} = ${numericSearchTerm}`
 			);
 		} else {
-			// If searchTerm is not a number, we only search in text fields
 			conditions = or(
 				ilike(users.name, `%${searchTerm}%`),
 				ilike(users.email, `%${searchTerm}%`),
@@ -71,7 +83,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		}
 	}
 
-	// Fetch members with pagination and search filter, plus total count in a single query
 	const membersWithCount = await db
 		.select({
 			id: users.id,
@@ -107,11 +118,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		img: row.img
 	}));
 	const totalCount = membersWithCount.length > 0 ? Number(membersWithCount[0].totalCount) : 0;
-
-	// Calculate total pages
 	const totalPages = Math.ceil(totalCount / perPage);
 
 	return {
+		isAuthenticated: true as const,
 		members,
 		searchTerm,
 		pagination: {
