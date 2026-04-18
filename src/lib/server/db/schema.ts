@@ -83,6 +83,8 @@ export const statsKegCredits = pgTable("stats_keg_credits", {
 	id: text("id").primaryKey(),
 	sort_order: integer("sort_order").notNull().unique(),
 	member_label: text("member_label").notNull(),
+	/** Parsed from legacy `#123` / `#123-1Nov17` suffix on member_label; optional. */
+	member_number: integer("member_number"),
 	credits: doublePrecision("credits").notNull(),
 	is_cik: boolean("is_cik").notNull().default(false),
 	created_at: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),

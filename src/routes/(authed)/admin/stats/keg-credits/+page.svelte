@@ -39,6 +39,7 @@
 				<Table.Row>
 					<Table.Head class="w-24">Rank</Table.Head>
 					<Table.Head>Member</Table.Head>
+					<Table.Head class="w-16 text-right">MBR</Table.Head>
 					<Table.Head class="w-28 text-right">Credits</Table.Head>
 					<Table.Head class="w-24">CIK</Table.Head>
 					<Table.Head class="w-32 text-right">Actions</Table.Head>
@@ -49,6 +50,9 @@
 					<Table.Row>
 						<Table.Cell class="tabular-nums">{row.sort_order}</Table.Cell>
 						<Table.Cell class="max-w-md whitespace-normal">{row.member_label}</Table.Cell>
+						<Table.Cell class="text-right tabular-nums text-muted-foreground">
+							{row.member_number ?? "—"}
+						</Table.Cell>
 						<Table.Cell class="text-right tabular-nums">{row.credits}</Table.Cell>
 						<Table.Cell>
 							{#if row.is_cik}

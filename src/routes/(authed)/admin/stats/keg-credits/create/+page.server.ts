@@ -1,23 +1,18 @@
 import { fail, redirect } from "@sveltejs/kit";
 import { superValidate } from "sveltekit-superforms";
 import { zod } from "sveltekit-superforms/adapters";
-import { z } from "zod";
 import { db } from "$lib/server/db/index.js";
+import { kegCreditsFormSchema } from "$lib/keg-credits-form-schema.js";
 import { statsKegCredits } from "$lib/server/db/schema.js";
 import { statsRowId } from "$lib/server/stats-id.js";
 import type { Actions, PageServerLoad } from "./$types.js";
 
-const formSchema = z.object({
-	sort_order: z.coerce.number().int(),
-	member_label: z.string().min(1, "Required"),
-	credits: z.coerce.number().nonnegative(),
-	is_cik: z.boolean().default(false)
-});
+const formSchema = kegCreditsFormSchema;
 
 export const load: PageServerLoad = async () => {
 	return {
 		form: await superValidate(
-			{ sort_order: 1, member_label: "", credits: 0, is_cik: false },
+			{ sort_order: 1, member_label: "", member_number: null, credits: 0, is_cik: false },
 			zod(formSchema)
 		)
 	};
@@ -37,6 +32,7 @@ export const actions: Actions = {
 				id: statsRowId(),
 				sort_order: form.data.sort_order,
 				member_label: form.data.member_label,
+				member_number: form.data.member_number,
 				credits: form.data.credits,
 				is_cik: form.data.is_cik,
 				updated_at: new Date()

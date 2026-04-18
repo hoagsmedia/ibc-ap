@@ -27,6 +27,7 @@ const statements = [
 		created_at timestamptz NOT NULL DEFAULT now(),
 		updated_at timestamptz NOT NULL DEFAULT now()
 	)`,
+	`ALTER TABLE public.stats_keg_credits ADD COLUMN IF NOT EXISTS member_number integer`,
 	`CREATE TABLE IF NOT EXISTS public.stats_beer_consumed (
 		id text PRIMARY KEY,
 		keg_number integer NOT NULL UNIQUE,

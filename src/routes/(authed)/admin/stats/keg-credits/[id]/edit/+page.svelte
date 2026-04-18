@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { superForm } from "sveltekit-superforms";
 	import { zodClient } from "sveltekit-superforms/adapters";
-	import { z } from "zod";
+	import { kegCreditsFormSchema } from "$lib/keg-credits-form-schema.js";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import {
 		Card,
@@ -18,12 +18,7 @@
 
 	const { data }: { data: PageData } = $props();
 
-	const schema = z.object({
-		sort_order: z.coerce.number().int(),
-		member_label: z.string().min(1),
-		credits: z.coerce.number().nonnegative(),
-		is_cik: z.boolean().default(false)
-	});
+	const schema = kegCreditsFormSchema;
 
 	const { form, errors, enhance, submitting } = superForm(data.form, {
 		validators: zodClient(schema)
@@ -54,10 +49,25 @@
 					{/if}
 				</div>
 				<div class="space-y-2">
-					<Label for="member_label">Member label</Label>
+					<Label for="member_label">Member name</Label>
 					<Input id="member_label" name="member_label" bind:value={$form.member_label} />
 					{#if $errors.member_label}
 						<p class="text-destructive text-sm">{$errors.member_label}</p>
+					{/if}
+				</div>
+				<div class="space-y-2">
+					<Label for="member_number">Member #</Label>
+					<Input
+						id="member_number"
+						name="member_number"
+						type="number"
+						min="1"
+						step="1"
+						placeholder="Optional"
+						bind:value={$form.member_number}
+					/>
+					{#if $errors.member_number}
+						<p class="text-destructive text-sm">{$errors.member_number}</p>
 					{/if}
 				</div>
 				<div class="space-y-2">

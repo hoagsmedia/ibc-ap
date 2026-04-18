@@ -32,6 +32,8 @@
 		"db:sync:images": "tsx scripts/sync-uploadthing-images.ts",
 		"db:studio": "drizzle-kit studio",
 		"db:pull:prod": "bash scripts/pull-prod-to-local.sh",
+		"db:import:stats": "tsx scripts/import-legacy-stats-html.ts",
+		"db:import:stats:prod": "tsx scripts/import-legacy-stats-html.ts --prod",
 		"db:pull:neon": "bash scripts/pull-prod-to-local.sh",
 		"migrate:images": "tsx scripts/migrate-images.ts"
 	},
