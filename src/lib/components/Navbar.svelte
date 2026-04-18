@@ -45,19 +45,30 @@
 <header
 	class="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur"
 >
-	<div class="container flex h-24 items-center">
+	<div
+		class="mx-auto flex h-24 w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8"
+	>
 		{#if !isMobile.current}
-			<!-- Desktop: equal side columns so the nav column is viewport-centered -->
-			<div class="grid w-full grid-cols-[1fr_auto_1fr] items-center gap-4">
-				<div class="flex min-w-0 items-center justify-start">
-					<a href="/" class="flex items-center">
+			<!--
+				Desktop: three equal columns — nav stays visually centered with even side margins.
+				(Matches main content width; avoids justify-between where a wide user block skews the nav.)
+			-->
+			<!--
+				Center column is `auto` so it keeps the nav's intrinsic width (equal `1fr` columns use minmax(0,1fr) and clip).
+			-->
+			<div class="grid h-full w-full grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
+				<div class="flex min-w-0 items-center justify-self-start">
+					<a href="/" class="flex shrink-0 items-center">
 						<img src={logo} alt="Island Beer Club Logo" class="w-[90px] object-contain px-2" />
 					</a>
 				</div>
 
-				<div class="flex min-w-0 justify-center">
-					<NavigationMenu.Root viewport={false} class="hidden md:flex">
-						<NavigationMenu.List class="flex-wrap justify-center">
+				<div class="flex justify-center">
+					<NavigationMenu.Root
+						viewport={false}
+						class="relative flex w-max max-w-none shrink-0 !flex-none"
+					>
+						<NavigationMenu.List class="!flex-nowrap flex-none justify-center gap-0.5 sm:gap-1">
 							{#each navLinks as link (link.href)}
 								<NavigationMenu.Item>
 									<NavigationMenu.Link href={link.href} active={isActive(link.href)}>
@@ -96,13 +107,14 @@
 					</NavigationMenu.Root>
 				</div>
 
-				<div class="flex min-w-0 flex-col items-end justify-center gap-1.5">
+				<div class="flex min-w-0 flex-col items-center justify-self-end justify-center gap-1">
 					{#if isAuthenticated && user}
-						<DropdownMenu.Root>
-							<DropdownMenu.Trigger>
-								<Avatar class="size-8" name={user.name} img={user.img} />
-								<span class="sr-only">Open user menu</span>
-							</DropdownMenu.Trigger>
+						<div class="flex flex-col items-center gap-1">
+							<DropdownMenu.Root>
+								<DropdownMenu.Trigger class="rounded-full outline-offset-2">
+									<Avatar class="size-8" name={user.name} img={user.img} />
+									<span class="sr-only">Open user menu</span>
+								</DropdownMenu.Trigger>
 							<DropdownMenu.Content align="center" class="w-56">
 								<DropdownMenu.Label>My Account</DropdownMenu.Label>
 								<DropdownMenu.Separator />
@@ -133,9 +145,10 @@
 								</DropdownMenu.Item>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
-						<span class="text-muted-foreground max-w-[10rem] truncate text-right text-sm"
-							>{user.name}</span
-						>
+							<span class="text-muted-foreground max-w-[10rem] truncate text-center text-xs leading-tight"
+								>{user.name}</span
+							>
+						</div>
 					{:else}
 						<Button variant="ghost">
 							<a href="/login">Login</a>
