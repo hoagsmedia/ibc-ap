@@ -4,18 +4,27 @@
 # Prerequisites: PostgreSQL client tools (pg_dump, pg_restore) — e.g. `brew install libpq`
 #   and add to PATH: export PATH="$(brew --prefix libpq)/bin:$PATH"
 #
+# URLs can be set in the shell OR in .env / .env.local:
+#   NEON_DATABASE_URL  — Neon connection string (or NEON_URL, or DATABASE_URL_DEV as fallback)
+#   LOCAL_DATABASE_URL — local Postgres (or LOCAL_DB_URL, or DATABASE_URL if it looks local)
+#
 # Usage:
-#   export NEON_DATABASE_URL="postgresql://user:pass@ep-xxx.neon.tech/ibc-db?sslmode=require"
-#   export LOCAL_DATABASE_URL="postgresql://postgres:pass@localhost:5432/ibc"
 #   pnpm db:pull:neon
 #
 # Target database should be empty (or only safe to overwrite). Create first:
-#   createdb -h localhost -U postgres ibc
+#   dropdb ibc && createdb ibc
 
 set -euo pipefail
 
-NEON_URL="${NEON_DATABASE_URL:-${NEON_URL:-}}"
-LOCAL_URL="${LOCAL_DATABASE_URL:-${LOCAL_DB_URL:-}}"
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$ROOT"
+
+# Resolve from .env / .env.local if not already exported (no mapfile — macOS bash is 3.2)
+_PULL_OUT="$(pnpm exec tsx scripts/resolve-pull-env.ts)"
+_NEON_LINE="$(printf '%s\n' "$_PULL_OUT" | sed -n '1p')"
+_LOCAL_LINE="$(printf '%s\n' "$_PULL_OUT" | sed -n '2p')"
+NEON_URL="${NEON_DATABASE_URL:-${NEON_URL:-$_NEON_LINE}}"
+LOCAL_URL="${LOCAL_DATABASE_URL:-${LOCAL_DB_URL:-$_LOCAL_LINE}}"
 
 if [[ -z "$NEON_URL" ]]; then
 	echo "error: Set NEON_DATABASE_URL (or NEON_URL) to your Neon connection string." >&2
