@@ -1,19 +1,17 @@
 #!/usr/bin/env bash
-# Copy Neon **production** (or the URL in DATABASE_URL_PROD) into a local Postgres DB, then use
-# DATABASE_URL=local for `pnpm dev`.
+# Copy Neon **production** (DATABASE_URL_PROD) into local Postgres. Then use DATABASE_URL=local for `pnpm dev`.
 #
-# Prerequisites: pg_dump + pg_restore (e.g. brew install libpq)
+# Needs: pg_dump + psql (e.g. brew install libpq)
 #   export PATH="$(brew --prefix libpq)/bin:$PATH"
 #
-# .env.local (minimal):
+# .env.local:
 #   DATABASE_URL="postgresql://YOU@localhost:5432/ibc"
 #   DATABASE_URL_PROD="postgresql://...@...neon.tech/ibc-db?sslmode=require"
 #
-# Fresh local DB (recommended before pull):
+# **Best results:** empty local DB first (avoids “already exists” / stale schema):
 #   dropdb ibc 2>/dev/null; createdb ibc
 #
-# Run:
-#   pnpm db:pull:prod
+# Run: pnpm db:pull:prod
 
 set -euo pipefail
 
@@ -38,34 +36,26 @@ if [[ -z "$LOCAL_URL" ]]; then
 	exit 1
 fi
 
-for cmd in pg_dump pg_restore; do
+for cmd in pg_dump psql; do
 	if ! command -v "$cmd" &>/dev/null; then
 		echo "error: '$cmd' not found. Install PostgreSQL client tools (e.g. brew install libpq)." >&2
 		exit 1
 	fi
 done
 
-TMPDIR="${TMPDIR:-/tmp}"
-DUMP_FILE="$TMPDIR/ibc-prod-pull-$(date +%Y%m%d%H%M%S).dump"
+echo "==> Dumping Neon → piping into local psql (stripping PG17-only transaction_timeout for older local Postgres)"
 
-echo "==> Dumping remote DB → $DUMP_FILE"
-pg_dump "$NEON_URL" --no-owner --no-acl -F c -f "$DUMP_FILE"
-
-echo "==> Restoring into local database"
 set +e
-pg_restore -d "$LOCAL_URL" --no-owner --no-acl --verbose "$DUMP_FILE"
-RESTORE_STATUS=$?
+pg_dump "$NEON_URL" --no-owner --no-acl -F p | sed -E '/transaction_timeout/d' | psql "$LOCAL_URL" -v ON_ERROR_STOP=1
+PSQL_STATUS=$?
 set -e
 
-if [[ "$RESTORE_STATUS" -ge 2 ]]; then
+if [[ "$PSQL_STATUS" -ne 0 ]]; then
 	echo "" >&2
-	echo "pg_restore failed (exit $RESTORE_STATUS)." >&2
-	echo "Try a clean local DB: dropdb ibc && createdb ibc && pnpm db:pull:prod" >&2
-	exit "$RESTORE_STATUS"
-fi
-if [[ "$RESTORE_STATUS" -eq 1 ]]; then
-	echo "==> pg_restore reported warnings (exit 1); often safe to ignore."
+	echo "psql restore failed (exit $PSQL_STATUS). Common fixes:" >&2
+	echo "  1) Empty local DB, then retry:  dropdb ibc && createdb ibc && pnpm db:pull:prod" >&2
+	echo "  2) Match Postgres major version to Neon (e.g. brew install postgresql@17) if errors persist." >&2
+	exit "$PSQL_STATUS"
 fi
 
-echo "==> Done. Ensure .env.local has DATABASE_URL pointing at local (same as restore target), then: pnpm dev"
-echo "    rm -f \"$DUMP_FILE\"   # optional: remove dump file"
+echo "==> Done. DATABASE_URL should point at the same DB you restored into; then: pnpm dev"
