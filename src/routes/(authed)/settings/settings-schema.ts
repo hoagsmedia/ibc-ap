@@ -6,6 +6,12 @@ export const profileSchema = z.object({
 		.min(2, 'Name must be at least 2 characters')
 		.max(100, 'Name must be less than 100 characters')
 		.trim(),
+	username: z
+		.string()
+		.max(64, 'Username must be 64 characters or less')
+		.regex(/^[a-z0-9_]*$/, 'Username can only contain lowercase letters, numbers, and underscores')
+		.trim()
+		.optional(),
 	phone: z
 		.string()
 		.optional()

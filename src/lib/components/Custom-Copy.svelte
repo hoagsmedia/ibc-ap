@@ -29,7 +29,7 @@
 			toast.success('Copied to clipboard!', {
 				duration: 2000
 			});
-		} catch (error) {
+		} catch {
 			// Fallback method for iOS and older browsers
 			try {
 				const textArea = document.createElement('textarea');
@@ -54,7 +54,7 @@
 				} else {
 					throw new Error('execCommand failed');
 				}
-			} catch (fallbackError) {
+			} catch {
 				toast.error('Failed to copy to clipboard', {
 					duration: 3000
 				});

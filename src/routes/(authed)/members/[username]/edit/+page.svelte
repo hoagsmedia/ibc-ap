@@ -1,46 +1,46 @@
 <script lang="ts">
-	import * as Form from '$lib/components/ui/form/index.js';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import * as Card from '$lib/components/ui/card/index.js';
-	import * as Select from '$lib/components/ui/select/index.js';
-	import * as Dialog from '$lib/components/ui/dialog/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { ArrowLeft, Check, Trash2, KeyRound, Copy } from '@lucide/svelte';
-	import { toast } from 'svelte-sonner';
-	import { Toaster } from '$lib/components/ui/sonner/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	import { memberSchema, type MemberSchema } from './edit-member-schema';
-	import { type SuperValidated, type Infer, superForm } from 'sveltekit-superforms';
-	import { createUploadThing } from '$lib/utils';
-	import { zodClient } from 'sveltekit-superforms/adapters';
-	import { generateUsername } from '$lib/utils';
+	import * as Form from "$lib/components/ui/form/index.js";
+	import Avatar from "$lib/components/Avatar.svelte";
+	import * as Card from "$lib/components/ui/card/index.js";
+	import * as Select from "$lib/components/ui/select/index.js";
+	import * as Dialog from "$lib/components/ui/dialog/index.js";
+	import { Button } from "$lib/components/ui/button/index.js";
+	import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+	import { Toaster } from "$lib/components/ui/sonner/index.js";
+	import { Input } from "$lib/components/ui/input/index.js";
+	import { Textarea } from "$lib/components/ui/textarea/index.js";
+	import { ArrowLeft, Check, Trash2, KeyRound, Copy } from "@lucide/svelte";
+	import { toast } from "svelte-sonner";
+	import { memberSchema } from "./edit-member-schema";
+	import { superForm } from "sveltekit-superforms";
+	import { createUploadThing } from "$lib/utils";
+	import { zodClient } from "sveltekit-superforms/adapters";
+	import type { PageData } from "./$types";
 
-	let { data }: { data: { form: SuperValidated<Infer<MemberSchema>>; member: any; user: any } } =
-		$props();
+	let { data }: { data: PageData } = $props();
 	let uploading = $state(false);
 	let fileInput = $state<HTMLInputElement | null>(null);
 	let deleteDialogOpen = $state(false);
-	let deleteConfirmText = $state('');
+	let deleteConfirmText = $state("");
 	let resetPasswordDialogOpen = $state(false);
-	let tempPassword = $state('');
+	let tempPassword = $state("");
 
 	// Check if current user is admin (for delete access)
-	const isAdmin = $derived(data.user?.role === 'admin');
+	const isAdmin = $derived(data.user?.role === "admin");
 
 	// Update form
 	const form = superForm(data.form, {
 		validators: zodClient(memberSchema),
 		resetForm: false,
 		onResult: ({ result }) => {
-			if (result.type === 'success') {
-				toast.success('Member updated successfully!', {
+			if (result.type === "success") {
+				toast.success("Member updated successfully!", {
 					icon: Check,
 					duration: 3000,
-					position: 'bottom-right',
-					class: 'bg-green-50 text-green-800',
+					position: "bottom-right",
+					class: "bg-green-50 text-green-800",
 					action: {
-						label: 'Close',
+						label: "Close",
 						onClick: () => toast.dismiss()
 					}
 				});
@@ -52,26 +52,26 @@
 
 	// Delete form
 	const deleteForm = superForm(data.form, {
-		id: 'delete-member',
+		id: "delete-member",
 		resetForm: false,
 		onResult: ({ result }) => {
-			if (result.type === 'success') {
-				toast.success('Member deleted successfully!', {
+			if (result.type === "success") {
+				toast.success("Member deleted successfully!", {
 					icon: Check,
 					duration: 3000,
-					position: 'bottom-right'
+					position: "bottom-right"
 				});
 				// Redirect to members list after successful deletion
-				window.location.href = '/members';
-			} else if (result.type === 'error') {
-				toast.error('Failed to delete member. Please try again.', {
+				window.location.href = "/members";
+			} else if (result.type === "error") {
+				toast.error("Failed to delete member. Please try again.", {
 					duration: 5000,
-					position: 'bottom-right'
+					position: "bottom-right"
 				});
 			}
 			// Close dialog regardless
 			deleteDialogOpen = false;
-			deleteConfirmText = '';
+			deleteConfirmText = "";
 		}
 	});
 
@@ -79,26 +79,26 @@
 
 	// Reset password form
 	const resetPasswordForm = superForm(data.form, {
-		id: 'reset-password',
+		id: "reset-password",
 		resetForm: false,
 		onResult: ({ result }) => {
-			if (result.type === 'success' && result.data?.tempPassword) {
+			if (result.type === "success" && result.data?.tempPassword) {
 				tempPassword = result.data.tempPassword;
 				resetPasswordDialogOpen = true;
 				toast.success(`Password reset for ${result.data.memberName}`, {
 					icon: Check,
 					duration: 5000,
-					position: 'bottom-right'
+					position: "bottom-right"
 				});
-			} else if (result.type === 'failure' && result.data?.message) {
+			} else if (result.type === "failure" && result.data?.message) {
 				toast.error(result.data.message, {
 					duration: 5000,
-					position: 'bottom-right'
+					position: "bottom-right"
 				});
-			} else if (result.type === 'error') {
-				toast.error('Failed to reset password. Please try again.', {
+			} else if (result.type === "error") {
+				toast.error("Failed to reset password. Please try again.", {
 					duration: 5000,
-					position: 'bottom-right'
+					position: "bottom-right"
 				});
 			}
 		}
@@ -107,8 +107,8 @@
 	const { enhance: enhanceResetPassword, submitting: isResettingPassword } = resetPasswordForm;
 
 	// Create UploadThing helper
-	const { startUpload } = createUploadThing('updateMemberImage', {
-		onClientUploadComplete: (res) => {
+	const { startUpload } = createUploadThing("updateMemberImage", {
+		onClientUploadComplete: () => {
 			uploading = false;
 			// Refresh the page to show the new image
 			window.location.reload();
@@ -117,7 +117,7 @@
 			uploading = false;
 			alert(`Upload failed: ${error.message}`);
 		},
-		onUploadBegin: (name) => {
+		onUploadBegin: () => {
 			uploading = true;
 		}
 	});
@@ -136,19 +136,19 @@
 				await startUpload(Array.from(files));
 			} catch (error) {
 				uploading = false;
-				console.error('Upload failed:', error);
+				console.error("Upload failed:", error);
 			}
 		}
 	}
 
 	function openDeleteDialog() {
-		deleteConfirmText = '';
+		deleteConfirmText = "";
 		deleteDialogOpen = true;
 	}
 
 	function closeDeleteDialog() {
 		deleteDialogOpen = false;
-		deleteConfirmText = '';
+		deleteConfirmText = "";
 	}
 
 	function openResetPasswordDialog() {
@@ -157,21 +157,21 @@
 
 	function closeResetPasswordDialog() {
 		resetPasswordDialogOpen = false;
-		tempPassword = '';
+		tempPassword = "";
 	}
 
 	async function copyToClipboard(text: string) {
 		try {
 			await navigator.clipboard.writeText(text);
-			toast.success('Password copied to clipboard!', {
+			toast.success("Password copied to clipboard!", {
 				duration: 2000,
-				position: 'bottom-right'
+				position: "bottom-right"
 			});
 		} catch (err) {
-			console.error('Failed to copy to clipboard:', err);
-			toast.error('Failed to copy to clipboard', {
+			console.error("Failed to copy to clipboard:", err);
+			toast.error("Failed to copy to clipboard", {
 				duration: 3000,
-				position: 'bottom-right'
+				position: "bottom-right"
 			});
 		}
 	}
@@ -195,7 +195,12 @@
 	<Card.Content>
 		<div class="flex items-center space-x-6">
 			<!-- Current member image -->
-			<Avatar class="size-24" name={data.member?.name} img={data.member?.img || $formData.img} />
+			<Avatar
+				class="size-24"
+				name={data.member?.name}
+				img={data.member?.img || $formData.img}
+				dops={$formData.dops}
+			/>
 
 			<div class="flex-1">
 				<div class="space-y-4">
@@ -308,7 +313,7 @@
 								<Select.Trigger class="w-36" {...props}>
 									{$formData.role
 										? $formData.role.charAt(0).toUpperCase() + $formData.role.slice(1)
-										: 'Select Role'}
+										: "Select Role"}
 								</Select.Trigger>
 								<Select.Content>
 									<Select.Group>
@@ -323,6 +328,26 @@
 					<Form.Description
 						>Changing this status will update member site privileges.</Form.Description
 					>
+					<Form.FieldErrors />
+				</Form.Field>
+				<Form.Field {form} name="dops_date">
+					<Form.Control>
+						{#snippet children({ props })}
+							<Form.Label>DOPS</Form.Label>
+							<Input type="date" {...props} bind:value={$formData.dops_date} />
+						{/snippet}
+					</Form.Control>
+					<Form.Description>Date of Permanent Sobriety.</Form.Description>
+					<Form.FieldErrors />
+				</Form.Field>
+				<Form.Field {form} name="dops">
+					<Form.Control>
+						{#snippet children({ props })}
+							<Form.Label>DOPS</Form.Label>
+							<Checkbox {...props} bind:checked={$formData.dops} />
+						{/snippet}
+					</Form.Control>
+					<Form.Description>Check if member is DOPS.</Form.Description>
 					<Form.FieldErrors />
 				</Form.Field>
 			</div>
@@ -386,10 +411,10 @@
 				<div class="flex flex-col gap-4 md:flex-row md:justify-between">
 					<div class="flex flex-col gap-4 md:flex-row">
 						<Button type="submit" disabled={$submitting}>
-							{$submitting ? 'Updating...' : 'Update Member'}
+							{$submitting ? "Updating..." : "Update Member"}
 						</Button>
 						<Button type="button" variant="outline" onclick={() => history.back()}
-							>{$message ? 'Close' : 'Cancel'}</Button
+							>{$message ? "Close" : "Cancel"}</Button
 						>
 					</div>
 
@@ -470,7 +495,7 @@
 				<Button
 					type="submit"
 					variant="destructive"
-					disabled={deleteConfirmText !== 'DELETE' || $isDeleting}
+					disabled={deleteConfirmText !== "DELETE" || $isDeleting}
 					class="flex items-center gap-2"
 				>
 					{#if $isDeleting}

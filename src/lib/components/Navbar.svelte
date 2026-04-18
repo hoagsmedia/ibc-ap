@@ -54,7 +54,7 @@
 			<!-- Desktop Navigation -->
 			<NavigationMenu.Root viewport={false} class="hidden md:flex">
 				<NavigationMenu.List>
-					{#each navLinks as link}
+					{#each navLinks as link (link.href)}
 						<NavigationMenu.Item>
 							<NavigationMenu.Link href={link.href} active={isActive(link.href)}>
 								{link.label}
@@ -66,7 +66,7 @@
 						<NavigationMenu.Trigger>More</NavigationMenu.Trigger>
 						<NavigationMenu.Content>
 							<ul class="grid w-[300px] gap-3 p-2">
-								{#each dropdownLinks as link}
+								{#each dropdownLinks as link (link.href)}
 									<li>
 										<NavigationMenu.Link href={link.href} active={isActive(link.href)}>
 											<div class="font-medium">{link.label}</div>
@@ -170,7 +170,7 @@
 						<nav class="flex-grow pl-6">
 							<ScrollArea class=" h-2/3">
 								<div class="flex flex-col space-y-2">
-									{#each [...navLinks, ...dropdownLinks] as link}
+									{#each [...navLinks, ...dropdownLinks] as link (link.href)}
 										<a
 											href={link.href}
 											class="text-foreground hover:bg-muted -mx-3 block rounded-lg px-3 py-2 text-base"

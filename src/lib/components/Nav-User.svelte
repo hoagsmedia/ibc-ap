@@ -17,7 +17,7 @@
 		user,
 		isOpen = $bindable()
 	}: {
-		user: { name: string; email: string; img: string; role?: string };
+		user: { name: string; email?: string | null; username?: string | null; img: string; role?: string };
 		isOpen?: boolean;
 	} = $props();
 </script>
@@ -29,7 +29,7 @@
 				<Avatar class="size-8 rounded-lg" name={user.name} img={user.img} />
 				<div class="grid flex-1 text-left text-sm leading-tight">
 					<span class="truncate font-medium">{user.name}</span>
-					<span class="truncate text-xs">{user.email}</span>
+					<span class="truncate text-xs">{user.email ?? user.username ?? 'Member'}</span>
 				</div>
 				<ChevronsUpDownIcon class="ml-auto size-4" />
 			</Button>
@@ -46,7 +46,7 @@
 				<Avatar class="size-8 rounded-lg" name={user.name} img={user.img} />
 				<div class="grid flex-1 text-left text-sm leading-tight">
 					<span class="truncate font-medium">{user.name}</span>
-					<span class="truncate text-xs">{user.email}</span>
+					<span class="truncate text-xs">{user.email ?? user.username ?? 'Member'}</span>
 				</div>
 			</div>
 		</DropdownMenu.Label>

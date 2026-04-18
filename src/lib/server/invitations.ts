@@ -1,9 +1,21 @@
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import { encodeBase64url } from '@oslojs/encoding';
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
+export const INVITATION_COOLDOWN_DAYS = 7;
+
+/** Returns the created_at of the most recent invitation by this user, or null if none. */
+export async function getLastInvitationCreatedAt(createdById: string): Promise<Date | null> {
+	const [row] = await db
+		.select({ created_at: table.invitationTokens.created_at })
+		.from(table.invitationTokens)
+		.where(eq(table.invitationTokens.created_by_id, createdById))
+		.orderBy(desc(table.invitationTokens.created_at))
+		.limit(1);
+	return row?.created_at ?? null;
+}
 
 export function generateInvitationToken(): string {
 	const bytes = crypto.getRandomValues(new Uint8Array(32));

@@ -10,8 +10,8 @@
 	let uploading = $state(false);
 
 	// Create UploadThing helper
-	const { startUpload, isUploading } = createUploadThing("profileImageUploader", {
-		onClientUploadComplete: (res) => {
+	const { startUpload } = createUploadThing("profileImageUploader", {
+		onClientUploadComplete: () => {
 			uploading = false;
 			// Refresh the page to show the new image
 			window.location.reload();
@@ -20,7 +20,7 @@
 			uploading = false;
 			alert(`Upload failed: ${error.message}`);
 		},
-		onUploadBegin: (name) => {
+		onUploadBegin: () => {
 			uploading = true;
 		}
 	});
@@ -39,7 +39,7 @@
 		if (files && files.length > 0) {
 			try {
 				await startUpload(Array.from(files));
-			} catch (error) {
+			} catch {
 				uploading = false;
 			}
 		}
@@ -72,8 +72,8 @@
 						/>
 						<div class="text-center">
 							<div class="text-card-foreground text-lg font-semibold">{data.user.name}</div>
-							{#if data.user.email}
-								<div class="text-muted-foreground text-sm">{data.user.email}</div>
+							{#if data.user.email ?? data.user.username}
+								<div class="text-muted-foreground text-sm">{data.user.email ?? data.user.username}</div>
 							{/if}
 						</div>
 						<div class="w-full max-w-xs">
@@ -123,8 +123,8 @@
 						/>
 						<div class="text-center">
 							<div class="text-card-foreground text-lg font-semibold">{data.user.name}</div>
-							{#if data.user.email}
-								<div class="text-muted-foreground text-sm">{data.user.email}</div>
+							{#if data.user.email ?? data.user.username}
+								<div class="text-muted-foreground text-sm">{data.user.email ?? data.user.username}</div>
 							{/if}
 						</div>
 					</Card.Content>

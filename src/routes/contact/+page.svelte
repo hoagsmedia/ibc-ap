@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { PageData } from "./$types";
 	import * as Card from "$lib/components/ui/card";
-	import { Field, Control, Label, FieldErrors, Description } from "formsnap";
+	import { Field, Control, Label, FieldErrors } from "formsnap";
 	import { Button } from "$lib/components/ui/button";
 	import { Input } from "$lib/components/ui/input";
 	import { Textarea } from "$lib/components/ui/textarea";
@@ -18,14 +18,14 @@
 		resetForm: true,
 		onUpdate: ({ form: f }) => {
 			if (f.valid) {
-				toast.success(`You submitted ${JSON.stringify(f.data, null, 2)}`);
+				toast.success("Message sent. Thanks — we'll be in touch soon.");
 			} else {
 				toast.error("Please fix the errors in the form.");
 			}
 		}
 	});
 
-	const { form: formData, enhance, errors, submitting } = form;
+	const { form: formData, enhance } = form;
 </script>
 
 <div class="bg-muted flex min-h-svh flex-col items-center justify-center gap-6 p-6 md:p-10">

@@ -1,5 +1,6 @@
 import type { PageServerLoad, Actions } from "./$types";
 import { validateInvitationToken, markInvitationTokenAsUsed } from "$lib/server/invitations";
+import { getUniqueUsernameForNewUser } from "$lib/server/username";
 import { error, redirect, fail } from "@sveltejs/kit";
 import { generateSessionToken, createSession, setSessionTokenCookie } from "$lib/server/auth";
 import { hash } from "argon2";
@@ -91,23 +92,29 @@ export const actions: Actions = {
 			// Hash password
 			const passwordHash = await hash(password);
 
+			// Assign username (same format as rest: last name base, unique suffix)
+			const username = await getUniqueUsernameForNewUser(name);
+
 			// Create user
 			const userId = crypto.randomUUID();
-			const newUser: table.User = {
+			const newUser = {
 				id: userId,
 				name,
+				username,
 				email,
-				password_hash: passwordHash, // Using bcrypt for password hashing
+				password_hash: passwordHash,
 				phone: phone || null,
 				address: address || null,
 				bio: bio || null,
 				hobbies: hobbies || null,
 				img: null,
-				role: "guest", // Users invited get guest role by default
+				role: "guest" as const,
 				likes: likes || null,
 				mbr: null,
 				msd: null,
 				sponsor: sponsor || null,
+				dops: false,
+				dops_date: null,
 				test_passed: null,
 				created_at: new Date(),
 				updated_at: new Date()

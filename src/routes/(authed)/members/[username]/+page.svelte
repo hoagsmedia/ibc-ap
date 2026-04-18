@@ -1,35 +1,38 @@
 <script lang="ts">
-	import * as Card from '$lib/components/ui/card/index.js';
-	import Avatar from '$lib/components/Avatar.svelte';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Button } from '$lib/components/ui/button/index.js';
-	import { ArrowLeft, Mail, Calendar, User, Hash, Heart } from '@lucide/svelte';
-	import type { PageData } from './$types';
+	import * as Card from "$lib/components/ui/card/index.js";
+	import Avatar from "$lib/components/Avatar.svelte";
+	import { Badge } from "$lib/components/ui/badge/index.js";
+	import { Button } from "$lib/components/ui/button/index.js";
+	import { ArrowLeft, Mail, Calendar, Hash, Heart } from "@lucide/svelte";
+	import type { PageData } from "./$types";
 
 	let { data }: { data: PageData } = $props();
 
+	// Slug for member links (username when set, else id for pending users)
+	const memberSlug = $derived(data.member.username ?? data.member.id);
+
 	// Format date helper
 	function formatDate(date: Date | string | null): string {
-		if (!date) return 'Not set';
-		const parsedDate = typeof date === 'string' ? new Date(date) : date;
-		return new Intl.DateTimeFormat('en-US', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
+		if (!date) return "Not set";
+		const parsedDate = typeof date === "string" ? new Date(date) : date;
+		return new Intl.DateTimeFormat("en-US", {
+			year: "numeric",
+			month: "long",
+			day: "numeric"
 		}).format(parsedDate);
 	}
 
 	// Format role badge variant
-	function getRoleBadgeVariant(role: string): 'default' | 'secondary' | 'destructive' | 'outline' {
+	function getRoleBadgeVariant(role: string): "default" | "secondary" | "destructive" | "outline" {
 		switch (role) {
-			case 'admin':
-				return 'destructive';
-			case 'member':
-				return 'default';
-			case 'guest':
-				return 'secondary';
+			case "admin":
+				return "destructive";
+			case "member":
+				return "default";
+			case "guest":
+				return "secondary";
 			default:
-				return 'outline';
+				return "outline";
 		}
 	}
 </script>
@@ -54,7 +57,12 @@
 		<Card.Root class="w-full max-w-sm lg:col-span-1">
 			<Card.Header class="text-center">
 				<div class="mx-auto mb-4">
-					<Avatar class="size-24" name={data.member.name} img={data.member.img ?? undefined} />
+					<Avatar
+						class="size-24"
+						name={data.member.name}
+						img={data.member.img ?? undefined}
+						dops={data.member.dops ?? undefined}
+					/>
 				</div>
 				<Card.Title class="text-2xl">{data.member.name}</Card.Title>
 				<Card.Description>
@@ -66,7 +74,7 @@
 			<Card.Content class="space-y-4">
 				<div class="text-muted-foreground flex items-center gap-2 text-sm">
 					<Mail class="size-4" />
-					{data.member.email}
+					{data.member.email ?? data.member.username ?? "N/A"}
 				</div>
 				{#if data.member.mbr}
 					<div class="text-muted-foreground flex items-center gap-2 text-sm">
@@ -78,6 +86,12 @@
 					<div class="text-muted-foreground flex items-center gap-2 text-sm">
 						<Calendar class="size-4" />
 						Member since {formatDate(data.member.msd)}
+					</div>
+				{/if}
+				{#if data.member.dops_date}
+					<div class="text-muted-foreground flex items-center gap-2 text-sm">
+						<Calendar class="size-4" />
+						Date of Permanent Sobriety: {formatDate(data.member.dops_date)}
 					</div>
 				{/if}
 			</Card.Content>
@@ -131,7 +145,7 @@
 						<div>
 							<h4 class="mb-2 font-medium">Member Number</h4>
 							<p class="text-muted-foreground text-sm">
-								{data.member.mbr || 'Not assigned'}
+								{data.member.mbr || "Not assigned"}
 							</p>
 						</div>
 						<div>
@@ -143,20 +157,20 @@
 						<div>
 							<h4 class="mb-2 font-medium">Test Passed</h4>
 							<p class="text-muted-foreground text-sm">
-								{data.member.test_passed ? formatDate(data.member.test_passed) : 'Not completed'}
+								{data.member.test_passed ? formatDate(data.member.test_passed) : "Not completed"}
 							</p>
 						</div>
 						<div>
 							<h4 class="mb-2 font-medium">Member Since</h4>
 							<p class="text-muted-foreground text-sm">
-								{data.member.msd ? formatDate(data.member.msd) : 'Not set'}
+								{data.member.msd ? formatDate(data.member.msd) : "Not set"}
 							</p>
 						</div>
 					</div>
 				</Card.Content>
 			</Card.Root>
 
-			{#if data.user.role === 'admin'}
+			{#if data.user?.role === "admin"}
 				<!-- Actions -->
 				<Card.Root class="w-full max-w-sm md:max-w-full">
 					<Card.Header>
@@ -164,8 +178,7 @@
 					</Card.Header>
 					<Card.Content>
 						<div class="flex flex-col gap-2 md:flex-row">
-							<Button variant="outline" href={`/members/${data.member.id}/edit`}>Edit Member</Button
-							>
+							<Button variant="outline" href={`/members/${memberSlug}/edit`}>Edit Member</Button>
 							<!-- <Button disabled variant="outline">Send Message</Button> -->
 						</div>
 					</Card.Content>

@@ -1,3 +1,4 @@
+import { dev } from "$app/environment";
 import { redirect, error } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
@@ -18,7 +19,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	// If client indicates it's using cache and has results, return minimal data
 	if (useCache && searchTerm) {
-		console.log("[IBC-LOG] [members] Using cached results for search term:", searchTerm);
+		if (dev) {
+			console.log("[IBC-LOG] [members] Using cached results for search term:", searchTerm);
+		}
 		return {
 			members: [],
 			searchTerm,
@@ -52,6 +55,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			conditions = or(
 				ilike(users.name, `%${searchTerm}%`),
 				ilike(users.email, `%${searchTerm}%`),
+				ilike(users.username, `%${searchTerm}%`),
 				sql`CAST(${users.mbr} AS TEXT) LIKE ${`%${searchTerm}%`}`,
 				sql`${users.mbr} = ${numericSearchTerm}`
 			);
@@ -60,6 +64,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			conditions = or(
 				ilike(users.name, `%${searchTerm}%`),
 				ilike(users.email, `%${searchTerm}%`),
+				ilike(users.username, `%${searchTerm}%`),
 				sql`CAST(${users.mbr} AS TEXT) LIKE ${`%${searchTerm}%`}`
 			);
 		}
@@ -71,8 +76,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			id: users.id,
 			name: users.name,
 			email: users.email,
+			username: users.username,
 			mbr: users.mbr,
 			role: users.role,
+			dops: users.dops,
+			dops_date: users.dops_date,
 			created_at: users.created_at,
 			test_passed: users.test_passed,
 			img: users.img,
@@ -88,8 +96,11 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		id: row.id,
 		name: row.name,
 		email: row.email,
+		username: row.username,
 		mbr: row.mbr,
 		role: row.role,
+		dops: row.dops,
+		dops_date: row.dops_date,
 		created_at: row.created_at,
 		test_passed: row.test_passed,
 		img: row.img

@@ -1,25 +1,25 @@
 <script lang="ts">
-	import * as Card from '$lib/components/ui/card/index.js';
-	import { Badge } from '$lib/components/ui/badge/index.js';
-	import { Calendar, MapPin, Clock } from '@lucide/svelte';
-	import type { PageData } from './$types.js';
+	import * as Card from "$lib/components/ui/card/index.js";
+	import { Badge } from "$lib/components/ui/badge/index.js";
+	import { Calendar, MapPin, Clock } from "@lucide/svelte";
+	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
 
 	function formatDate(date: Date | null) {
-		if (!date) return 'No date set';
-		return new Intl.DateTimeFormat('en-US', {
-			year: 'numeric',
-			month: 'long',
-			day: 'numeric'
+		if (!date) return "No date set";
+		return new Intl.DateTimeFormat("en-US", {
+			year: "numeric",
+			month: "long",
+			day: "numeric"
 		}).format(date);
 	}
 
 	function formatTime(date: Date | null) {
-		if (!date) return '';
-		return new Intl.DateTimeFormat('en-US', {
-			hour: '2-digit',
-			minute: '2-digit'
+		if (!date) return "";
+		return new Intl.DateTimeFormat("en-US", {
+			hour: "2-digit",
+			minute: "2-digit"
 		}).format(date);
 	}
 
@@ -93,14 +93,14 @@
 					Upcoming Events
 				</h2>
 				<div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-					{#each upcomingEvents as event}
+					{#each upcomingEvents as event (event.id)}
 						<Card.Root class="flex h-full min-h-[300px] flex-col transition-shadow hover:shadow-lg">
 							{#if event.img}
 								<div class="-mt-6 overflow-hidden rounded-t-lg">
 									<img src={event.img} alt={event.title} class="h-48 w-full object-cover" />
 								</div>
 							{/if}
-							<Card.Header class={event.img ? '' : 'rounded-t-lg'}>
+							<Card.Header class={event.img ? "" : "rounded-t-lg"}>
 								<div class="flex items-start justify-between">
 									<div class="space-y-2">
 										<Card.Title class="text-xl">{event.title}</Card.Title>
@@ -150,16 +150,16 @@
 					Past Events
 				</h2>
 				<div class="grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-					{#each pastEvents as event}
+					{#each pastEvents as event (event.id)}
 						<Card.Root
 							class="flex h-full min-h-[250px] flex-col opacity-90 transition-shadow hover:shadow-lg"
 						>
 							{#if event.img}
-								<div class="overflow-hidden rounded-t-lg">
+								<div class="-mt-6 overflow-hidden rounded-t-lg">
 									<img src={event.img} alt={event.title} class="h-32 w-full object-cover" />
 								</div>
 							{/if}
-							<Card.Header class={event.img ? '' : 'rounded-t-lg'}>
+							<Card.Header class={event.img ? "" : "rounded-t-lg"}>
 								<div class="space-y-2">
 									<Card.Title class="text-lg">{event.title}</Card.Title>
 									{#if event.description}

@@ -6,24 +6,30 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
+		"build:vercel": "tsx scripts/ensure-users-schema.ts && vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
+		"lint:ts": "eslint vite.config.ts drizzle.config.ts scripts src --ignore-pattern \"**/*.svelte\"",
+		"ci": "pnpm check && eslint . && vitest run && vite build",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
-		"db:migrate": "drizzle-kit migrate --config=drizzle.config.ts ",
-		"db:migrate:dev": "drizzle-kit migrate --config=drizzle-dev.config.ts ",
+		"db:generate": "drizzle-kit generate --config=drizzle.config.ts",
+		"db:generate:dev": "cross-env TARGET=dev drizzle-kit generate --config=drizzle.config.ts",
+		"db:generate:prod": "cross-env TARGET=prod drizzle-kit generate --config=drizzle.config.ts",
+		"db:migrate": "drizzle-kit migrate --config=drizzle.config.ts",
+		"db:migrate:dev": "cross-env TARGET=dev drizzle-kit migrate --config=drizzle.config.ts",
+		"db:migrate:prod": "cross-env TARGET=prod drizzle-kit migrate --config=drizzle.config.ts",
 		"db:push": "drizzle-kit push --config=drizzle.config.ts",
-		"db:push:prod": "drizzle-kit push --config=drizzle-prod.config.ts",
-		"db:push:dev": "drizzle-kit push --config=drizzle-dev.config.ts",
-		"db:generate": "drizzle-kit generate --config=drizzle.config.ts ",
-		"db:generate:prod": "drizzle-kit generate --config=drizzle-prod.config.ts",
-		"db:generate:dev": "drizzle-kit generate --config=drizzle-dev.config.ts",
+		"db:push:dev": "cross-env TARGET=dev drizzle-kit push --config=drizzle.config.ts",
+		"db:push:prod": "cross-env TARGET=prod drizzle-kit push --config=drizzle.config.ts",
 		"db:seed:dev": "NODE_ENV=development tsx scripts/seed-users.ts",
 		"db:seed": "tsx scripts/seed-users.ts",
+		"db:seed:csv": "tsx scripts/seed-from-csv.ts",
+		"db:sync:images": "tsx scripts/sync-uploadthing-images.ts",
 		"db:studio": "drizzle-kit studio",
 		"migrate:images": "tsx scripts/migrate-images.ts"
 	},
@@ -44,8 +50,10 @@
 		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/svelte": "^5.2.8",
 		"@types/node": "^22.15.33",
+		"@types/pg": "^8.15.4",
 		"bits-ui": "^2.8.8",
 		"clsx": "^2.1.1",
+		"cross-env": "^7.0.3",
 		"dotenv": "^16.5.0",
 		"drizzle-kit": "^0.31.2",
 		"embla-carousel-svelte": "^8.6.0",
@@ -77,10 +85,10 @@
 		"@neondatabase/serverless": "^0.10.4",
 		"@oslojs/crypto": "^1.0.1",
 		"@oslojs/encoding": "^1.1.0",
-		"@types/pg": "^8.15.4",
-		"@uploadthing/svelte": "^7.3.2",
+		"@uploadthing/svelte": "^7.3.3",
 		"@vercel/analytics": "^1.5.0",
 		"argon2": "^0.43.0",
+		"csv-parse": "^6.1.0",
 		"drizzle-orm": "^0.40.1",
 		"drizzle-seed": "^0.3.1",
 		"formsnap": "^2.0.1",
@@ -89,12 +97,18 @@
 		"pg": "^8.16.2",
 		"postgres": "^3.4.7",
 		"svelte-sonner": "^1.0.5",
-		"uploadthing": "^7.7.3",
+		"uploadthing": "^7.7.4",
 		"zod": "^3.25.67"
+	},
+	"engines": {
+		"node": ">=22"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
-			"esbuild"
+			"@tailwindcss/oxide",
+			"argon2",
+			"esbuild",
+			"msgpackr-extract"
 		]
 	}
 }

@@ -1,4 +1,5 @@
 import type { RequestEvent } from "@sveltejs/kit";
+import { dev } from "$app/environment";
 import { eq } from "drizzle-orm";
 import { sha256 } from "@oslojs/crypto/sha2";
 import { encodeBase64url, encodeHexLowerCase } from "@oslojs/encoding";
@@ -23,10 +24,12 @@ export async function createSession(token: string, userId: string) {
 		expires_at: new Date(Date.now() + DAY_IN_MS * 30)
 	};
 	await db.insert(table.session).values(session);
-	console.log("[IBC-LOG] [auth] Session created", {
-		userId: userId.slice(0, 5) + "...",
-		sessionId: sessionId.slice(0, 5) + "..."
-	});
+	if (dev) {
+		console.log("[IBC-LOG] [auth] Session created", {
+			userId: userId.slice(0, 5) + "...",
+			sessionId: sessionId.slice(0, 5) + "..."
+		});
+	}
 	return session;
 }
 
@@ -36,9 +39,11 @@ export async function validateSessionToken(token: string) {
 	}
 
 	const sessionId = encodeHexLowerCase(sha256(new TextEncoder().encode(token)));
-	console.log("[IBC-LOG] [auth] Validating session token", {
-		sessionId: sessionId.slice(0, 5) + "..."
-	});
+	if (dev) {
+		console.log("[IBC-LOG] [auth] Validating session token", {
+			sessionId: sessionId.slice(0, 5) + "..."
+		});
+	}
 
 	try {
 		const [result] = await db
@@ -48,6 +53,7 @@ export async function validateSessionToken(token: string) {
 					id: table.users.id,
 					name: table.users.name,
 					email: table.users.email,
+					username: table.users.username,
 					role: table.users.role,
 					img: table.users.img,
 					mbr: table.users.mbr,

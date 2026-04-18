@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const memberSchema = z.object({
 	id: z.string().optional(),
@@ -7,6 +7,8 @@ export const memberSchema = z.object({
 	phone: z.string().optional(),
 	address: z.string().optional(),
 	password_hash: z.string(),
+	dops: z.boolean(),
+	dops_date: z.string().optional(), // Date of Permanent Sobriety
 	bio: z.string().optional(),
 	hobbies: z.string().optional(),
 	img: z.string().optional(),

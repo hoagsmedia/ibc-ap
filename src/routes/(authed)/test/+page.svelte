@@ -40,10 +40,6 @@
 		}
 	});
 
-	function selectAnswer(questionId: number, answerIndex: number) {
-		selectedAnswers[questionId] = answerIndex;
-	}
-
 	function navigateToDashboard() {
 		goto('/dashboard');
 	}
@@ -92,7 +88,7 @@
 					class="space-y-8"
 				>
 					{#if data.questions}
-						{#each data.questions as question, index}
+						{#each data.questions as question (question.id)}
 							<Card class="border-border">
 								<CardHeader class="pb-4">
 									<CardTitle class="text-lg">
@@ -100,7 +96,7 @@
 									</CardTitle>
 								</CardHeader>
 								<CardContent class="space-y-3">
-									{#each question.options as option, optionIndex}
+									{#each question.options as option, optionIndex (question.id + "-" + optionIndex)}
 										<Label
 											class="border-border hover:bg-muted/50 flex cursor-pointer items-center space-x-3 rounded-lg border p-3"
 										>
@@ -182,7 +178,7 @@
 					<h3 class="text-foreground text-lg font-semibold">Review Your Answers:</h3>
 
 					{#if form?.results && data.questions}
-						{#each form.results as result}
+						{#each form.results as result (result.questionId)}
 							{@const question = data.questions.find((q) => q.id === result.questionId)}
 							<Card class="border-border">
 								<CardContent class="p-4">
@@ -250,17 +246,15 @@
 	<Dialog open={showPassDialog}>
 		<DialogContent>
 			<DialogHeader>
-				<DialogTitle>🎉 Welcome to the Island Beer Club!</DialogTitle>
+				<DialogTitle>🎉 You passed the test!</DialogTitle>
 			</DialogHeader>
 			<div class="space-y-4">
 				<p class="text-muted-foreground">
-					Congratulations! You have successfully passed the Island Beer Club test and are now an
-					official member.
+					Congratulations! You have successfully passed the Island Beer Club test.
 				</p>
-				<div class="rounded-md bg-green-50 p-3 dark:bg-green-950">
-					<p class="text-sm text-green-800 dark:text-green-200">
-						✅ <strong>Member privileges unlocked:</strong> You can now create invitation links and access
-						all member features.
+				<div class="rounded-md bg-muted p-3">
+					<p class="text-muted-foreground text-sm">
+						An admin will review your profile and assign you a member number. After that, you’ll be able to create invitation links and use all member features.
 					</p>
 				</div>
 			</div>
