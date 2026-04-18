@@ -31,6 +31,7 @@
 		"db:seed:csv": "tsx scripts/seed-from-csv.ts",
 		"db:sync:images": "tsx scripts/sync-uploadthing-images.ts",
 		"db:studio": "drizzle-kit studio",
+		"db:pull:neon": "bash scripts/pull-neon-to-local.sh",
 		"migrate:images": "tsx scripts/migrate-images.ts"
 	},
 	"devDependencies": {
