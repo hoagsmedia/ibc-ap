@@ -1,8 +1,7 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { LayoutData } from './$types';
+	import type { Snippet } from 'svelte';
 
-	let { children, data }: { children: any; data: LayoutData } = $props();
+	let { children }: { children: Snippet } = $props();
 </script>
 
 <!-- Main content -->

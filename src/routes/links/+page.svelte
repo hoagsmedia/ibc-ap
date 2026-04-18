@@ -62,11 +62,11 @@
 
 <section class="mx-auto max-w-2xl px-4 py-12 text-black">
 	<h1 class="mb-6 text-center text-3xl font-bold">Beer Links & Resources</h1>
-	{#each links as section}
+	{#each links as section (section.category)}
 		<div class="mb-8">
 			<h2 class="mb-2 text-xl font-semibold">{section.category}</h2>
 			<ul class="space-y-2">
-				{#each section.items as item}
+				{#each section.items as item (item.url + item.name)}
 					<li>
 						<a
 							href={item.url}

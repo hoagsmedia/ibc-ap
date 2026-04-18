@@ -3,7 +3,7 @@
 	import Avatar from "$lib/components/Avatar.svelte";
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
-	import { ArrowLeft, Mail, Calendar, User, Hash, Heart } from "@lucide/svelte";
+	import { ArrowLeft, Mail, Calendar, Hash, Heart } from "@lucide/svelte";
 	import type { PageData } from "./$types";
 
 	let { data }: { data: PageData } = $props();

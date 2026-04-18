@@ -50,9 +50,6 @@
 		onUploadError: (error: Error) => {
 			console.error('Upload failed:', error);
 			alert(`Upload failed: ${error.message}`);
-		},
-		onUploadBegin: () => {
-			console.log('Upload starting...');
 		}
 	});
 

@@ -301,7 +301,7 @@
 									<div class="space-y-2">
 										<h4 class="text-sm font-medium">Recent Invitations</h4>
 										<div class="space-y-2">
-											{#each data.invitations.slice(0, 5) as invitation}
+											{#each data.invitations.slice(0, 5) as invitation (invitation.token)}
 												<div class="flex items-center justify-between rounded-md border p-3">
 													<div class="flex items-center gap-3">
 														<div class="flex flex-col">

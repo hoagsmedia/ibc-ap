@@ -13,6 +13,8 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"format": "prettier --write .",
 		"lint": "prettier --check . && eslint .",
+		"lint:ts": "eslint vite.config.ts drizzle.config.ts scripts src --ignore-pattern \"**/*.svelte\"",
+		"ci": "pnpm check && eslint . && vitest run && vite build",
 		"test:unit": "vitest",
 		"test": "npm run test:unit -- --run",
 		"db:generate": "drizzle-kit generate --config=drizzle.config.ts",
@@ -97,6 +99,9 @@
 		"svelte-sonner": "^1.0.5",
 		"uploadthing": "^7.7.4",
 		"zod": "^3.25.67"
+	},
+	"engines": {
+		"node": ">=22"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [

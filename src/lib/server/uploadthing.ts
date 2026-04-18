@@ -56,15 +56,6 @@ export const ourFileRouter = {
 			if (!user) throw new Error("Unauthorized");
 
 			const currentImageKey = user.img?.split("/f/")[1] ?? null;
-			// Remove protocol (http:// or https://)
-			const currentImageUrl = user.img?.replace(/^https?:\/\//, "") ?? "";
-
-			// Debug logging (safe slicing if ID exists)
-			console.log(
-				"Current user",
-				(user.id?.slice(0, 5) ?? "???") + "...",
-				currentImageUrl.slice(0, 5) + "..."
-			);
 
 			// Label files with custom identifier for better organization
 			const filesWithCustomIds = files.map((file) => ({
@@ -101,28 +92,6 @@ export const ourFileRouter = {
 			}
 
 			return { uploadedBy: metadata.userId, imageUrl: file.ufsUrl };
-		}),
-
-	// Profile image migration route - server-only uploads for migrating existing profile images
-	"profile-images": f({
-		image: {
-			maxFileSize: "4MB",
-			maxFileCount: 1
-		}
-	})
-		.middleware(async ({ req }) => {
-			// Check for migration token or allow server-side requests
-			const userAgent = req.headers.get("user-agent");
-			if (userAgent?.includes("Node.js") || userAgent?.includes("tsx")) {
-				return {
-					uploadType: "profile-migration" as const,
-					source: "server-migration"
-				};
-			}
-			throw new Error("Migration route only accessible from server");
-		})
-		.onUploadComplete(async ({ metadata, file }) => {
-			return { source: metadata.source, imageUrl: file.ufsUrl };
 		}),
 
 	// Gallery image uploader - multiple images for events, galleries, etc.

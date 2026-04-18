@@ -11,15 +11,6 @@
 		url: "https://islandbeerclub.com/founders-day/original-script"
 	};
 
-	// Founders data for the script
-	const founders = [
-		{ name: 'Jeff "Bones" Wilkens', member: 1 },
-		{ name: 'John "Old Doc" Morton', member: 2 },
-		{ name: 'John "Cruncher" Muncy', member: 3 },
-		{ name: 'Wayne "Big Oly" Oldendorph', member: 4 },
-		{ name: 'Rob "Crenny" Crenshaw', member: 5 }
-	];
-
 	const limericks = [
 		{
 			founder: "Rob",
@@ -293,7 +284,7 @@ When he blows the damn whistle at 6 o'clock.`
 	<Card.Root class="mb-8 space-y-6">
 		<Card.Header class="text-foreground text-3xl font-bold">Founder Limericks</Card.Header>
 		<Card.Content>
-			{#each limericks as limerick, index}
+			{#each limericks as limerick (limerick.founder)}
 				<div class="bg-card rounded-lg border p-8 shadow-md">
 					<h3 class="text-foreground mb-4 flex items-center gap-3 text-xl font-bold">
 						<span

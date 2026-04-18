@@ -40,10 +40,6 @@
 		}
 	});
 
-	function selectAnswer(questionId: number, answerIndex: number) {
-		selectedAnswers[questionId] = answerIndex;
-	}
-
 	function navigateToDashboard() {
 		goto('/dashboard');
 	}
@@ -92,7 +88,7 @@
 					class="space-y-8"
 				>
 					{#if data.questions}
-						{#each data.questions as question, index}
+						{#each data.questions as question (question.id)}
 							<Card class="border-border">
 								<CardHeader class="pb-4">
 									<CardTitle class="text-lg">
@@ -100,7 +96,7 @@
 									</CardTitle>
 								</CardHeader>
 								<CardContent class="space-y-3">
-									{#each question.options as option, optionIndex}
+									{#each question.options as option, optionIndex (question.id + "-" + optionIndex)}
 										<Label
 											class="border-border hover:bg-muted/50 flex cursor-pointer items-center space-x-3 rounded-lg border p-3"
 										>
@@ -182,7 +178,7 @@
 					<h3 class="text-foreground text-lg font-semibold">Review Your Answers:</h3>
 
 					{#if form?.results && data.questions}
-						{#each form.results as result}
+						{#each form.results as result (result.questionId)}
 							{@const question = data.questions.find((q) => q.id === result.questionId)}
 							<Card class="border-border">
 								<CardContent class="p-4">

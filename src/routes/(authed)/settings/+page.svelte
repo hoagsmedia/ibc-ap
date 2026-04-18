@@ -10,8 +10,8 @@
 	let uploading = $state(false);
 
 	// Create UploadThing helper
-	const { startUpload, isUploading } = createUploadThing("profileImageUploader", {
-		onClientUploadComplete: (res) => {
+	const { startUpload } = createUploadThing("profileImageUploader", {
+		onClientUploadComplete: () => {
 			uploading = false;
 			// Refresh the page to show the new image
 			window.location.reload();
@@ -20,7 +20,7 @@
 			uploading = false;
 			alert(`Upload failed: ${error.message}`);
 		},
-		onUploadBegin: (name) => {
+		onUploadBegin: () => {
 			uploading = true;
 		}
 	});
@@ -39,7 +39,7 @@
 		if (files && files.length > 0) {
 			try {
 				await startUpload(Array.from(files));
-			} catch (error) {
+			} catch {
 				uploading = false;
 			}
 		}

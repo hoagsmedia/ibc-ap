@@ -8,6 +8,7 @@
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Search } from "@lucide/svelte";
+	import { dev } from "$app/environment";
 	import { goto } from "$app/navigation";
 	import type { PageProps } from "./$types";
 	import { IsMobile } from "$lib/hooks/is-mobile.svelte";
@@ -52,7 +53,7 @@
 
 	// Get cached results for a search term
 	function getCachedResults(searchKey: string): CachedMemberData | null {
-		console.log("Checking cache for:", searchKey);
+		if (dev) console.log("Checking cache for:", searchKey);
 		const cache = memberCache.value || {};
 		const cached = cache[searchKey];
 		if (cached && isCacheValid(cached.timestamp)) {
@@ -88,8 +89,8 @@
 
 		// Check cache first
 		const cached = getCachedResults(searchKey);
-		if (cached) {
-			console.log("Using cached results for:", searchKey);
+		if (cached && cached.members.length > 0) {
+			if (dev) console.log("Using cached results for:", searchKey);
 			members = cached.members;
 			pagination = {
 				...pagination,
@@ -101,7 +102,7 @@
 		}
 
 		// If no cache or empty results, go to server
-		console.log("Fetching from server for:", searchKey);
+		if (dev) console.log("Fetching from server for:", searchKey);
 		navigateToServer(pageNum);
 	}
 
@@ -143,14 +144,14 @@
 	$effect(() => {
 		// Only process server data if it's not a cached response
 		if (!("cached" in data) || (!data.cached && data.members.length > 0)) {
-			console.log("[Effect]:Processing server data:", data);
+			if (dev) console.log("[Effect]:Processing server data:", data);
 			const searchKey = `${data.searchTerm}-${data.pagination.page}-${data.pagination.perPage}`;
 			cacheResults(searchKey, data.members, data.searchTerm, data.pagination.totalCount);
 		}
 
 		// Always update current state with fresh data
 		if (!("cached" in data) || !data.cached) {
-			console.log("[Effect]:Updating members and pagination");
+			if (dev) console.log("[Effect]:Updating members and pagination");
 			members = data.members;
 			pagination = data.pagination;
 		}
@@ -159,7 +160,7 @@
 
 <svelte:head>
 	<title>Member Directory | Island Beer Club</title>
-	<meta name="description" content="Island Beer Club member directory - Admin access only" />
+	<meta name="description" content="Island Beer Club member directory for signed-in members." />
 </svelte:head>
 <div class="container py-8 md:w-full">
 	<!-- Header with back button -->

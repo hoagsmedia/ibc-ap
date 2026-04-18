@@ -86,7 +86,7 @@
 <section class="bg-accent flex flex-col items-center overflow-scroll py-12">
 	<h2 class="mb-6 text-center text-2xl font-semibold">Meet The Founders</h2>
 	<div class="grid grid-cols-2 gap-4 md:grid-cols-5">
-		{#each founders as founder}
+		{#each founders as founder (founder.name)}
 			<div class="w-34">
 				<img
 					src={founder.photo}
@@ -269,7 +269,7 @@
 	<div class="mx-auto max-w-2xl px-4">
 		<h2 class="mb-8 text-center text-2xl font-semibold">Member Quotes</h2>
 		<ul class="space-y-8">
-			{#each sortedQuotes as quote}
+			{#each sortedQuotes as quote (quote.text)}
 				<li>
 					<Card.Root class="bg-accent p-6 shadow-lg">
 						<Card.Header>

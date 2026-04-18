@@ -197,7 +197,7 @@
 					<div class="grid gap-4 md:grid-cols-2">
 						<div class="space-y-2">
 							<h4 class="text-center font-semibold">Terms</h4>
-							{#each matchGame.words as item}
+							{#each matchGame.words as item (item.word)}
 								<Button
 									variant={selectedWord === item.word ? "default" : "outline"}
 									onclick={() => selectWord(item.word)}
@@ -209,7 +209,7 @@
 						</div>
 						<div class="space-y-2">
 							<h4 class="text-center font-semibold">Definitions</h4>
-							{#each shuffledDefinitions() as definition}
+							{#each shuffledDefinitions() as definition (definition)}
 								<Button
 									variant={selectedDefinition === definition ? "default" : "outline"}
 									onclick={() => selectDefinition(definition)}
