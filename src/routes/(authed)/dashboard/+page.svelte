@@ -16,7 +16,6 @@
 		ClockIcon,
 		Home,
 		IdCard,
-		Images,
 		LayoutGrid,
 		LinkIcon,
 		Settings,
@@ -147,14 +146,6 @@
 								<Settings class="text-muted-foreground size-4 shrink-0" />
 								Profile settings
 							</Button>
-							<Button
-								href="/gallery"
-								variant="outline"
-								class="h-11 w-full justify-start gap-3 px-4 font-medium"
-							>
-								<Images class="text-muted-foreground size-4 shrink-0" />
-								View gallery
-							</Button>
 							{#if data.user.role === "admin"}
 								<Button
 									href="/dashboard/pending-members"
@@ -218,7 +209,7 @@
 								</span>
 								Club stats
 							</Card.Title>
-							<Card.Description>At-a-glance numbers (illustrative)</Card.Description>
+							<Card.Description>Live figures from the club database.</Card.Description>
 						</Card.Header>
 						<Card.Content class="space-y-3">
 							<div
@@ -226,18 +217,22 @@
 							>
 								<span class="text-muted-foreground flex items-center gap-2 text-sm">
 									<Users class="size-4 opacity-70" />
-									Total members
+									Members &amp; officers
 								</span>
-								<span class="text-card-foreground text-sm font-semibold tabular-nums">436</span>
+								<span class="text-card-foreground text-sm font-semibold tabular-nums">
+									{data.clubStats.totalMembers.toLocaleString()}
+								</span>
 							</div>
 							<div
 								class="border-border/60 bg-muted/20 flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5"
 							>
 								<span class="text-muted-foreground flex items-center gap-2 text-sm">
 									<UserCheck class="size-4 opacity-70" />
-									Active members
+									With member number
 								</span>
-								<span class="text-card-foreground text-sm font-semibold tabular-nums">324</span>
+								<span class="text-card-foreground text-sm font-semibold tabular-nums">
+									{data.clubStats.activeMembers.toLocaleString()}
+								</span>
 							</div>
 							<div
 								class="border-border/60 bg-muted/20 flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5"
@@ -246,7 +241,9 @@
 									<CalendarDays class="size-4 opacity-70" />
 									Events this year
 								</span>
-								<span class="text-card-foreground text-sm font-semibold tabular-nums">12</span>
+								<span class="text-card-foreground text-sm font-semibold tabular-nums">
+									{data.clubStats.eventsThisYear.toLocaleString()}
+								</span>
 							</div>
 							<div
 								class="border-border/60 bg-muted/20 flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5"
@@ -255,7 +252,9 @@
 									<Beer class="size-4 opacity-70" />
 									Kegs consumed
 								</span>
-								<span class="text-card-foreground text-sm font-semibold tabular-nums">147</span>
+								<span class="text-card-foreground text-sm font-semibold tabular-nums">
+									{data.clubStats.kegsConsumed.toLocaleString()}
+								</span>
 							</div>
 						</Card.Content>
 					</Card.Root>

@@ -8,6 +8,7 @@ import {
 } from "$lib/server/invitations";
 import { fail, redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
+import { getDashboardClubStats } from "$lib/server/dashboard-club-stats-cache";
 import { users } from "$lib/server/db/schema";
 import { ibcDebugEnabled } from "$lib/server/ibc-debug";
 import { and, asc, isNotNull, isNull } from "drizzle-orm";
@@ -50,11 +51,25 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		});
 	}
 
+	const canViewMembersOnlyEvents =
+		locals.user.role === "member" || locals.user.role === "admin";
+
+	const cached = await getDashboardClubStats(db);
+	const eventsThisYear = canViewMembersOnlyEvents
+		? cached.eventsThisYearMember
+		: cached.eventsThisYearGuest;
+
 	return {
 		user: locals.user,
 		invitations,
 		...(pendingMembers !== undefined && { pendingMembers }),
-		baseUrl: url.origin
+		baseUrl: url.origin,
+		clubStats: {
+			totalMembers: cached.totalMembers,
+			activeMembers: cached.activeMembers,
+			eventsThisYear,
+			kegsConsumed: cached.kegsConsumed
+		}
 	};
 };
 
