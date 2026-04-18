@@ -6,7 +6,6 @@ export const memberSchema = z.object({
 	email: z.string(),
 	phone: z.string().optional(),
 	address: z.string().optional(),
-	password_hash: z.string(),
 	dops: z.boolean(),
 	dops_date: z.string().optional(), // Date of Permanent Sobriety
 	bio: z.string().optional(),
