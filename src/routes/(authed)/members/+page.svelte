@@ -219,7 +219,14 @@
 									dops={member.dops ?? undefined}
 								/>
 							</Table.Cell>
-							<Table.Cell>{member.name || "N/A"}</Table.Cell>
+							<Table.Cell>
+								<a
+									href={`/members/${member.username ?? member.id}`}
+									class="text-foreground font-medium underline-offset-4 hover:text-primary hover:underline"
+								>
+									{member.name || "N/A"}
+								</a>
+							</Table.Cell>
 							<Table.Cell class={cn("", isMobile.current && "text-center")}
 								>{member.mbr || "N/A"}</Table.Cell
 							>
