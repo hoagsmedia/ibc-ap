@@ -4,7 +4,7 @@ import path from "path";
 
 // Load .env first, then .env.local so local overrides (same as typical app behavior)
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
-dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local"), override: true });
 
 // One config, one output dir. Target is chosen by env:
 //   no TARGET or TARGET=local → DATABASE_URL (local)
