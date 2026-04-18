@@ -6,7 +6,7 @@
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
-		"build:vercel": "tsx scripts/ensure-users-schema.ts && vite build",
+		"build:vercel": "tsx scripts/ensure-users-schema.ts && tsx scripts/ensure-events-schema.ts && vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",

@@ -57,6 +57,11 @@
 			Join us for exciting beer tastings, brewery tours, and community gatherings. Check out our
 			upcoming events and relive the memories from past gatherings.
 		</p>
+		{#if !data.canViewMembersOnly}
+			<p class="text-muted-foreground mx-auto mt-4 max-w-2xl text-sm">
+				Members: sign in to see members-only events on this page.
+			</p>
+		{/if}
 	</div>
 
 	{#if data.events.length === 0}
@@ -101,14 +106,19 @@
 								</div>
 							{/if}
 							<Card.Header class={event.img ? "" : "rounded-t-lg"}>
-								<div class="flex items-start justify-between">
+								<div class="flex items-start justify-between gap-2">
 									<div class="space-y-2">
 										<Card.Title class="text-xl">{event.title}</Card.Title>
 										{#if event.description}
 											<Card.Description class="text-base">{event.description}</Card.Description>
 										{/if}
 									</div>
-									<Badge variant="default" class="shrink-0">Upcoming</Badge>
+									<div class="flex shrink-0 flex-col items-end gap-1">
+										<Badge variant="default">Upcoming</Badge>
+										{#if event.members_only}
+											<Badge variant="secondary">Members only</Badge>
+										{/if}
+									</div>
 								</div>
 							</Card.Header>
 							<Card.Content class="flex-1">
@@ -160,10 +170,15 @@
 								</div>
 							{/if}
 							<Card.Header class={event.img ? "" : "rounded-t-lg"}>
-								<div class="space-y-2">
-									<Card.Title class="text-lg">{event.title}</Card.Title>
-									{#if event.description}
-										<Card.Description>{event.description}</Card.Description>
+								<div class="flex items-start justify-between gap-2">
+									<div class="space-y-2">
+										<Card.Title class="text-lg">{event.title}</Card.Title>
+										{#if event.description}
+											<Card.Description>{event.description}</Card.Description>
+										{/if}
+									</div>
+									{#if event.members_only}
+										<Badge variant="secondary" class="shrink-0">Members only</Badge>
 									{/if}
 								</div>
 							</Card.Header>

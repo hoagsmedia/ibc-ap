@@ -60,6 +60,8 @@ export const events = pgTable("events", {
 	content: text("content"),
 	event_date: timestamp("event_date", { withTimezone: true, mode: "date" }),
 	location: text("location"),
+	/** When true, only logged-in members and admins see this event on /events. */
+	members_only: boolean("members_only").notNull().default(false),
 	is_published: integer("is_published").notNull().default(0),
 	created_by_id: text("created_by_id")
 		.notNull()

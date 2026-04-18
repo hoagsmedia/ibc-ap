@@ -8,6 +8,7 @@
 		CardHeader,
 		CardTitle
 	} from "$lib/components/ui/card/index.js";
+	import { Badge } from "$lib/components/ui/badge/index.js";
 	import { Plus, Calendar, MapPin, Edit, Trash2, Eye, EyeOff, Loader2 } from "@lucide/svelte";
 	import { enhance } from "$app/forms";
 	import type { PageData } from "./$types.js";
@@ -66,7 +67,12 @@
 					<CardHeader>
 						<div class="flex items-start justify-between">
 							<div class="space-y-1">
-								<CardTitle class="text-xl">{event.title}</CardTitle>
+								<div class="flex flex-wrap items-center gap-2">
+									<CardTitle class="text-xl">{event.title}</CardTitle>
+									{#if event.members_only}
+										<Badge variant="secondary">Members only</Badge>
+									{/if}
+								</div>
 								{#if event.description}
 									<CardDescription>{event.description}</CardDescription>
 								{/if}

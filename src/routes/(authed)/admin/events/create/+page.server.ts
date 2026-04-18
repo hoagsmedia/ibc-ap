@@ -17,6 +17,8 @@ const createEventSchema = z.object({
 	event_date: z.string().min(1, 'Event date is required'),
 	location: z.string(),
 	is_published: z.boolean().default(false),
+	/** When true, /events lists this only for logged-in members and admins. */
+	members_only: z.boolean().default(false),
 	img: z.string().optional()
 });
 
@@ -54,6 +56,7 @@ export const actions: Actions = {
 				event_date: eventDate,
 				location: form.data.location || null,
 				is_published: form.data.is_published ? 1 : 0,
+				members_only: form.data.members_only,
 				img: form.data.img || null,
 				created_by_id: locals.user.id
 			});

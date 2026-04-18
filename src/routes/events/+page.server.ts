@@ -3,15 +3,26 @@ import { events } from '$lib/server/db/schema.js';
 import { desc, eq, isNotNull, and } from 'drizzle-orm';
 import type { PageServerLoad } from './$types.js';
 
-export const load: PageServerLoad = async () => {
-	// Only show published events that have dates, ordered by event date (most recent first)
+export const load: PageServerLoad = async ({ locals }) => {
+	const user = locals.user;
+	const canViewMembersOnly = user?.role === 'member' || user?.role === 'admin';
+
+	const visibilityFilter = canViewMembersOnly ? undefined : eq(events.members_only, false);
+
 	const publishedEvents = await db
 		.select()
 		.from(events)
-		.where(and(eq(events.is_published, 1), isNotNull(events.event_date)))
+		.where(
+			and(
+				eq(events.is_published, 1),
+				isNotNull(events.event_date),
+				...(visibilityFilter ? [visibilityFilter] : [])
+			)
+		)
 		.orderBy(desc(events.event_date));
 
 	return {
-		events: publishedEvents
+		events: publishedEvents,
+		canViewMembersOnly
 	};
 };

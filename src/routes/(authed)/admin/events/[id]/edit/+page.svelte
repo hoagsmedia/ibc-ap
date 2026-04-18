@@ -27,6 +27,7 @@
 		event_date: z.string().min(1, 'Event date is required'),
 		location: z.string().optional(),
 		is_published: z.boolean().default(false),
+		members_only: z.boolean().default(false),
 		img: z.string().optional()
 	});
 
@@ -295,6 +296,16 @@
 						class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
 					>
 						Published
+					</Label>
+				</div>
+
+				<div class="flex items-center space-x-2">
+					<Checkbox id="members_only" name="members_only" bind:checked={$form.members_only} />
+					<Label
+						for="members_only"
+						class="text-sm leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					>
+						Members only (hide from public /events until signed in as a member)
 					</Label>
 				</div>
 
