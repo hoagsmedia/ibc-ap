@@ -1,34 +1,17 @@
 import { dev } from "$app/environment";
 import { error } from "@sveltejs/kit";
+import { membersPublicRosterSnapshot } from "$lib/config/members-public-stats";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
 import { ibcDebugEnabled } from "$lib/server/ibc-debug";
-import { and, asc, count, inArray, isNotNull, or, ilike, sql } from "drizzle-orm";
+import { asc, or, ilike, sql } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
-		const memberRole = inArray(users.role, ["member", "admin"]);
-
-		const [memberRow] = await db.select({ n: count() }).from(users).where(memberRole);
-
-		const [numberedRow] = await db
-			.select({ n: count() })
-			.from(users)
-			.where(and(memberRole, isNotNull(users.mbr)));
-
-		const [testRow] = await db
-			.select({ n: count() })
-			.from(users)
-			.where(and(memberRole, isNotNull(users.test_passed)));
-
 		return {
 			isAuthenticated: false as const,
-			publicStats: {
-				totalMembers: Number(memberRow?.n ?? 0),
-				withMemberNumber: Number(numberedRow?.n ?? 0),
-				withBeerTest: Number(testRow?.n ?? 0)
-			}
+			publicStats: membersPublicRosterSnapshot
 		};
 	}
 
