@@ -114,6 +114,9 @@
 									<a href="/admin/events" class="w-full">Manage Events</a>
 								</DropdownMenu.Item>
 								<DropdownMenu.Item>
+									<a href="/admin/stats" class="w-full">Club stats data</a>
+								</DropdownMenu.Item>
+								<DropdownMenu.Item>
 									<a href="/members" class="w-full">Manage Members</a>
 								</DropdownMenu.Item>
 							{/if}

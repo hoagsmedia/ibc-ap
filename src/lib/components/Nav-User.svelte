@@ -9,7 +9,8 @@
 		SettingsIcon,
 		CalendarIcon,
 		UsersIcon,
-		LogOutIcon
+		LogOutIcon,
+		BarChart3Icon
 	} from '@lucide/svelte/icons';
 	import { enhance } from '$app/forms';
 
@@ -81,6 +82,16 @@
 					>
 						<CalendarIcon class="size-4" />
 						Manage Events
+					</a>
+				</DropdownMenu.Item>
+				<DropdownMenu.Item>
+					<a
+						href="/admin/stats"
+						class="flex w-full items-center gap-2"
+						onclick={() => (isOpen = false)}
+					>
+						<BarChart3Icon class="size-4" />
+						Club stats data
 					</a>
 				</DropdownMenu.Item>
 				<DropdownMenu.Item>

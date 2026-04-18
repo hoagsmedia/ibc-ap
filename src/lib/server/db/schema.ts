@@ -1,4 +1,4 @@
-import { pgTable, integer, text, timestamp, date, boolean } from "drizzle-orm/pg-core";
+import { pgTable, integer, text, timestamp, date, boolean, doublePrecision } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -77,3 +77,30 @@ export type User = typeof users.$inferSelect;
 export type InvitationToken = typeof invitationTokens.$inferSelect;
 
 export type Event = typeof events.$inferSelect;
+
+/** Legacy islandbeerclub.com/stats.htm — keg credits leaderboard (sort_order = rank / “who buys next”). */
+export const statsKegCredits = pgTable("stats_keg_credits", {
+	id: text("id").primaryKey(),
+	sort_order: integer("sort_order").notNull().unique(),
+	member_label: text("member_label").notNull(),
+	credits: doublePrecision("credits").notNull(),
+	is_cik: boolean("is_cik").notNull().default(false),
+	created_at: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+	updated_at: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow()
+});
+
+/** Per-keg consumption rows from the legacy stats page (keg #, dates, gallons, beer name). */
+export const statsBeerConsumed = pgTable("stats_beer_consumed", {
+	id: text("id").primaryKey(),
+	keg_number: integer("keg_number").notNull().unique(),
+	beer_name: text("beer_name"),
+	purchased_on: date("purchased_on", { mode: "date" }),
+	delivered_on: date("delivered_on", { mode: "date" }),
+	finished_on: date("finished_on", { mode: "date" }),
+	gallons: doublePrecision("gallons").notNull(),
+	created_at: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+	updated_at: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow()
+});
+
+export type StatsKegCredit = typeof statsKegCredits.$inferSelect;
+export type StatsBeerConsumedRow = typeof statsBeerConsumed.$inferSelect;

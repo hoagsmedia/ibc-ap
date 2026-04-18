@@ -128,6 +128,12 @@
 								>
 									Manage Events
 								</Button>
+								<Button
+									href="/admin/stats"
+									class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+								>
+									Club stats data
+								</Button>
 							{:else}
 								<Button
 									href="/members"
