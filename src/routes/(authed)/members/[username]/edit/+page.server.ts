@@ -10,6 +10,7 @@ import { memberSchema } from "./edit-member-schema";
 import { zod } from "sveltekit-superforms/adapters";
 import { hash } from "argon2";
 import { encodeBase32LowerCase } from "@oslojs/encoding";
+import { userWithoutPasswordHash } from "$lib/server/user-client";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -41,7 +42,6 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		id: member.id,
 		name: member.name,
 		email: member.email ?? "",
-		password_hash: member.password_hash,
 		phone: member.phone ?? "",
 		address: member.address ?? "",
 		bio: member.bio ?? "",
@@ -60,7 +60,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	};
 
 	return {
-		member,
+		member: userWithoutPasswordHash(member),
 		user: locals.user,
 		form: await superValidate(memberData, zod(memberSchema))
 	};

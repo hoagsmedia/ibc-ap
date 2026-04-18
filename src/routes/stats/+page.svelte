@@ -65,7 +65,7 @@
 			</div>
 			{#if data.statsSource === "database"}
 				<span
-					class="bg-destructive text-destructive-foreground shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wide shadow-sm"
+					class="border-rose-200/70 bg-rose-100 text-rose-900 dark:bg-destructive dark:text-destructive-foreground dark:border-transparent shrink-0 rounded-md border px-2 py-1 text-[10px] font-bold uppercase leading-none tracking-wide shadow-sm"
 					title="Live data from the club database"
 				>
 					Live

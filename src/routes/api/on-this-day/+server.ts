@@ -8,7 +8,7 @@ interface WikimediaEvent {
 	year: number;
 }
 
-let cachedEvent: { date: string; data: WikimediaEvent } | null = null;
+let cachedEvent: { date: string; data: WikimediaEvent | null } | null = null;
 
 export const GET: RequestHandler = async ({ fetch }) => {
 	const today = new Date().toDateString().slice(0, 10);
@@ -17,6 +17,9 @@ export const GET: RequestHandler = async ({ fetch }) => {
 	if (cachedEvent?.date === today) {
 		if (dev && ibcDebugEnabled()) {
 			console.log("[IBC-LOG] [api/on-this-day] Returning cached event", { date: today });
+		}
+		if (!cachedEvent.data) {
+			return new Response("No event found", { status: 404 });
 		}
 		const { text, year } = cachedEvent.data;
 		return new Response(JSON.stringify({ text, year }), {

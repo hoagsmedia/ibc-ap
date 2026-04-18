@@ -10,6 +10,7 @@ import { superValidate, message } from 'sveltekit-superforms';
 import { zod } from 'sveltekit-superforms/adapters';
 import { hash } from 'argon2';
 import { profileSchema, updatePasswordSchema } from './settings-schema';
+import { userWithoutPasswordHash } from '$lib/server/user-client';
 
 export const load: PageServerLoad = async (event) => {
 	if (!event.locals.user) {
@@ -43,7 +44,7 @@ export const load: PageServerLoad = async (event) => {
 	const updatePasswordForm = await superValidate(zod(updatePasswordSchema));
 
 	return {
-		user: fullUser,
+		user: userWithoutPasswordHash(fullUser),
 		form,
 		updatePasswordForm
 	};

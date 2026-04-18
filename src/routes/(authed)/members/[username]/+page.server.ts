@@ -1,5 +1,6 @@
 import { error, redirect } from "@sveltejs/kit";
 import { getMemberByUsernameOrId } from "$lib/server/member-lookup";
+import { userWithoutPasswordHash } from "$lib/server/user-client";
 import type { PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -23,5 +24,5 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		throw redirect(302, `/members/${member.username}`);
 	}
 
-	return { member };
+	return { member: userWithoutPasswordHash(member) };
 };

@@ -6,7 +6,23 @@
 	import * as Card from "$lib/components/ui/card";
 	import { Badge } from "$lib/components/ui/badge";
 	import { Button } from "$lib/components/ui/button";
-	import { CheckIcon, ClockIcon, LinkIcon, UserPlusIcon } from "@lucide/svelte/icons";
+	import {
+		BarChart3,
+		Beer,
+		BookUser,
+		CalendarDays,
+		CalendarRange,
+		CheckIcon,
+		ClockIcon,
+		Home,
+		IdCard,
+		LayoutGrid,
+		LinkIcon,
+		Settings,
+		UserPlusIcon,
+		UserCheck,
+		Users
+	} from "@lucide/svelte/icons";
 	import { formatDate, formatDateTime } from "$lib/utils";
 	import CustomCopy from "$lib/components/Custom-Copy.svelte";
 
@@ -34,22 +50,41 @@
 	<meta name="description" content="Island Beer Club member dashboard" />
 </svelte:head>
 
-<div class="px-4 py-6 sm:px-0">
-	<div class="border-border rounded-lg border-4 border-dashed p-8">
-		<div class="text-center">
-			<h1 class="text-foreground mb-4 text-3xl font-bold">Welcome to Your Dashboard</h1>
-			<p class="text-muted-foreground mb-8 text-lg">
-				Hello, <span class="font-semibold">{data.user?.name}</span>! Welcome to the Island Beer Club
-				member area.
-			</p>
+<div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+	<div class="space-y-10">
+		<div
+			class="border-border/60 bg-card/80 text-card-foreground relative overflow-hidden rounded-2xl border p-8 shadow-sm backdrop-blur-sm sm:p-10"
+		>
+			<div
+				class="from-primary/8 pointer-events-none absolute -right-20 -top-20 size-64 rounded-full bg-gradient-to-br to-transparent blur-3xl"
+				aria-hidden="true"
+			></div>
+			<div class="relative text-center">
+				<p class="text-muted-foreground mb-2 text-sm font-medium tracking-wide uppercase">
+					Member area
+				</p>
+				<h1 class="text-foreground mb-3 text-3xl font-bold tracking-tight sm:text-4xl">
+					Welcome back
+				</h1>
+				<p class="text-muted-foreground mx-auto max-w-xl text-lg leading-relaxed">
+					Hello, <span class="text-foreground font-semibold">{data.user?.name}</span> — here is your
+					Island Beer Club home base.
+				</p>
+			</div>
+		</div>
 
-			{#if data.user}
-				<div class="grid grid-cols-1 gap-6 md:grid-cols-3">
-					<!-- Member Info Card -->
-					<Card.Root class="">
-						<Card.Header>
-							<Card.Title>Member Information</Card.Title>
-						</Card.Header>
+		{#if data.user}
+			<div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+				<!-- Member Info Card -->
+				<Card.Root class="border-border/60 shadow-sm transition-shadow hover:shadow-md">
+					<Card.Header class="pb-4">
+						<Card.Title class="flex items-center gap-2 text-lg">
+							<span class="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
+								<IdCard class="size-4" />
+							</span>
+							Member information
+						</Card.Title>
+					</Card.Header>
 						<Card.Content class="space-y-2">
 							<div class="border-border bg-muted/30 rounded-md border p-3">
 								<dt class="text-muted-foreground text-xs font-medium tracking-wide uppercase">
@@ -92,86 +127,134 @@
 					</Card.Root>
 
 					<!-- Quick Actions Card -->
-					<Card.Root class="">
-						<Card.Header>
-							<Card.Title>Quick Actions</Card.Title>
+					<Card.Root class="border-border/60 shadow-sm transition-shadow hover:shadow-md">
+						<Card.Header class="pb-4">
+							<Card.Title class="flex items-center gap-2 text-lg">
+								<span class="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
+									<LayoutGrid class="size-4" />
+								</span>
+								Quick actions
+							</Card.Title>
+							<Card.Description>Shortcuts to common member tools</Card.Description>
 						</Card.Header>
-						<Card.Content class="space-y-3">
+						<Card.Content class="flex flex-col gap-2">
 							<Button
 								href="/settings"
-								class="bg-accent text-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+								variant="outline"
+								class="h-11 w-full justify-start gap-3 px-4 font-medium"
 							>
-								Profile Settings
-							</Button>
-							<Button
-								href="/gallery"
-								class="bg-accent text-foreground hover:bg-accent/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
-							>
-								View Gallery
+								<Settings class="text-muted-foreground size-4 shrink-0" />
+								Profile settings
 							</Button>
 							{#if data.user.role === "admin"}
 								<Button
 									href="/dashboard/pending-members"
-									class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+									variant="outline"
+									class="h-11 w-full justify-start gap-3 px-4 font-medium"
 								>
+									<UserPlusIcon class="text-muted-foreground size-4 shrink-0" />
 									New members
 								</Button>
 								<Button
 									href="/members"
-									class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+									variant="outline"
+									class="h-11 w-full justify-start gap-3 px-4 font-medium"
 								>
-									Manage Members
+									<Users class="text-muted-foreground size-4 shrink-0" />
+									Manage members
 								</Button>
 								<Button
 									href="/admin/events"
-									class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+									variant="outline"
+									class="h-11 w-full justify-start gap-3 px-4 font-medium"
 								>
-									Manage Events
+									<CalendarDays class="text-muted-foreground size-4 shrink-0" />
+									Manage events
 								</Button>
 								<Button
 									href="/admin/stats"
-									class="bg-accent text-foreground hover:bg-secondary/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+									variant="outline"
+									class="h-11 w-full justify-start gap-3 px-4 font-medium"
 								>
+									<BarChart3 class="text-muted-foreground size-4 shrink-0" />
 									Club stats data
 								</Button>
 							{:else}
 								<Button
 									href="/members"
-									class="bg-accent text-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+									variant="outline"
+									class="h-11 w-full justify-start gap-3 px-4 font-medium"
 								>
-									Member Directory
+									<BookUser class="text-muted-foreground size-4 shrink-0" />
+									Member directory
 								</Button>
 								<Button
 									href="/events"
-									class="bg-accent text-foreground hover:bg-muted/80 block w-full rounded-md px-4 py-2 text-sm font-medium transition-colors"
+									variant="outline"
+									class="h-11 w-full justify-start gap-3 px-4 font-medium"
 								>
-									View Events
+									<CalendarRange class="text-muted-foreground size-4 shrink-0" />
+									View events
 								</Button>
 							{/if}
 						</Card.Content>
 					</Card.Root>
 
 					<!-- Club Stats Card -->
-					<Card.Root class="">
-						<Card.Header>
-							<Card.Title>Club Stats</Card.Title>
+					<Card.Root class="border-border/60 shadow-sm transition-shadow hover:shadow-md">
+						<Card.Header class="pb-4">
+							<Card.Title class="flex items-center gap-2 text-lg">
+								<span class="bg-primary/10 text-primary flex size-9 items-center justify-center rounded-lg">
+									<BarChart3 class="size-4" />
+								</span>
+								Club stats
+							</Card.Title>
+							<Card.Description>Live figures from the club database.</Card.Description>
 						</Card.Header>
 						<Card.Content class="space-y-3">
-							<div class="flex justify-between">
-								<span class="text-muted-foreground text-sm">Total Members</span>
-								<span class="text-card-foreground text-sm font-medium">436</span>
+							<div
+								class="border-border/60 bg-muted/20 flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5"
+							>
+								<span class="text-muted-foreground flex items-center gap-2 text-sm">
+									<Users class="size-4 opacity-70" />
+									Members &amp; officers
+								</span>
+								<span class="text-card-foreground text-sm font-semibold tabular-nums">
+									{data.clubStats.totalMembers.toLocaleString()}
+								</span>
 							</div>
-							<div class="flex justify-between">
-								<span class="text-muted-foreground text-sm">Active Members</span>
-								<span class="text-card-foreground text-sm font-medium">324</span>
+							<div
+								class="border-border/60 bg-muted/20 flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5"
+							>
+								<span class="text-muted-foreground flex items-center gap-2 text-sm">
+									<UserCheck class="size-4 opacity-70" />
+									With member number
+								</span>
+								<span class="text-card-foreground text-sm font-semibold tabular-nums">
+									{data.clubStats.activeMembers.toLocaleString()}
+								</span>
 							</div>
-							<div class="flex justify-between">
-								<span class="text-muted-foreground text-sm">Events This Year</span>
-								<span class="text-card-foreground text-sm font-medium">12</span>
+							<div
+								class="border-border/60 bg-muted/20 flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5"
+							>
+								<span class="text-muted-foreground flex items-center gap-2 text-sm">
+									<CalendarDays class="size-4 opacity-70" />
+									Events this year
+								</span>
+								<span class="text-card-foreground text-sm font-semibold tabular-nums">
+									{data.clubStats.eventsThisYear.toLocaleString()}
+								</span>
 							</div>
-							<div class="flex justify-between">
-								<span class="text-muted-foreground text-sm">Kegs Consumed</span>
-								<span class="text-card-foreground text-sm font-medium">147</span>
+							<div
+								class="border-border/60 bg-muted/20 flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5"
+							>
+								<span class="text-muted-foreground flex items-center gap-2 text-sm">
+									<Beer class="size-4 opacity-70" />
+									Kegs consumed
+								</span>
+								<span class="text-card-foreground text-sm font-semibold tabular-nums">
+									{data.clubStats.kegsConsumed.toLocaleString()}
+								</span>
 							</div>
 						</Card.Content>
 					</Card.Root>
@@ -180,8 +263,8 @@
 
 			<!-- IBC-20: Link to dedicated new-members page for admins -->
 			{#if data.user?.role === "admin"}
-				<div class="mt-8">
-					<Card.Root>
+				<div>
+					<Card.Root class="border-border/60 shadow-sm">
 						<Card.Header>
 							<Card.Title class="flex items-center gap-2">
 								<UserPlusIcon class="size-5" />
@@ -208,8 +291,8 @@
 			{/if}
 
 			<!-- Invitation Management Section -->
-			<div class="mt-8">
-				<Card.Root>
+			<div>
+				<Card.Root class="border-border/60 shadow-sm">
 					<Card.Header>
 						<Card.Title class="flex items-center gap-2">
 							<LinkIcon class="size-5" />
@@ -357,14 +440,11 @@
 				</Card.Root>
 			</div>
 
-			<div class="mt-8">
-				<Button
-					href="/"
-					class="bg-accent text-accent-foreground hover:bg-accent/80 focus:ring-ring inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium focus:ring-2 focus:ring-offset-2 focus:outline-none"
-				>
-					← Back to Main Site
+			<div class="flex flex-wrap gap-3 pt-2">
+				<Button href="/" variant="outline" class="gap-2">
+					<Home class="size-4" />
+					Back to main site
 				</Button>
 			</div>
 		</div>
-	</div>
 </div>
