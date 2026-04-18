@@ -4,11 +4,10 @@ import { render, screen } from '@testing-library/svelte';
 import Page from './+page.svelte';
 
 describe('Home page', () => {
-	test('should render h1 elements', () => {
+	test('should render hero h1', () => {
 		render(Page);
-		const h1Elements = screen.getAllByRole('heading', { level: 1 });
-		expect(h1Elements).toHaveLength(2);
-		expect(h1Elements[0]).toBeInTheDocument();
-		expect(h1Elements[1]).toBeInTheDocument();
+		const h1 = screen.getByRole('heading', { level: 1 });
+		expect(h1).toBeInTheDocument();
+		expect(h1).toHaveTextContent(/Rule #1/i);
 	});
 });

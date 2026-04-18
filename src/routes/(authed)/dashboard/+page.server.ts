@@ -9,21 +9,29 @@ import {
 import { fail, redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { getDashboardClubStats } from "$lib/server/dashboard-club-stats-cache";
-import { users } from "$lib/server/db/schema";
+import { events, users } from "$lib/server/db/schema";
 import { ibcDebugEnabled } from "$lib/server/ibc-debug";
-import { and, asc, isNotNull, isNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, gte, isNotNull, isNull } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
 		throw redirect(302, "/login");
 	}
 
-	// Load user's invitation tokens
-	const invitations = await getInvitationsByUser(locals.user.id);
+	// Most recent invitation links only (dashboard UI)
+	const invitations = await getInvitationsByUser(locals.user.id, { limit: 3 });
 
-	// IBC-20: For admins only, load users who passed the test but have no member number yet
-	let pendingMembers: { id: string; name: string; email: string | null; test_passed: Date }[] | undefined;
+	// IBC-20: For admins only — up to 3 most recent pending applicants (oldest-first) + total count
+	let pendingMembers:
+		| { id: string; name: string; email: string | null; test_passed: Date }[]
+		| undefined;
+	let pendingMembersCount: number | undefined;
 	if (locals.user.role === "admin") {
+		const wherePending = and(isNotNull(users.test_passed), isNull(users.mbr));
+
+		const [countRow] = await db.select({ n: count() }).from(users).where(wherePending);
+		pendingMembersCount = Number(countRow?.n ?? 0);
+
 		const rows = await db
 			.select({
 				id: users.id,
@@ -32,8 +40,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 				test_passed: users.test_passed
 			})
 			.from(users)
-			.where(and(isNotNull(users.test_passed), isNull(users.mbr)))
-			.orderBy(asc(users.test_passed));
+			.where(wherePending)
+			.orderBy(desc(users.test_passed))
+			.limit(3);
+
 		pendingMembers = rows
 			.filter((r) => r.test_passed != null)
 			.map((r) => ({
@@ -51,19 +61,48 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		});
 	}
 
-	const canViewMembersOnlyEvents =
-		locals.user.role === "member" || locals.user.role === "admin";
+	const canViewMembersOnlyEvents = locals.user.role === "member" || locals.user.role === "admin";
 
 	const cached = await getDashboardClubStats(db);
 	const eventsThisYear = canViewMembersOnlyEvents
 		? cached.eventsThisYearMember
 		: cached.eventsThisYearGuest;
 
+	const startOfToday = new Date();
+	startOfToday.setUTCHours(0, 0, 0, 0);
+
+	const membersOnlyVisibility =
+		locals.user.role === "member" || locals.user.role === "admin"
+			? undefined
+			: eq(events.members_only, false);
+
+	const upcomingEvents = await db
+		.select({
+			id: events.id,
+			title: events.title,
+			event_date: events.event_date,
+			location: events.location,
+			members_only: events.members_only
+		})
+		.from(events)
+		.where(
+			and(
+				eq(events.is_published, 1),
+				isNotNull(events.event_date),
+				gte(events.event_date, startOfToday),
+				...(membersOnlyVisibility ? [membersOnlyVisibility] : [])
+			)
+		)
+		.orderBy(asc(events.event_date))
+		.limit(8);
+
 	return {
 		user: locals.user,
 		invitations,
 		...(pendingMembers !== undefined && { pendingMembers }),
+		...(pendingMembersCount !== undefined && { pendingMembersCount }),
 		baseUrl: url.origin,
+		upcomingEvents,
 		clubStats: {
 			totalMembers: cached.totalMembers,
 			activeMembers: cached.activeMembers,
@@ -106,7 +145,7 @@ export const actions: Actions = {
 			if (lastCreated && Date.now() - lastCreated.getTime() < cooldownMs) {
 				const nextAllowed = new Date(lastCreated.getTime() + cooldownMs);
 				return fail(429, {
-					message: `You can only create one invitation link per week. You can create another on ${nextAllowed.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}.`
+					message: `You can only create one invitation link per week. You can create another on ${nextAllowed.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}.`
 				});
 			}
 		}
