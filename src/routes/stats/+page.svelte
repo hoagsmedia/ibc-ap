@@ -3,6 +3,10 @@
 	import * as Table from "$lib/components/ui/table/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import { ScrollArea } from "$lib/components/ui/scroll-area/index.js";
+	import {
+		formatKegCreditsForDisplay,
+		isJeffWilkensFounderKegCredit
+	} from "$lib/stats-keg-credits-display.js";
 	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
@@ -104,7 +108,9 @@
 										{row.member_number ?? "—"}
 									</Table.Cell>
 									<Table.Cell class="text-right">
-										<span class="tabular-nums">{row.credits}</span>
+										<span
+											class={isJeffWilkensFounderKegCredit(row) ? '' : 'tabular-nums'}
+										>{formatKegCreditsForDisplay(row)}</span>
 										{#if row.is_cik}
 											<Badge variant="secondary" class="ml-2">CIK</Badge>
 										{/if}
