@@ -37,8 +37,8 @@
 
 	// --- Reactive State ---
 	let searchTerm = $state(data.searchTerm || "");
-	let currentMembers = $state<typeof data.members>(data.members);
-	let currentPagination = $state<PaginationData>(data.pagination);
+	let members = $state<typeof data.members>(data.members);
+	let pagination = $state<PaginationData>(data.pagination);
 	const pageData = $state(page);
 	const admin = $derived(pageData.data.user?.role === "admin");
 	const isAuthenticated = $derived(!!admin);
@@ -70,29 +70,33 @@
 		totalCount: number
 	): void {
 		const cache = memberCache.value || {};
-		cache[searchKey] = {
-			members,
-			searchTerm,
-			timestamp: Date.now(),
-			totalCount
+		// Avoid mutating the cached object in-place (helps prevent reactivity surprises and
+		// makes it clear there's a single source of truth for the members array).
+		memberCache.value = {
+			...cache,
+			[searchKey]: {
+				members,
+				searchTerm,
+				timestamp: Date.now(),
+				totalCount
+			}
 		};
-		memberCache.value = cache;
 	}
 
 	// Perform search with caching
 	async function performSearch(term: string, pageNum: number = 1): Promise<void> {
-		const searchKey = `${term}-${pageNum}-${currentPagination.perPage}`;
+		const searchKey = `${term}-${pageNum}-${pagination.perPage}`;
 
 		// Check cache first
 		const cached = getCachedResults(searchKey);
 		if (cached && cached.members.length > 0) {
 			if (dev) console.log("Using cached results for:", searchKey);
-			currentMembers = cached.members;
-			currentPagination = {
-				...currentPagination,
+			members = cached.members;
+			pagination = {
+				...pagination,
 				page: pageNum,
 				totalCount: cached.totalCount,
-				totalPages: Math.ceil(cached.totalCount / currentPagination.perPage)
+				totalPages: Math.ceil(cached.totalCount / pagination.perPage)
 			};
 			return;
 		}
@@ -106,7 +110,7 @@
 	function navigateToServer(page: number): void {
 		const params = new URLSearchParams();
 		params.set("page", page.toString());
-		params.set("perPage", currentPagination.perPage.toString());
+		params.set("perPage", pagination.perPage.toString());
 		if (searchTerm) {
 			params.set("search", searchTerm);
 			// Check if we have any cached results for this search
@@ -147,9 +151,9 @@
 
 		// Always update current state with fresh data
 		if (!("cached" in data) || !data.cached) {
-			if (dev) console.log("[Effect]:Updating current members and pagination");
-			currentMembers = data.members;
-			currentPagination = data.pagination;
+			if (dev) console.log("[Effect]:Updating members and pagination");
+			members = data.members;
+			pagination = data.pagination;
 		}
 	});
 </script>
@@ -198,14 +202,14 @@
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
-				{#if currentMembers.length === 0}
+				{#if members.length === 0}
 					<Table.Row>
 						<Table.Cell class="py-6 text-center">
 							{searchTerm ? "No members found for your search" : "No members found"}
 						</Table.Cell>
 					</Table.Row>
 				{:else}
-					{#each currentMembers as member (member.id)}
+					{#each members as member (member.id)}
 						<Table.Row>
 							<Table.Cell>
 								<Avatar
@@ -261,9 +265,9 @@
 	<!-- Pagination -->
 	<div class="mt-8 flex items-center justify-center">
 		<Pagination.Root
-			count={currentPagination.totalCount}
-			perPage={currentPagination.perPage}
-			page={currentPagination.page}
+			count={pagination.totalCount}
+			perPage={pagination.perPage}
+			page={pagination.page}
 		>
 			{#snippet children({ pages, currentPage })}
 				<Pagination.Content>
@@ -296,7 +300,7 @@
 					<Pagination.Item>
 						<Pagination.NextButton
 							onclick={() => handlePageChange(currentPage + 1)}
-							disabled={currentPage === currentPagination.totalPages}
+							disabled={currentPage === pagination.totalPages}
 						>
 							<span class="hidden sm:block">Next</span>
 							<ChevronRightIcon class="size-4" />
