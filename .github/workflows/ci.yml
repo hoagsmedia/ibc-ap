@@ -14,6 +14,9 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    env:
+      # GitHub Actions: use Node 24 for JS actions (avoids Node 20 deprecation on runner)
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +32,7 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
-      - name: Typecheck, lint TS, test, production build
+      - name: Typecheck, ESLint, test, production build
         run: pnpm run ci
         env:
           # Ensure build does not pick up optional local DB URL in CI

@@ -1,5 +1,5 @@
 import { dev } from "$app/environment";
-import { WIKIMEDIA_EMAIL, WIKIMEDIA_ACCESS_TOKEN } from "$env/static/private";
+import { env } from "$env/dynamic/private";
 import type { RequestHandler } from "@sveltejs/kit";
 
 interface WikimediaEvent {
@@ -28,12 +28,19 @@ export const GET: RequestHandler = async ({ fetch }) => {
 	const month = String(now.getMonth() + 1).padStart(2, "0");
 	const day = String(now.getDate()).padStart(2, "0");
 
+	const wikimediaEmail = env.WIKIMEDIA_EMAIL;
+	const wikimediaToken = env.WIKIMEDIA_ACCESS_TOKEN;
+	if (!wikimediaEmail?.trim() || !wikimediaToken?.trim()) {
+		console.error("on-this-day: WIKIMEDIA_EMAIL / WIKIMEDIA_ACCESS_TOKEN not configured");
+		return new Response("Wikimedia API not configured", { status: 503 });
+	}
+
 	const response = await fetch(
 		`https://api.wikimedia.org/feed/v1/wikipedia/en/onthisday/events/${month}/${day}`,
 		{
 			headers: {
-				Authorization: `Bearer ${WIKIMEDIA_ACCESS_TOKEN}`,
-				"Api-User-Agent": `Island Beer Club App (${WIKIMEDIA_EMAIL})`
+				Authorization: `Bearer ${wikimediaToken}`,
+				"Api-User-Agent": `Island Beer Club App (${wikimediaEmail})`
 			}
 		}
 	);
