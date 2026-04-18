@@ -69,7 +69,9 @@ export function pageDataFromSnapshot(s: ClubStatsSnapshotFile) {
 		beerRows,
 		totals: computeBeerTotals(beerRows),
 		/** Anonymous users read bundled snapshot — not live DB. */
-		statsSource: "snapshot" as const
+		statsSource: "snapshot" as const,
+		/** ISO 8601 — when `club-stats.json` was exported. */
+		snapshotExportedAt: s.exportedAt
 	};
 }
 
@@ -81,6 +83,7 @@ export function pageDataFromDatabase(
 		credits,
 		beerRows,
 		totals: computeBeerTotals(beerRows),
-		statsSource: "database" as const
+		statsSource: "database" as const,
+		snapshotExportedAt: null as string | null
 	};
 }
