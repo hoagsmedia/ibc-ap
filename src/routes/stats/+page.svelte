@@ -2,7 +2,12 @@
 	import * as Card from "$lib/components/ui/card/index.js";
 	import * as Table from "$lib/components/ui/table/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
+	import { Button } from "$lib/components/ui/button/index.js";
 	import { ScrollArea } from "$lib/components/ui/scroll-area/index.js";
+	import {
+		formatKegCreditsForDisplay,
+		isJeffWilkensFounderKegCredit
+	} from "$lib/stats-keg-credits-display.js";
 	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
@@ -19,6 +24,17 @@
 			month: "short",
 			day: "numeric",
 			timeZone: "UTC"
+		}).format(d);
+	}
+
+	/** Month, day, year only (no time). */
+	function fmtSnapshotDateOnly(iso: string) {
+		const d = new Date(iso);
+		if (!Number.isFinite(d.getTime())) return iso;
+		return new Intl.DateTimeFormat(undefined, {
+			year: "numeric",
+			month: "long",
+			day: "numeric"
 		}).format(d);
 	}
 </script>
@@ -42,9 +58,35 @@
 	</header>
 
 	<Card.Root>
-		<Card.Header>
-			<Card.Title>Totals (from keg list)</Card.Title>
-			<Card.Description>Computed from the beer-consumed table.</Card.Description>
+		<Card.Header class="flex flex-row flex-wrap items-start justify-between gap-3 space-y-0">
+			<div class="min-w-0 flex-1 space-y-1.5">
+				<Card.Title>Totals (from keg list)</Card.Title>
+				<Card.Description>Computed from the beer-consumed table.</Card.Description>
+			</div>
+			{#if data.statsSource === "database"}
+				<span
+					class="bg-destructive text-destructive-foreground shrink-0 rounded px-1.5 py-0.5 text-[10px] font-bold uppercase leading-none tracking-wide shadow-sm"
+					title="Live data from the club database"
+				>
+					Live
+				</span>
+			{:else if data.statsSource === "snapshot"}
+				<div
+					class="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center sm:gap-3"
+					role="status"
+				>
+					{#if data.snapshotExportedAt}
+						<p class="text-muted-foreground text-right text-xs leading-snug sm:text-sm">
+							<span class="text-foreground font-medium">Snapshot</span>
+							<span class="text-muted-foreground/80"> · </span>
+							<time datetime={data.snapshotExportedAt} class="text-foreground font-medium">
+								{fmtSnapshotDateOnly(data.snapshotExportedAt)}
+							</time>
+						</p>
+					{/if}
+					<Button href="/login" size="sm" variant="secondary">Sign in</Button>
+				</div>
+			{/if}
 		</Card.Header>
 		<Card.Content>
 			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -104,7 +146,9 @@
 										{row.member_number ?? "—"}
 									</Table.Cell>
 									<Table.Cell class="text-right">
-										<span class="tabular-nums">{row.credits}</span>
+										<span
+											class={isJeffWilkensFounderKegCredit(row) ? '' : 'tabular-nums'}
+										>{formatKegCreditsForDisplay(row)}</span>
 										{#if row.is_cik}
 											<Badge variant="secondary" class="ml-2">CIK</Badge>
 										{/if}

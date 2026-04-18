@@ -120,6 +120,10 @@
 }
 
 @layer base {
+	html {
+		/* Avoid nav / full-width UI jumping when the vertical scrollbar appears or disappears between routes. */
+		scrollbar-gutter: stable;
+	}
 	* {
 		@apply border-border outline-ring/50;
 	}

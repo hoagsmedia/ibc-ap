@@ -4,6 +4,10 @@
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import * as Table from "$lib/components/ui/table/index.js";
 	import { ArrowLeft, Plus, Trash2, Pencil } from "@lucide/svelte";
+	import {
+		formatKegCreditsForDisplay,
+		isJeffWilkensFounderKegCredit
+	} from "$lib/stats-keg-credits-display.js";
 	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
@@ -53,7 +57,11 @@
 						<Table.Cell class="text-right tabular-nums text-muted-foreground">
 							{row.member_number ?? "—"}
 						</Table.Cell>
-						<Table.Cell class="text-right tabular-nums">{row.credits}</Table.Cell>
+						<Table.Cell class="text-right">
+							<span
+								class={isJeffWilkensFounderKegCredit(row) ? "" : "tabular-nums"}
+							>{formatKegCreditsForDisplay(row)}</span>
+						</Table.Cell>
 						<Table.Cell>
 							{#if row.is_cik}
 								<Badge variant="secondary">CIK</Badge>
