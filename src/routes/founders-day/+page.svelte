@@ -122,7 +122,7 @@
 		<div class="space-y-6">
 			<h2 class="text-foreground mb-6 text-3xl font-bold">Founders Day Celebrations</h2>
 
-			{#each foundersData.foundersEvents as event, index}
+			{#each foundersData.foundersEvents as event, index (event.title + event.date)}
 				<Card.Root>
 					<!-- Event Header -->
 					{#if event.image}
@@ -165,7 +165,7 @@
 								<div>
 									<h4 class="text-foreground mb-3 font-semibold">Organizers:</h4>
 									<ul class="space-y-2">
-										{#each event.organizers as organizer}
+										{#each event.organizers as organizer (organizer)}
 											<li class="text-muted-foreground flex items-center gap-2 text-sm">
 												<div class="bg-primary h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
 												{organizer}

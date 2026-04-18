@@ -11,13 +11,13 @@
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
 	import { ArrowLeft, Check, Trash2, KeyRound, Copy } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
-	import { memberSchema, type MemberSchema } from "./edit-member-schema";
-	import { type SuperValidated, type Infer, superForm } from "sveltekit-superforms";
+	import { memberSchema } from "./edit-member-schema";
+	import { superForm } from "sveltekit-superforms";
 	import { createUploadThing } from "$lib/utils";
 	import { zodClient } from "sveltekit-superforms/adapters";
+	import type { PageData } from "./$types";
 
-	let { data }: { data: { form: SuperValidated<Infer<MemberSchema>>; member: any; user: any } } =
-		$props();
+	let { data }: { data: PageData } = $props();
 	let uploading = $state(false);
 	let fileInput = $state<HTMLInputElement | null>(null);
 	let deleteDialogOpen = $state(false);
@@ -108,7 +108,7 @@
 
 	// Create UploadThing helper
 	const { startUpload } = createUploadThing("updateMemberImage", {
-		onClientUploadComplete: (res) => {
+		onClientUploadComplete: () => {
 			uploading = false;
 			// Refresh the page to show the new image
 			window.location.reload();
@@ -117,7 +117,7 @@
 			uploading = false;
 			alert(`Upload failed: ${error.message}`);
 		},
-		onUploadBegin: (name) => {
+		onUploadBegin: () => {
 			uploading = true;
 		}
 	});

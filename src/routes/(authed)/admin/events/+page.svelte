@@ -61,7 +61,7 @@
 		</Card>
 	{:else}
 		<div class="grid gap-6">
-			{#each data.events as event}
+			{#each data.events as event (event.id)}
 				<Card>
 					<CardHeader>
 						<div class="flex items-start justify-between">

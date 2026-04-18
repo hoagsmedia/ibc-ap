@@ -56,3 +56,28 @@ If Preview was previously pointing at the Neon **development** branch (e.g. via 
 ## Build
 
 The build runs `scripts/ensure-users-schema.ts` then `vite build`, so the `users` table gets any missing columns (e.g. `username`) without interactive prompts.
+
+## CI/CD (GitHub Actions)
+
+Workflow: `.github/workflows/ci.yml`
+
+Runs on pushes and pull requests targeting `main`, `development`, and `preview`:
+
+1. `pnpm install --frozen-lockfile`
+2. `pnpm run ci` — `svelte-check`, full ESLint (including Svelte), Vitest, then `vite build`
+
+CI does **not** run `build:vercel` (no database connection). **Vercel** still builds with `pnpm run build:vercel` from `vercel.json`, using project environment variables and `ensure-users-schema.ts` when `DATABASE_URL` is set.
+
+Use **Node 22** locally (see `.nvmrc`) to match the CI and Vercel runtime.
+
+### Lint commands
+
+| Command | Purpose |
+|--------|---------|
+| `pnpm lint:ts` | ESLint on TS/scripts only (`**/*.svelte` ignored) — quick local check |
+| `pnpm lint` | Prettier check + full ESLint |
+| `pnpm run ci` | What GitHub Actions runs: check + ESLint + tests + build (no Prettier) |
+
+## Cleaning up duplicate Vercel env vars
+
+If you see multiple `DATABASE_URL` or `DATABASE_URL_UNPOOLED` rows (e.g. old git-branch overrides), trim them in **Vercel → Project → Settings → Environment Variables** so each target environment has a single clear source of truth for the Neon branch you want (e.g. production branch `DATABASE_URL` for Production and optionally Preview).

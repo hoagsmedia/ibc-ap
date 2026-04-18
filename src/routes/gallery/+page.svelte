@@ -41,7 +41,7 @@
 	</p>
 	<div class="columns-4 gap-4 [column-fill:_balance] sm:columns-2 md:columns-3">
 		<!-- Masonry grid -->
-		{#each images as img, i}
+		{#each images as img, i (i)}
 			<button
 				type="button"
 				class="mb-4 block w-full focus:outline-none"

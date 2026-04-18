@@ -1,3 +1,4 @@
+import { dev } from "$app/environment";
 import { redirect, error } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
@@ -18,7 +19,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	// If client indicates it's using cache and has results, return minimal data
 	if (useCache && searchTerm) {
-		console.log("[IBC-LOG] [members] Using cached results for search term:", searchTerm);
+		if (dev) {
+			console.log("[IBC-LOG] [members] Using cached results for search term:", searchTerm);
+		}
 		return {
 			members: [],
 			searchTerm,

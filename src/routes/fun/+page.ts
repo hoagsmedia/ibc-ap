@@ -3,8 +3,6 @@ import type { PageLoad } from "./$types.js";
 
 export const load: PageLoad = async ({ fetch, setHeaders }) => {
 	const response = await fetch("/api/on-this-day");
-	//console log the response headers for debugging
-	console.log("Response Headers:", response.headers);
 
 	setHeaders({
 		age: response.headers.get("age") || "0",

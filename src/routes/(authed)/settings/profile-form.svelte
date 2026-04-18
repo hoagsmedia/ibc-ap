@@ -1,7 +1,6 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form';
 	import * as Card from '$lib/components/ui/card';
-	import Button from '$lib/components/ui/button/button.svelte';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { profileSchema, type ProfileSchema } from './settings-schema';

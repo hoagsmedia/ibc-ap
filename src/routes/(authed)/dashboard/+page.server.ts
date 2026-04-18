@@ -1,3 +1,4 @@
+import { dev } from "$app/environment";
 import type { PageServerLoad, Actions } from "./$types";
 import {
 	createInvitationToken,
@@ -41,10 +42,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			}));
 	}
 
-	console.log("[IBC-LOG] [dashboard] Page loaded", {
-		userId: locals.user.id.slice(0, 5) + "...", // Show only first 5 characters for security
-		invitationCount: invitations.length
-	});
+	if (dev) {
+		console.log("[IBC-LOG] [dashboard] Page loaded", {
+			userId: locals.user.id.slice(0, 5) + "...",
+			invitationCount: invitations.length
+		});
+	}
 
 	return {
 		user: locals.user,
@@ -96,10 +99,11 @@ export const actions: Actions = {
 			const invitation = await createInvitationToken(locals.user.id);
 			const inviteUrl = `${url.origin}/invite/${invitation.token}`;
 
-			console.log("[IBC-LOG] [dashboard] Invitation created", {
-				userId: locals.user.id,
-				invitationToken: invitation.token
-			});
+			if (dev) {
+				console.log("[IBC-LOG] [dashboard] Invitation created", {
+					userId: locals.user.id.slice(0, 5) + "..."
+				});
+			}
 
 			return {
 				success: true,

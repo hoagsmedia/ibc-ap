@@ -16,7 +16,6 @@
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { ArrowLeft, Upload, X } from '@lucide/svelte';
 	import { createUploadThing } from '$lib/utils';
-	import { onMount } from 'svelte';
 	import type { PageData } from './$types.js';
 
 	const { data }: { data: PageData } = $props();
@@ -49,9 +48,6 @@
 		onUploadError: (error: Error) => {
 			console.error('Upload failed:', error);
 			alert(`Upload failed: ${error.message}`);
-		},
-		onUploadBegin: () => {
-			console.log('Upload starting...');
 		}
 	});
 

@@ -1,3 +1,4 @@
+import { dev } from "$app/environment";
 import { WIKIMEDIA_EMAIL, WIKIMEDIA_ACCESS_TOKEN } from "$env/static/private";
 import type { RequestHandler } from "@sveltejs/kit";
 
@@ -13,7 +14,9 @@ export const GET: RequestHandler = async ({ fetch }) => {
 
 	// Use cached data if it's available
 	if (cachedEvent?.date === today) {
-		console.log("[IBC-LOG] [api/on-this-day] Returning cached event", { date: today });
+		if (dev) {
+			console.log("[IBC-LOG] [api/on-this-day] Returning cached event", { date: today });
+		}
 		const { text, year } = cachedEvent.data;
 		return new Response(JSON.stringify({ text, year }), {
 			headers: { "Content-Type": "application/json", "Cache-Control": "public, max-age=86400" }
@@ -35,7 +38,9 @@ export const GET: RequestHandler = async ({ fetch }) => {
 		}
 	);
 
-	console.log("[IBC-LOG] [api/on-this-day] Wikimedia API response", { status: response.status });
+	if (dev) {
+		console.log("[IBC-LOG] [api/on-this-day] Wikimedia API response", { status: response.status });
+	}
 
 	if (!response.ok) {
 		console.error("Failed to fetch data from Wikimedia API", response.statusText);

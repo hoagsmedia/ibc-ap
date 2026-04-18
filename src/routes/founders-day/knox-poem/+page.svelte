@@ -124,7 +124,7 @@
 				</Card.Header>
 				<Card.Content>
 					<div class="space-y-6">
-						{#each poemStanzas as stanza, index}
+						{#each poemStanzas as stanza, index (index)}
 							<div class="bg-muted/30 border-primary rounded-lg border-l-4 p-6">
 								<div
 									class="text-card-foreground font-mono text-lg leading-relaxed whitespace-pre-line"

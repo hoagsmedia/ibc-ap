@@ -76,7 +76,7 @@
 		<div class="bg-card rounded-lg p-6 shadow-sm">
 			<h2 class="text-foreground mb-6 text-2xl font-semibold">The Founding Five</h2>
 			<div class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-				{#each founders as founder, index}
+				{#each founders as founder, index (founder.name)}
 					<div class="space-y-3">
 						<div class="flex items-center gap-3">
 							<div class="relative size-12 overflow-hidden rounded-full">

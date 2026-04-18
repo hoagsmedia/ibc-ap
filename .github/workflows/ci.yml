@@ -1,0 +1,36 @@
+# PR / branch checks. Deployments are handled by Vercel Git integration (see DEPLOYMENT.md).
+name: CI
+
+on:
+  push:
+    branches: [main, development, preview]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck, lint TS, test, production build
+        run: pnpm run ci
+        env:
+          # Ensure build does not pick up optional local DB URL in CI
+          DATABASE_URL: ""
