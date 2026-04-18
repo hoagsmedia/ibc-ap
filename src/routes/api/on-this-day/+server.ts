@@ -1,5 +1,6 @@
 import { dev } from "$app/environment";
 import { env } from "$env/dynamic/private";
+import { ibcDebugEnabled } from "$lib/server/ibc-debug";
 import type { RequestHandler } from "@sveltejs/kit";
 
 interface WikimediaEvent {
@@ -14,7 +15,7 @@ export const GET: RequestHandler = async ({ fetch }) => {
 
 	// Use cached data if it's available
 	if (cachedEvent?.date === today) {
-		if (dev) {
+		if (dev && ibcDebugEnabled()) {
 			console.log("[IBC-LOG] [api/on-this-day] Returning cached event", { date: today });
 		}
 		const { text, year } = cachedEvent.data;
@@ -45,7 +46,7 @@ export const GET: RequestHandler = async ({ fetch }) => {
 		}
 	);
 
-	if (dev) {
+	if (dev && ibcDebugEnabled()) {
 		console.log("[IBC-LOG] [api/on-this-day] Wikimedia API response", { status: response.status });
 	}
 
