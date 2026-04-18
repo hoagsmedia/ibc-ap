@@ -7,7 +7,18 @@ import path from "path";
 import postgres from "postgres";
 
 dotenv.config({ path: path.resolve(process.cwd(), ".env") });
-dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local"), override: true });
+
+const prod = process.argv.includes("--prod");
+if (prod) {
+	const neon = process.env.DATABASE_URL_PROD?.trim();
+	if (!neon) {
+		console.error("DATABASE_URL_PROD is not set. Cannot ensure stats schema on Neon.");
+		process.exit(1);
+	}
+	process.env.DATABASE_URL = neon;
+	console.log("Using DATABASE_URL_PROD (Neon) for stats schema ensure.");
+}
 
 const url = process.env.DATABASE_URL;
 if (!url) {
