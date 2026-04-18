@@ -9,6 +9,7 @@ import {
 import { fail, redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
+import { ibcDebugEnabled } from "$lib/server/ibc-debug";
 import { and, asc, isNotNull, isNull } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -42,7 +43,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			}));
 	}
 
-	if (dev) {
+	if (dev && ibcDebugEnabled()) {
 		console.log("[IBC-LOG] [dashboard] Page loaded", {
 			userId: locals.user.id.slice(0, 5) + "...",
 			invitationCount: invitations.length
@@ -99,7 +100,7 @@ export const actions: Actions = {
 			const invitation = await createInvitationToken(locals.user.id);
 			const inviteUrl = `${url.origin}/invite/${invitation.token}`;
 
-			if (dev) {
+			if (dev && ibcDebugEnabled()) {
 				console.log("[IBC-LOG] [dashboard] Invitation created", {
 					userId: locals.user.id.slice(0, 5) + "..."
 				});

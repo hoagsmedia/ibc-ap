@@ -1,12 +1,16 @@
 <script lang="ts">
 	import '../app.css';
 	import Navbar from '$lib/components/Navbar.svelte';
+	import { dev } from '$app/environment';
 	import { ModeWatcher } from 'mode-watcher';
 	import { Toaster } from '$lib/components/ui/sonner';
 	import { injectAnalytics } from '@vercel/analytics/sveltekit';
 
 	let { children } = $props();
-	injectAnalytics();
+	// Skip in dev: avoids loading va.vercel-scripts.com debug script + page subscription overhead.
+	if (!dev) {
+		injectAnalytics();
+	}
 </script>
 
 <div class="bg-background relative mx-auto flex min-h-dvh w-full flex-col">

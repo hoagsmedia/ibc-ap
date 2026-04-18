@@ -2,6 +2,7 @@ import { dev } from "$app/environment";
 import { redirect, error } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
+import { ibcDebugEnabled } from "$lib/server/ibc-debug";
 import { asc, or, ilike, sql } from "drizzle-orm";
 import type { PageServerLoad } from "./$types";
 
@@ -19,7 +20,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	// If client indicates it's using cache and has results, return minimal data
 	if (useCache && searchTerm) {
-		if (dev) {
+		if (dev && ibcDebugEnabled()) {
 			console.log("[IBC-LOG] [members] Using cached results for search term:", searchTerm);
 		}
 		return {
