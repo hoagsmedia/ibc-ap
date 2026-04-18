@@ -4,6 +4,7 @@ import type { User } from "./db/schema";
 export type UserForClient = Omit<User, "password_hash">;
 
 export function userWithoutPasswordHash(user: User): UserForClient {
-	const { password_hash: _, ...safe } = user;
+	const { password_hash, ...safe } = user;
+	void password_hash;
 	return safe;
 }
