@@ -78,9 +78,17 @@ export async function markInvitationTokenAsUsed(token: string, usedById: string)
 		.where(eq(table.invitationTokens.token, token));
 }
 
-export async function getInvitationsByUser(userId: string): Promise<table.InvitationToken[]> {
-	return await db
+export async function getInvitationsByUser(
+	userId: string,
+	options?: { limit?: number }
+): Promise<table.InvitationToken[]> {
+	const q = db
 		.select()
 		.from(table.invitationTokens)
-		.where(eq(table.invitationTokens.created_by_id, userId));
+		.where(eq(table.invitationTokens.created_by_id, userId))
+		.orderBy(desc(table.invitationTokens.created_at));
+	if (options?.limit != null) {
+		return await q.limit(options.limit);
+	}
+	return await q;
 }

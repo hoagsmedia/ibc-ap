@@ -54,7 +54,7 @@
 
 	<div class="grid gap-2 md:gap-6 lg:grid-cols-3">
 		<!-- Profile Card -->
-		<Card.Root class="w-full max-w-sm lg:col-span-1">
+		<Card.Root class="w-full max-w-sm md:max-w-full lg:col-span-1">
 			<Card.Header class="text-center">
 				<div class="mx-auto mb-4">
 					<Avatar
