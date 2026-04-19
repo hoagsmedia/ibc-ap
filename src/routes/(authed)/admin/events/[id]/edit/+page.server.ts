@@ -31,10 +31,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 	const eventData = event[0];
 
-	// Format the date for datetime-local input
-	const formattedEventDate = eventData.event_date
-		? eventData.event_date.toISOString().slice(0, 16)
-		: '';
+	/** Local wall time for event form (not UTC `toISOString`, which shifts the clock). */
+	function toDatetimeLocalField(d: Date): string {
+		const pad = (n: number) => String(n).padStart(2, "0");
+		return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+	}
+
+	const formattedEventDate = eventData.event_date ? toDatetimeLocalField(eventData.event_date) : "";
 	return {
 		event: eventData,
 		form: await superValidate(

@@ -9,9 +9,10 @@
 		SettingsIcon,
 		CalendarIcon,
 		UsersIcon,
-		LogOutIcon,
-		BarChart3Icon
+		LogOutIcon
 	} from '@lucide/svelte/icons';
+	import Beer from '@lucide/svelte/icons/beer';
+	import Package from '@lucide/svelte/icons/package';
 	import { enhance } from '$app/forms';
 
 	let {
@@ -86,12 +87,22 @@
 				</DropdownMenu.Item>
 				<DropdownMenu.Item>
 					<a
-						href="/admin/stats"
+						href="/admin/stats/beer-consumed"
 						class="flex w-full items-center gap-2"
 						onclick={() => (isOpen = false)}
 					>
-						<BarChart3Icon class="size-4" />
-						Club stats data
+						<Beer class="size-4" />
+						Manage Beer Consumed
+					</a>
+				</DropdownMenu.Item>
+				<DropdownMenu.Item>
+					<a
+						href="/admin/stats/keg-credits"
+						class="flex w-full items-center gap-2"
+						onclick={() => (isOpen = false)}
+					>
+						<Package class="size-4" />
+						Manage Keg Credits
 					</a>
 				</DropdownMenu.Item>
 				<DropdownMenu.Item>

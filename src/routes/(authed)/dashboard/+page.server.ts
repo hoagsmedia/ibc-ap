@@ -11,6 +11,7 @@ import { db } from "$lib/server/db";
 import { getDashboardClubStats } from "$lib/server/dashboard-club-stats-cache";
 import { events, users } from "$lib/server/db/schema";
 import { ibcDebugEnabled } from "$lib/server/ibc-debug";
+import { requiresIbcTest } from "$lib/ibc-test";
 import { and, asc, count, desc, eq, gte, isNotNull, isNull } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -21,7 +22,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	// Most recent invitation links only (dashboard UI)
 	const invitations = await getInvitationsByUser(locals.user.id, { limit: 3 });
 
-	// IBC-20: For admins only — up to 3 most recent pending applicants (oldest-first) + total count
+	// IBC-20: For admins only — up to 3 most recent Prospects (oldest-first) + total count
 	let pendingMembers:
 		| { id: string; name: string; email: string | null; test_passed: Date }[]
 		| undefined;
@@ -67,6 +68,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const eventsThisYear = canViewMembersOnlyEvents
 		? cached.eventsThisYearMember
 		: cached.eventsThisYearGuest;
+	const eventsThisMonth = canViewMembersOnlyEvents
+		? cached.eventsThisMonthMember
+		: cached.eventsThisMonthGuest;
 
 	const startOfToday = new Date();
 	startOfToday.setUTCHours(0, 0, 0, 0);
@@ -107,7 +111,10 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			totalMembers: cached.totalMembers,
 			activeMembers: cached.activeMembers,
 			eventsThisYear,
-			kegsConsumed: cached.kegsConsumed
+			eventsThisMonth,
+			kegsConsumed: cached.kegsConsumed,
+			membersJoinedThisMonth: cached.membersJoinedThisMonth,
+			kegsAddedThisMonth: cached.kegsAddedThisMonth
 		}
 	};
 };
@@ -125,7 +132,7 @@ export const actions: Actions = {
 					"You must be an accepted member with a member number before you can create invitation links. An admin will review your profile after you pass the test."
 			});
 		}
-		if (!locals.user.test_passed) {
+		if (requiresIbcTest(locals.user)) {
 			return fail(403, {
 				message:
 					"You must pass the official IBC test before creating invitation links. Please visit the test page to complete it."

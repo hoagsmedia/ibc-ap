@@ -36,13 +36,13 @@
 	<title>Events Management - Island Beer Club Admin</title>
 </svelte:head>
 
-<div class="container mx-auto py-8">
-	<div class="mb-8 flex items-center justify-between space-x-3">
-		<div>
+<div class="container mx-auto max-w-full px-4 py-8">
+	<div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+		<div class="min-w-0">
 			<h1 class="text-3xl font-bold">Events Management</h1>
 			<p class="text-muted-foreground">Create and manage club events</p>
 		</div>
-		<Button href="/admin/events/create" class="gap-2">
+		<Button href="/admin/events/create" class="shrink-0 gap-2 sm:self-start">
 			<Plus class="h-4 w-4" />
 			Create Event
 		</Button>
@@ -63,10 +63,10 @@
 	{:else}
 		<div class="grid gap-6">
 			{#each data.events as event (event.id)}
-				<Card>
-					<CardHeader>
-						<div class="flex items-start justify-between">
-							<div class="space-y-1">
+				<Card class="min-w-0 overflow-hidden">
+					<CardHeader class="space-y-4">
+						<div class="flex min-w-0 flex-col gap-4 md:flex-row md:items-start md:justify-between md:gap-6">
+							<div class="min-w-0 flex-1 space-y-1">
 								<div class="flex flex-wrap items-center gap-2">
 									<CardTitle class="text-xl">{event.title}</CardTitle>
 									{#if event.members_only}
@@ -77,68 +77,67 @@
 									<CardDescription>{event.description}</CardDescription>
 								{/if}
 							</div>
-							<div class="flex items-center gap-2">
-								<!-- <Badge variant={event.is_published === 1 ? 'default' : 'secondary'}>
-									{event.is_published === 1 ? 'Published' : 'Draft'}
-								</Badge> -->
-								<div class="flex gap-1">
-									<!-- Toggle Publish/Unpublish -->
-									<form
-										method="POST"
-										action="?/togglePublish"
-										class="inline"
-										use:enhance={() => {
-											loadingStates[event.id] = true;
-											return async ({ update }) => {
-												await update();
-												loadingStates[event.id] = false;
-											};
-										}}
+							<div
+								class="flex w-full min-w-0 shrink-0 flex-wrap gap-2 md:w-auto md:max-w-full md:justify-end"
+							>
+								<!-- Toggle Publish/Unpublish -->
+								<form
+									method="POST"
+									action="?/togglePublish"
+									class="min-w-0"
+									use:enhance={() => {
+										loadingStates[event.id] = true;
+										return async ({ update }) => {
+											await update();
+											loadingStates[event.id] = false;
+										};
+									}}
+								>
+									<input type="hidden" name="eventId" value={event.id} />
+									<input type="hidden" name="currentStatus" value={event.is_published} />
+									<Button
+										type="submit"
+										variant="outline"
+										size="sm"
+										disabled={loadingStates[event.id]}
+										class="max-w-full gap-1 {event.is_published === 1
+											? 'text-orange-600 hover:bg-orange-500/10 dark:text-orange-400 dark:hover:bg-orange-500/15'
+											: 'text-green-600 hover:bg-green-500/10 dark:text-green-400 dark:hover:bg-green-500/15'}"
 									>
-										<input type="hidden" name="eventId" value={event.id} />
-										<input type="hidden" name="currentStatus" value={event.is_published} />
-										<Button
-											type="submit"
-											variant="outline"
-											size="sm"
-											disabled={loadingStates[event.id]}
-											class="gap-1 {event.is_published === 1
-												? 'text-orange-600 hover:bg-orange-50'
-												: 'text-green-600 hover:bg-green-50'}"
-										>
-											{#if loadingStates[event.id]}
-												<Loader2 class="h-3 w-3 animate-spin" />
-												{event.is_published === 1 ? "Unpublishing..." : "Publishing..."}
-											{:else if event.is_published === 1}
-												<EyeOff class="h-3 w-3" />
-												Unpublish
-											{:else}
-												<Eye class="h-3 w-3" />
-												Publish
-											{/if}
-										</Button>
-									</form>
+										{#if loadingStates[event.id]}
+											<Loader2 class="h-3 w-3 shrink-0 animate-spin" />
+											<span class="truncate"
+												>{event.is_published === 1 ? "Unpublishing..." : "Publishing..."}</span
+											>
+										{:else if event.is_published === 1}
+											<EyeOff class="h-3 w-3 shrink-0" />
+											Unpublish
+										{:else}
+											<Eye class="h-3 w-3 shrink-0" />
+											Publish
+										{/if}
+									</Button>
+								</form>
 
-									<!-- Delete Button -->
-									<Button
-										variant="outline"
-										size="sm"
-										class="text-destructive hover:bg-destructive hover:text-primary-foreground gap-1"
-										onclick={() => (eventToDelete = event.id)}
-									>
-										<Trash2 class="h-3 w-3" />
-										Delete
-									</Button>
-									<Button
-										href={`/admin/events/${event.id}/edit`}
-										variant="outline"
-										size="sm"
-										class="gap-1"
-									>
-										<Edit class="h-3 w-3" />
-										Edit
-									</Button>
-								</div>
+								<!-- Delete Button -->
+								<Button
+									variant="outline"
+									size="sm"
+									class="text-destructive gap-1 hover:bg-destructive hover:text-destructive-foreground"
+									onclick={() => (eventToDelete = event.id)}
+								>
+									<Trash2 class="h-3 w-3 shrink-0" />
+									Delete
+								</Button>
+								<Button
+									href={`/admin/events/${event.id}/edit`}
+									variant="outline"
+									size="sm"
+									class="gap-1"
+								>
+									<Edit class="h-3 w-3 shrink-0" />
+									Edit
+								</Button>
 							</div>
 						</div>
 					</CardHeader>

@@ -13,7 +13,7 @@
 	import { Separator } from "$lib/components/ui/separator/index.js";
 	import { toggleMode } from "mode-watcher";
 	import { Menu } from "@lucide/svelte";
-	import logo from "$lib/assets/ibc-logo.svg";
+	import IbcLogo from "$lib/components/IbcLogo.svelte";
 	import { navLinks, dropdownLinks } from "$lib/config/navigation";
 	import { IsMobile } from "$lib/hooks/is-mobile.svelte";
 
@@ -58,8 +58,8 @@
 			-->
 			<div class="grid h-full w-full grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
 				<div class="flex min-w-0 items-center justify-self-start">
-					<a href="/" class="flex shrink-0 items-center">
-						<img src={logo} alt="Island Beer Club Logo" class="w-[90px] object-contain px-2" />
+					<a href="/" class="flex shrink-0 items-center" aria-label="Island Beer Club home">
+						<IbcLogo class="w-[90px] px-2 [&>svg]:h-auto [&>svg]:w-full" decorative />
 					</a>
 				</div>
 
@@ -131,7 +131,10 @@
 										<a href="/admin/events" class="w-full">Manage Events</a>
 									</DropdownMenu.Item>
 									<DropdownMenu.Item>
-										<a href="/admin/stats" class="w-full">Club stats data</a>
+										<a href="/admin/stats/beer-consumed" class="w-full">Manage Beer Consumed</a>
+									</DropdownMenu.Item>
+									<DropdownMenu.Item>
+										<a href="/admin/stats/keg-credits" class="w-full">Manage Keg Credits</a>
 									</DropdownMenu.Item>
 									<DropdownMenu.Item>
 										<a href="/members" class="w-full">Manage Members</a>
@@ -158,8 +161,8 @@
 			</div>
 		{:else}
 			<!-- Mobile Navigation -->
-			<a href="/" class="flex items-center">
-				<img src={logo} alt="Island Beer Club Logo" class="w-[90px] object-contain px-2" />
+			<a href="/" class="flex items-center" aria-label="Island Beer Club home">
+				<IbcLogo class="w-[90px] px-2 [&>svg]:h-auto [&>svg]:w-full" decorative />
 			</a>
 			<div class="ml-auto">
 				<Sheet.Root bind:open={isOpen}>

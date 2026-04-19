@@ -15,6 +15,14 @@ export type DashboardClubStatsCached = {
 	/** Published events this calendar year (UTC), including members-only. */
 	eventsThisYearMember: number;
 	kegsConsumed: number;
+	/** Member/admin accounts created this calendar month (UTC). */
+	membersJoinedThisMonth: number;
+	/** Keg rows with finished_on in this calendar month (UTC). */
+	kegsAddedThisMonth: number;
+	/** Published events with event_date in this calendar month (UTC), excluding members-only. */
+	eventsThisMonthGuest: number;
+	/** Published events with event_date in this calendar month (UTC), including members-only. */
+	eventsThisMonthMember: number;
 };
 
 let cache: { expiresAt: number; data: DashboardClubStatsCached } | null = null;
@@ -38,18 +46,49 @@ async function loadClubStats(db: DB): Promise<DashboardClubStatsCached> {
 		lt(events.event_date, yearEnd)
 	);
 
+	const u = new Date();
+	const yUtc = u.getUTCFullYear();
+	const moUtc = u.getUTCMonth();
+	const monthStart = new Date(Date.UTC(yUtc, moUtc, 1, 0, 0, 0, 0));
+	const monthEnd = new Date(Date.UTC(yUtc, moUtc + 1, 1, 0, 0, 0, 0));
+
+	const membersJoinedThisMonth = and(
+		memberOrAdmin,
+		gte(users.created_at, monthStart),
+		lt(users.created_at, monthEnd)
+	);
+	const kegsFinishedThisMonth = and(
+		isNotNull(statsBeerConsumed.finished_on),
+		gte(statsBeerConsumed.finished_on, monthStart),
+		lt(statsBeerConsumed.finished_on, monthEnd)
+	);
+	const baseEventsThisMonth = and(
+		eq(events.is_published, 1),
+		isNotNull(events.event_date),
+		gte(events.event_date, monthStart),
+		lt(events.event_date, monthEnd)
+	);
+
 	const [
 		totalMembersRows,
 		activeMembersRows,
 		eventsGuestRows,
 		eventsMemberRows,
-		kegsConsumedRows
+		kegsConsumedRows,
+		membersJoinedThisMonthRows,
+		kegsAddedThisMonthRows,
+		eventsThisMonthGuestRows,
+		eventsThisMonthMemberRows
 	] = await Promise.all([
 		db.select({ n: count() }).from(users).where(memberOrAdmin),
 		db.select({ n: count() }).from(users).where(and(memberOrAdmin, isNotNull(users.mbr))),
 		db.select({ n: count() }).from(events).where(and(baseEvents, eq(events.members_only, false))),
 		db.select({ n: count() }).from(events).where(baseEvents),
-		db.select({ n: count() }).from(statsBeerConsumed)
+		db.select({ n: count() }).from(statsBeerConsumed),
+		db.select({ n: count() }).from(users).where(membersJoinedThisMonth),
+		db.select({ n: count() }).from(statsBeerConsumed).where(kegsFinishedThisMonth),
+		db.select({ n: count() }).from(events).where(and(baseEventsThisMonth, eq(events.members_only, false))),
+		db.select({ n: count() }).from(events).where(baseEventsThisMonth)
 	]);
 
 	return {
@@ -57,7 +96,11 @@ async function loadClubStats(db: DB): Promise<DashboardClubStatsCached> {
 		activeMembers: num(activeMembersRows),
 		eventsThisYearGuest: num(eventsGuestRows),
 		eventsThisYearMember: num(eventsMemberRows),
-		kegsConsumed: num(kegsConsumedRows)
+		kegsConsumed: num(kegsConsumedRows),
+		membersJoinedThisMonth: num(membersJoinedThisMonthRows),
+		kegsAddedThisMonth: num(kegsAddedThisMonthRows),
+		eventsThisMonthGuest: num(eventsThisMonthGuestRows),
+		eventsThisMonthMember: num(eventsThisMonthMemberRows)
 	};
 }
 

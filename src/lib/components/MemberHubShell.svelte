@@ -10,7 +10,7 @@
 	import Avatar from "$lib/components/Avatar.svelte";
 	import { toggleMode } from "mode-watcher";
 	import { enhance } from "$app/forms";
-	import logo from "$lib/assets/ibc-logo.svg";
+	import IbcLogo from "$lib/components/IbcLogo.svelte";
 	import Search from "@lucide/svelte/icons/search";
 	import Sun from "@lucide/svelte/icons/sun";
 	import Moon from "@lucide/svelte/icons/moon";
@@ -20,7 +20,8 @@
 	import Calendar from "@lucide/svelte/icons/calendar";
 	import Settings from "@lucide/svelte/icons/settings";
 	import UserPlus from "@lucide/svelte/icons/user-plus";
-	import BarChart3 from "@lucide/svelte/icons/bar-chart-3";
+	import Beer from "@lucide/svelte/icons/beer";
+	import Package from "@lucide/svelte/icons/package";
 	import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
 	import LogOut from "@lucide/svelte/icons/log-out";
 	import Home from "@lucide/svelte/icons/home";
@@ -36,9 +37,13 @@
 	}
 
 	function memberHubTitle(pathname: string): string {
+		if (pathname.startsWith("/dashboard/pending-members")) return "Prospects";
 		if (pathname.startsWith("/dashboard")) return "Dashboard";
 		if (pathname.startsWith("/members")) return "Members";
 		if (pathname.startsWith("/settings")) return "Settings";
+		if (pathname.startsWith("/admin/stats/beer-consumed")) return "Manage Beer Consumed";
+		if (pathname.startsWith("/admin/stats/keg-credits")) return "Manage Keg Credits";
+		if (pathname.startsWith("/admin/events")) return "Events";
 		if (pathname.startsWith("/admin")) return "Club admin";
 		if (pathname.startsWith("/test")) return "IBC test";
 		if (pathname === "/events" || pathname.startsWith("/events/")) return "Events";
@@ -46,6 +51,11 @@
 	}
 
 	const headerTitle = $derived(memberHubTitle(path));
+
+	const eventsNavHref = $derived(user?.role === "admin" ? "/admin/events" : "/events");
+	const eventsNavActive = $derived(
+		user?.role === "admin" ? navActive("/admin/events") : navActive("/events")
+	);
 </script>
 
 <Sidebar.Provider>
@@ -71,13 +81,12 @@
 				)}
 			>
 				<a href="/" class="flex w-full flex-col items-center gap-2 overflow-hidden py-1 text-center">
-					<img
-						src={logo}
-						alt="Island Beer Club"
-						class="h-auto w-[min(90%,15rem)] max-w-full shrink-0 object-contain"
+					<IbcLogo
+						class="h-auto w-[min(90%,15rem)] max-w-full shrink-0 [&>svg]:h-auto [&>svg]:w-full"
+						decorative
 					/>
 					<div class="flex w-full min-w-0 flex-col leading-tight">
-						<span class="text-foam w-full truncate text-sm font-semibold tracking-tight"
+						<span class="w-full truncate text-sm font-semibold tracking-tight text-foreground"
 							>Island Beer Club</span
 						>
 						<span class="text-muted-foreground w-full truncate text-xs">Member hub</span>
@@ -114,11 +123,14 @@
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
 						<Sidebar.MenuItem>
-							<Sidebar.MenuButton isActive={navActive("/events")} tooltipContent="Events">
+							<Sidebar.MenuButton
+								isActive={eventsNavActive}
+								tooltipContent={user?.role === "admin" ? "Manage Events" : "Events"}
+							>
 								{#snippet child({ props })}
-									<a href="/events" {...props}>
+									<a href={eventsNavHref} {...props}>
 										<Calendar />
-										<span>Events</span>
+										<span>{user?.role === "admin" ? "Manage Events" : "Events"}</span>
 									</a>
 								{/snippet}
 							</Sidebar.MenuButton>
@@ -144,38 +156,38 @@
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton
 									isActive={navActive("/dashboard/pending-members")}
-									tooltipContent="New members"
+									tooltipContent="Prospects"
 								>
 									{#snippet child({ props })}
 										<a href="/dashboard/pending-members" {...props}>
 											<UserPlus />
-											<span>New members</span>
+											<span>Prospects</span>
 										</a>
 									{/snippet}
 								</Sidebar.MenuButton>
 							</Sidebar.MenuItem>
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton
-									isActive={navActive("/admin/events")}
-									tooltipContent="Manage events"
+									isActive={navActive("/admin/stats/beer-consumed")}
+									tooltipContent="Manage Beer Consumed"
 								>
 									{#snippet child({ props })}
-										<a href="/admin/events" {...props}>
-											<Calendar />
-											<span>Manage events</span>
+										<a href="/admin/stats/beer-consumed" {...props}>
+											<Beer />
+											<span>Manage Beer Consumed</span>
 										</a>
 									{/snippet}
 								</Sidebar.MenuButton>
 							</Sidebar.MenuItem>
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton
-									isActive={navActive("/admin/stats")}
-									tooltipContent="Club stats"
+									isActive={navActive("/admin/stats/keg-credits")}
+									tooltipContent="Manage Keg Credits"
 								>
 									{#snippet child({ props })}
-										<a href="/admin/stats" {...props}>
-											<BarChart3 />
-											<span>Club stats</span>
+										<a href="/admin/stats/keg-credits" {...props}>
+											<Package />
+											<span>Manage Keg Credits</span>
 										</a>
 									{/snippet}
 								</Sidebar.MenuButton>

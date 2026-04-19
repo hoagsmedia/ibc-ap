@@ -13,40 +13,40 @@
       }
 
       .st0, .st2, .st3 {
-        stroke: #fff;
+        stroke: var(--ibc-stroke-white, #fff);
       }
 
       .st5 {
-        fill: #ffe376;
+        fill: var(--ibc-fill-yellow, #ffe376);
       }
 
       .st6 {
-        fill: #231f20;
+        fill: var(--ibc-fill-wordmark, #231f20);
       }
 
       .st7 {
-        fill: #f4edcd;
+        fill: var(--ibc-fill-disc, #f4edcd);
       }
 
       .st8 {
-        fill: #68b7ca;
+        fill: var(--ibc-fill-water-mid, #68b7ca);
       }
 
       .st9 {
-        fill: #4a9c73;
+        fill: var(--ibc-fill-forest, #4a9c73);
       }
 
       .st1 {
-        stroke: #efe3ab;
+        stroke: var(--ibc-stroke-cream, #efe3ab);
         stroke-width: 13.6px;
       }
 
       .st10 {
-        fill: #99e1ee;
+        fill: var(--ibc-fill-sky, #99e1ee);
       }
 
       .st11 {
-        fill: #2b5d4c;
+        fill: var(--ibc-fill-pine, #2b5d4c);
       }
 
       .st2 {
@@ -58,36 +58,36 @@
       }
 
       .st12, .st13 {
-        fill: #faf6ee;
+        fill: var(--ibc-fill-paper, #faf6ee);
       }
 
       .st14 {
-        fill: #eb5649;
+        fill: var(--ibc-fill-coral, #eb5649);
       }
 
       .st15 {
-        fill: #0b91ac;
+        fill: var(--ibc-fill-teal, #0b91ac);
       }
 
       .st16 {
-        fill: #fff;
+        fill: var(--ibc-fill-white, #fff);
       }
 
       .st17 {
-        fill: #f8ebc3;
+        fill: var(--ibc-fill-sand, #f8ebc3);
       }
 
       .st4 {
-        stroke: #eddf9c;
+        stroke: var(--ibc-stroke-gold, #eddf9c);
         stroke-width: 16.3px;
       }
 
       .st18 {
-        fill: #336da6;
+        fill: var(--ibc-fill-blue, #336da6);
       }
 
       .st19 {
-        fill: #ef3e42;
+        fill: var(--ibc-fill-red, #ef3e42);
       }
 
       .st13, .st20 {
@@ -95,51 +95,51 @@
       }
 
       .st21 {
-        fill: #eddf9c;
+        fill: var(--ibc-fill-gold, #eddf9c);
       }
 
       .st22 {
-        fill: #e85749;
+        fill: var(--ibc-fill-coral-dark, #e85749);
       }
 
       .st23 {
-        fill: #f8e9c4;
+        fill: var(--ibc-fill-sand2, #f8e9c4);
       }
 
       .st24 {
-        fill: #fbf7f0;
+        fill: var(--ibc-fill-paper2, #fbf7f0);
       }
 
       .st25 {
-        fill: #fefefe;
+        fill: var(--ibc-fill-paper3, #fefefe);
       }
 
       .st26 {
-        fill: #539770;
+        fill: var(--ibc-fill-green, #539770);
       }
 
       .st27 {
-        fill: #ffe7be;
+        fill: var(--ibc-fill-cream, #ffe7be);
       }
 
       .st28 {
-        fill: #4c5b52;
+        fill: var(--ibc-fill-slate, #4c5b52);
       }
 
       .st29 {
-        fill: #66c293;
+        fill: var(--ibc-fill-mint, #66c293);
       }
 
       .st30 {
-        fill: #e81e26;
+        fill: var(--ibc-fill-red-deep, #e81e26);
       }
 
       .st31 {
-        fill: #168eab;
+        fill: var(--ibc-fill-ocean, #168eab);
       }
 
       .st32 {
-        fill: #2d5e4f;
+        fill: var(--ibc-fill-forest-deep, #2d5e4f);
       }
     </style>
   </defs>

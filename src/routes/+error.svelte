@@ -34,7 +34,7 @@
 	>
 		<Beer class="text-primary size-4 shrink-0 opacity-90" strokeWidth={1.75} aria-hidden="true" />
 		<span class="text-muted-foreground font-normal">Error</span>
-		<span class="text-foam tabular-nums">{status}</span>
+		<span class="tabular-nums text-foreground">{status}</span>
 	</div>
 
 	<h1 class="text-foreground max-w-lg text-balance text-3xl font-bold tracking-tight sm:text-4xl">

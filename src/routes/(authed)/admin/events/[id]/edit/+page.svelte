@@ -16,6 +16,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
 	import { ArrowLeft, Upload, X } from '@lucide/svelte';
 	import { createUploadThing } from '$lib/utils';
+	import EventDateTimeField from '$lib/components/EventDateTimeField.svelte';
 	import type { PageData } from './$types.js';
 
 	const { data }: { data: PageData } = $props();
@@ -97,7 +98,7 @@
 	<title>Edit Event - Island Beer Club Admin</title>
 </svelte:head>
 
-<div class="container mx-auto py-8">
+<div class="container mx-auto max-w-full px-4 py-8">
 	<div class="mb-8">
 		<Button href="/admin/events" variant="ghost" class="mb-4 gap-2">
 			<ArrowLeft class="h-4 w-4" />
@@ -147,13 +148,14 @@
 				</div>
 
 				<div class="space-y-2">
-					<Label for="event_date">Event Date & Time <span class="text-destructive">*</span></Label>
-					<Input
+					<p class="text-sm leading-none font-medium">
+						Event date &amp; time <span class="text-destructive">*</span>
+					</p>
+					<EventDateTimeField
 						id="event_date"
 						name="event_date"
-						type="datetime-local"
 						bind:value={$form.event_date}
-						required
+						aria-invalid={$errors.event_date ? 'true' : undefined}
 					/>
 					{#if $errors.event_date}
 						<p class="text-destructive text-sm">{$errors.event_date}</p>

@@ -148,6 +148,42 @@
 		brightness(1.06) contrast(1.06);
 }
 
+/*
+ * IBC logo (inline SVG via IbcLogo.svelte) — dark mode softens creams/whites and nudges
+ * illustration colors toward the taproom palette without changing the default asset.
+ */
+.dark .ibc-logo-themed {
+	--ibc-stroke-white: #c4c0b8;
+	--ibc-stroke-cream: #cfc39a;
+	--ibc-stroke-gold: #c4ba88;
+	--ibc-fill-yellow: #ebd063;
+	--ibc-fill-wordmark: #3d4f47;
+	--ibc-fill-disc: #beb6a8;
+	--ibc-fill-water-mid: #5aa4b5;
+	--ibc-fill-forest: #438f6a;
+	--ibc-fill-sky: #84c9d8;
+	--ibc-fill-pine: #265a4a;
+	--ibc-fill-paper: #e2dfd8;
+	--ibc-fill-coral: #d64e45;
+	--ibc-fill-teal: #0a8399;
+	--ibc-fill-white: #e4e1da;
+	--ibc-fill-sand: #e5ddba;
+	--ibc-fill-blue: #2f6094;
+	--ibc-fill-red: #e0363a;
+	--ibc-fill-gold: #d2c88a;
+	--ibc-fill-coral-dark: #d1493e;
+	--ibc-fill-sand2: #e0d9b8;
+	--ibc-fill-paper2: #e8e6e0;
+	--ibc-fill-paper3: #e6e6e4;
+	--ibc-fill-green: #4c8a66;
+	--ibc-fill-cream: #edd9a4;
+	--ibc-fill-slate: #455248;
+	--ibc-fill-mint: #5cb386;
+	--ibc-fill-red-deep: #d41b22;
+	--ibc-fill-ocean: #14829a;
+	--ibc-fill-forest-deep: #285548;
+}
+
 @theme inline {
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);
@@ -218,6 +254,31 @@
 	body {
 		@apply bg-background text-foreground;
 	}
+
+	/*
+		Native date/time pickers (datetime-local, date, time) — align popover chrome with app theme.
+		Supported in WebKit/Blink; mobile Safari uses color-scheme for sheet styling where available.
+	*/
+	input[type="datetime-local"],
+	input[type="date"],
+	input[type="time"] {
+		color-scheme: light;
+	}
+	.dark input[type="datetime-local"],
+	.dark input[type="date"],
+	.dark input[type="time"] {
+		color-scheme: dark;
+	}
+
+	input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+	input[type="date"]::-webkit-calendar-picker-indicator {
+		opacity: 0.75;
+	}
+	.dark input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+	.dark input[type="date"]::-webkit-calendar-picker-indicator {
+		opacity: 0.9;
+		filter: invert(1);
+	}
 }
 
 @layer components {
@@ -240,12 +301,12 @@
 			linear-gradient(165deg, oklch(0.22 0.03 95 / 0.92) 0%, oklch(0.18 0.028 100 / 0.96) 100%);
 	}
 
-	/* Invitation links card — barrel photo overlay */
+	/* Invitation links card — barrel photo overlay (light: slightly richer so photo reads after scrims) */
 	.ibc-invites-card-bg {
 		background:
-			radial-gradient(ellipse 95% 75% at 92% 55%, oklch(0.72 0.1 58 / 0.22) 0%, transparent 58%),
-			radial-gradient(ellipse 65% 85% at 98% 100%, oklch(0.65 0.08 50 / 0.2) 0%, transparent 50%),
-			linear-gradient(105deg, transparent 0%, oklch(0.94 0.03 85 / 0.45) 100%);
+			radial-gradient(ellipse 95% 75% at 92% 55%, oklch(0.72 0.1 58 / 0.34) 0%, transparent 58%),
+			radial-gradient(ellipse 65% 85% at 98% 100%, oklch(0.65 0.08 50 / 0.3) 0%, transparent 50%),
+			linear-gradient(105deg, transparent 0%, oklch(0.94 0.03 85 / 0.38) 100%);
 	}
 
 	.dark .ibc-invites-card-bg {

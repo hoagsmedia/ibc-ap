@@ -85,7 +85,7 @@
 				We are a bunch of guys who grew up together and love beer. We’ve all gone off to school, have
 				had successful careers and, in our later life, returned to our home town to reunite and share
 				experiences. We’re posting this site to communicate and coordinate with our numerous members
-				worldwide and with potential members wherever they may be. This is for our amusement and
+				worldwide and with prospects wherever they may be. This is for our amusement and
 				entertainment. If you like it please return.
 			</p>
 		</div>
