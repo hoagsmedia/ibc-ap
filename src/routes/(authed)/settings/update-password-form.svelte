@@ -33,7 +33,7 @@
 </script>
 
 <!-- Update Password Section -->
-<Card.Root class="bg-card rounded-lg p-6 shadow">
+<Card.Root class="ibc-hub-surface bg-card/50 rounded-lg p-6 shadow-sm dark:bg-card/35">
 	<Card.Header class="text-card-foreground mb-4 text-lg font-medium">Update Password</Card.Header>
 	<Card.Content>
 		<form method="POST" action="?/updatePassword" use:enhance>

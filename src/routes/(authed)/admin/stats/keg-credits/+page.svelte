@@ -22,7 +22,7 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-5xl py-8">
-	<Button href="/admin/stats" variant="ghost" class="mb-4 gap-2">
+	<Button href="/admin/stats" variant="ghost" class="ibc-hub-back-link mb-4 gap-2">
 		<ArrowLeft class="h-4 w-4" />
 		Club stats
 	</Button>
@@ -37,7 +37,7 @@
 		</Button>
 	</div>
 
-	<div class="rounded-md border">
+	<div class="ibc-hub-surface overflow-hidden">
 		<Table.Root>
 			<Table.Header>
 				<Table.Row>

@@ -36,7 +36,7 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-lg py-8">
-	<Button href="/admin/stats/beer-consumed" variant="ghost" class="mb-4 gap-2">
+	<Button href="/admin/stats/beer-consumed" variant="ghost" class="ibc-hub-back-link mb-4 gap-2">
 		<ArrowLeft class="h-4 w-4" />
 		Beer consumed
 	</Button>

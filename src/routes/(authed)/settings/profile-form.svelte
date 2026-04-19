@@ -1,6 +1,7 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form';
 	import * as Card from '$lib/components/ui/card';
+	import { Button } from '$lib/components/ui/button/index.js';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { profileSchema, type ProfileSchema } from './settings-schema';
@@ -36,7 +37,7 @@
 	const { form: formData, enhance, submitting } = form;
 </script>
 
-<Card.Root class="bg-card rounded-lg p-6 shadow">
+<Card.Root class="ibc-hub-surface bg-card/50 rounded-lg p-6 shadow-sm dark:bg-card/35">
 	<Card.Header class="text-card-foreground mb-4 text-lg font-medium"
 		>Profile Information</Card.Header
 	>
@@ -162,12 +163,9 @@
 					{$submitting ? 'Updating...' : 'Update Profile'}
 				</Form.Button>
 
-				<a
-					href="/dashboard"
-					class="border-border bg-card text-card-foreground hover:bg-accent focus:ring-ring inline-flex items-center rounded-md border px-4 py-2 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
-				>
+				<Button href="/dashboard" variant="ghost" class="ibc-hub-back-link">
 					← Back to Dashboard
-				</a>
+				</Button>
 			</div>
 		</form>
 	</Card.Content>

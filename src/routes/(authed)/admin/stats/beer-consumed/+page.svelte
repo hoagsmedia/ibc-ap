@@ -37,7 +37,7 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-6xl py-8">
-	<Button href="/admin/stats" variant="ghost" class="mb-4 gap-2">
+	<Button href="/admin/stats" variant="ghost" class="ibc-hub-back-link mb-4 gap-2">
 		<ArrowLeft class="h-4 w-4" />
 		Club stats
 	</Button>
@@ -52,7 +52,7 @@
 		</Button>
 	</div>
 
-	<div class="overflow-hidden rounded-md border">
+	<div class="ibc-hub-surface overflow-hidden">
 		<Table.Root class="border-separate border-spacing-0">
 			<Table.Header>
 				<Table.Row>
@@ -63,7 +63,7 @@
 					<Table.Head class="w-24 text-right">Gal</Table.Head>
 					<Table.Head class="min-w-[12rem]">Beer</Table.Head>
 					<Table.Head
-						class="bg-background sticky right-0 z-30 w-28 border-l border-border text-right shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.12)] dark:shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.35)]"
+						class="sticky right-0 z-30 w-28 border-l border-border/60 bg-card/90 text-right shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.12)] backdrop-blur-sm dark:bg-card/80 dark:shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.35)]"
 					>
 						Actions
 					</Table.Head>
@@ -80,7 +80,7 @@
 						<Table.Cell class="text-right tabular-nums">{row.gallons}</Table.Cell>
 						<Table.Cell class="text-sm" title={beer.title}>{beer.label}</Table.Cell>
 						<Table.Cell
-							class="bg-background group-hover:bg-muted/50 sticky right-0 z-20 w-28 border-l border-border text-right shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.12)] transition-colors dark:shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.35)]"
+							class="group-hover:bg-muted/50 sticky right-0 z-20 w-28 border-l border-border/60 bg-card/90 text-right shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.12)] backdrop-blur-sm transition-colors dark:bg-card/80 dark:shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.35)]"
 						>
 							<div class="flex justify-end gap-1">
 								<Button variant="outline" size="icon" href="/admin/stats/beer-consumed/{row.id}/edit" title="Edit">

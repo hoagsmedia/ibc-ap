@@ -179,7 +179,7 @@
 
 <!-- Header with back button -->
 <div class="mb-6 flex flex-col items-center gap-4 md:flex-row">
-	<Button variant="outline" size="sm" onclick={() => history.back()}>
+	<Button variant="outline" size="sm" class="ibc-hub-back-link" onclick={() => history.back()}>
 		<ArrowLeft class="size-4" />
 		Back to Members
 	</Button>

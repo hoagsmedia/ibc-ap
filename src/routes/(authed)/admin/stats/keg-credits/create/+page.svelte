@@ -30,7 +30,7 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-lg py-8">
-	<Button href="/admin/stats/keg-credits" variant="ghost" class="mb-4 gap-2">
+	<Button href="/admin/stats/keg-credits" variant="ghost" class="ibc-hub-back-link mb-4 gap-2">
 		<ArrowLeft class="h-4 w-4" />
 		Keg credits
 	</Button>

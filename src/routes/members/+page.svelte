@@ -274,7 +274,7 @@
 	{:else}
 		<!-- Header with back button -->
 		<div class="mb-6 flex flex-col items-center gap-4 md:flex-row">
-			<Button variant="outline" size="sm" href="/dashboard" class="gap-2">
+			<Button variant="outline" size="sm" href="/dashboard" class="ibc-hub-back-link gap-2">
 				<ArrowLeft class="size-4" />
 				Back to Dashboard
 			</Button>
@@ -296,9 +296,9 @@
 			</div>
 		</div>
 
-		<div class="rounded-md border">
+		<div class="ibc-hub-surface overflow-hidden">
 			<Table.Root>
-				<Table.Header class="bg-muted">
+				<Table.Header class="bg-muted/80">
 					<Table.Row>
 						<Table.Head>Profile</Table.Head>
 						<Table.Head>Name</Table.Head>

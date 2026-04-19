@@ -63,7 +63,7 @@
 		<div class="space-y-8">
 			<!-- Profile Image Section (Admins only) -->
 			{#if data.user.role === "admin"}
-				<Card.Root class="bg-card rounded-lg p-6 shadow">
+				<Card.Root class="ibc-hub-surface bg-card/50 rounded-lg p-6 shadow-sm dark:bg-card/35">
 					<Card.Content class="flex flex-col items-center justify-center gap-4 py-6">
 						<Avatar
 							class="border-primary size-32 rounded-full border-4 shadow"
@@ -114,7 +114,7 @@
 					</Card.Content>
 				</Card.Root>
 			{:else}
-				<Card.Root class="bg-card rounded-lg p-6 shadow">
+				<Card.Root class="ibc-hub-surface bg-card/50 rounded-lg p-6 shadow-sm dark:bg-card/35">
 					<Card.Content class="flex flex-col items-center justify-center gap-4 py-6">
 						<Avatar
 							class="border-primary size-32 rounded-full border-4 shadow"

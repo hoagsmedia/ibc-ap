@@ -19,13 +19,13 @@
 
 <div class="px-4 py-6 sm:px-0">
 	<div class="mb-6 flex items-center justify-between gap-4">
-		<Button href="/dashboard" variant="ghost" size="sm" class="gap-2">
+		<Button href="/dashboard" variant="ghost" size="sm" class="ibc-hub-back-link gap-2">
 			<ArrowLeftIcon class="size-4" />
 			Back to dashboard
 		</Button>
 	</div>
 
-	<Card.Root>
+	<Card.Root class="ibc-hub-surface bg-card/50 dark:bg-card/35">
 		<Card.Header>
 			<Card.Title class="flex items-center gap-2">
 				<UserPlusIcon class="size-5" />

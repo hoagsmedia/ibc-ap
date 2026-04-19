@@ -94,7 +94,7 @@
 
 <div class="container mx-auto max-w-full px-4 py-8">
 	<div class="mb-8">
-		<Button href="/admin/events" variant="ghost" class="mb-4 gap-2">
+		<Button href="/admin/events" variant="ghost" class="ibc-hub-back-link mb-4 gap-2">
 			<ArrowLeft class="h-4 w-4" />
 			Back to Events
 		</Button>
@@ -102,7 +102,7 @@
 		<p class="text-muted-foreground">Add a new event for the club</p>
 	</div>
 
-	<Card class="mx-auto w-full max-w-2xl">
+	<Card class="ibc-hub-surface bg-card/50 mx-auto w-full max-w-2xl dark:bg-card/35">
 		<CardHeader>
 			<CardTitle>Event Details</CardTitle>
 			<CardDescription

@@ -362,4 +362,38 @@
 				transparent 68%
 			);
 	}
+
+	/*
+		Member hub main column — same amber / hop story as dashboard stat cards & lounge hero,
+		full-bleed behind content (see MemberHubShell Sidebar.Inset).
+	*/
+	.ibc-member-hub-canvas {
+		background:
+			radial-gradient(ellipse 100% 85% at 100% 0%, oklch(0.72 0.12 72 / 0.14) 0%, transparent 58%),
+			radial-gradient(ellipse 85% 70% at 0% 100%, oklch(0.65 0.08 145 / 0.11) 0%, transparent 52%),
+			linear-gradient(
+				165deg,
+				oklch(0.985 0.014 95) 0%,
+				oklch(0.965 0.022 100) 100%
+			);
+	}
+
+	.dark .ibc-member-hub-canvas {
+		background:
+			radial-gradient(ellipse 100% 80% at 100% 0%, oklch(0.45 0.08 72 / 0.26) 0%, transparent 55%),
+			radial-gradient(ellipse 80% 60% at 0% 100%, oklch(0.35 0.06 145 / 0.18) 0%, transparent 50%),
+			linear-gradient(165deg, oklch(0.2 0.028 95) 0%, oklch(0.175 0.026 100) 100%);
+	}
+
+	/* Subtle frosted panel for tables and dense admin surfaces */
+	.ibc-hub-surface {
+		@apply rounded-xl border border-border/45 bg-card/40 shadow-sm backdrop-blur-md;
+		@apply dark:border-border/35 dark:bg-card/28;
+	}
+
+	/* Back / “up” navigation in the hub — lifted glass chip */
+	.ibc-hub-back-link {
+		@apply border-border/50 bg-card/45 text-foreground shadow-sm backdrop-blur-md;
+		@apply hover:bg-card/60 dark:border-border/45 dark:bg-card/30 dark:hover:bg-card/42;
+	}
 }

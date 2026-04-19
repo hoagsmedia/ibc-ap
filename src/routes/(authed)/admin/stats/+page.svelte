@@ -17,7 +17,7 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-3xl py-8">
-	<Button href="/dashboard" variant="ghost" class="mb-6 gap-2">
+	<Button href="/dashboard" variant="ghost" class="ibc-hub-back-link mb-6 gap-2">
 		<ArrowLeft class="h-4 w-4" />
 		Back to dashboard
 	</Button>
@@ -26,7 +26,7 @@
 		Edit the two legacy tables shown on the public <a class="text-primary underline" href="/stats">/stats</a> page.
 	</p>
 	<div class="grid gap-6 md:grid-cols-2">
-		<Card>
+		<Card class="ibc-hub-surface bg-card/50 dark:bg-card/35">
 			<CardHeader>
 				<CardTitle class="flex items-center gap-2">
 					<Table2 class="h-5 w-5" />
@@ -38,7 +38,7 @@
 				<Button href="/admin/stats/keg-credits" class="w-full">Manage keg credits</Button>
 			</CardContent>
 		</Card>
-		<Card>
+		<Card class="ibc-hub-surface bg-card/50 dark:bg-card/35">
 			<CardHeader>
 				<CardTitle class="flex items-center gap-2">
 					<Wine class="h-5 w-5" />
