@@ -82,9 +82,28 @@
 								<Button variant="outline" size="icon" href="/admin/stats/beer-consumed/{row.id}/edit" title="Edit">
 									<Pencil class="h-4 w-4" />
 								</Button>
-								<form method="POST" action="?/delete" use:enhance>
+								<form
+									method="POST"
+									action="?/delete"
+									use:enhance={({ cancel }) => {
+										const label = row.beer_name?.trim() || `keg ${row.keg_number}`;
+										if (
+											!confirm(
+												`Delete this row (${label})? This cannot be undone.`
+											)
+										) {
+											cancel();
+										}
+									}}
+								>
 									<input type="hidden" name="id" value={row.id} />
-									<Button variant="outline" size="icon" type="submit" title="Delete">
+									<Button
+										variant="outline"
+										size="icon"
+										type="submit"
+										title="Delete"
+										aria-label="Delete row"
+									>
 										<Trash2 class="text-destructive h-4 w-4" />
 									</Button>
 								</form>
