@@ -26,6 +26,8 @@ class SidebarState {
 	openMobile = $state(false);
 	setOpen: SidebarStateProps["setOpen"];
 	#isMobile: IsMobile;
+	/** Defers mobile sheet mount to the next frame so INP isn't dominated by portal + DOM work in the click handler. */
+	#mobileOpenRaf: number | null = null;
 	state = $derived.by(() => (this.open ? "expanded" : "collapsed"));
 
 	constructor(props: SidebarStateProps) {
@@ -49,13 +51,29 @@ class SidebarState {
 	};
 
 	setOpenMobile = (value: boolean) => {
+		if (this.#mobileOpenRaf !== null) {
+			cancelAnimationFrame(this.#mobileOpenRaf);
+			this.#mobileOpenRaf = null;
+		}
+
+		if (value && this.#isMobile.current) {
+			if (this.openMobile) return;
+			this.#mobileOpenRaf = requestAnimationFrame(() => {
+				this.#mobileOpenRaf = null;
+				this.openMobile = true;
+			});
+			return;
+		}
+
 		this.openMobile = value;
 	};
 
 	toggle = () => {
-		return this.#isMobile.current
-			? (this.openMobile = !this.openMobile)
-			: this.setOpen(!this.open);
+		if (this.#isMobile.current) {
+			this.setOpenMobile(!this.openMobile);
+			return;
+		}
+		this.setOpen(!this.open);
 	};
 }
 

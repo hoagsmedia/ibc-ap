@@ -10,7 +10,8 @@
 	import Avatar from "$lib/components/Avatar.svelte";
 	import { toggleMode } from "mode-watcher";
 	import { enhance } from "$app/forms";
-	import IbcLogo from "$lib/components/IbcLogo.svelte";
+	/** URL logo in the shell: avoids parsing a huge inline SVG when the mobile sheet mounts (INP). */
+	import memberHubLogoUrl from "$lib/assets/ibc-logo.svg?url";
 	import Search from "@lucide/svelte/icons/search";
 	import Sun from "@lucide/svelte/icons/sun";
 	import Moon from "@lucide/svelte/icons/moon";
@@ -81,9 +82,14 @@
 				)}
 			>
 				<a href="/" class="flex w-full flex-col items-center gap-2 overflow-hidden py-1 text-center">
-					<IbcLogo
-						class="h-auto w-[min(90%,15rem)] max-w-full shrink-0 [&>svg]:h-auto [&>svg]:w-full"
-						decorative
+					<img
+						src={memberHubLogoUrl}
+						alt=""
+						width="862"
+						height="475"
+						decoding="async"
+						fetchpriority="low"
+						class="h-auto w-[min(90%,15rem)] max-w-full shrink-0 object-contain dark:brightness-[0.88] dark:saturate-[0.92]"
 					/>
 					<div class="flex w-full min-w-0 flex-col leading-tight">
 						<span class="w-full truncate text-sm font-semibold tracking-tight text-foreground"
