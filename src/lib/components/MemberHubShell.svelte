@@ -38,6 +38,7 @@
 	}
 
 	function memberHubTitle(pathname: string): string {
+		if (pathname.startsWith("/dashboard/invitations")) return "Your invitations";
 		if (pathname.startsWith("/dashboard/pending-members")) return "Prospects";
 		if (pathname.startsWith("/dashboard")) return "Dashboard";
 		if (pathname.startsWith("/members")) return "Members";

@@ -1,6 +1,6 @@
 import { db } from '$lib/server/db';
 import * as table from '$lib/server/db/schema';
-import { desc, eq } from 'drizzle-orm';
+import { and, desc, eq, gte, lt } from 'drizzle-orm';
 import { encodeBase64url } from '@oslojs/encoding';
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
@@ -80,15 +80,23 @@ export async function markInvitationTokenAsUsed(token: string, usedById: string)
 
 export async function getInvitationsByUser(
 	userId: string,
-	options?: { limit?: number }
+	options?: { limit?: number; year?: number }
 ): Promise<table.InvitationToken[]> {
-	const q = db
+	const conditions = [eq(table.invitationTokens.created_by_id, userId)];
+	if (options?.year != null) {
+		const y = options.year;
+		const start = new Date(Date.UTC(y, 0, 1, 0, 0, 0, 0));
+		const end = new Date(Date.UTC(y + 1, 0, 1, 0, 0, 0, 0));
+		conditions.push(gte(table.invitationTokens.created_at, start));
+		conditions.push(lt(table.invitationTokens.created_at, end));
+	}
+	const base = db
 		.select()
 		.from(table.invitationTokens)
-		.where(eq(table.invitationTokens.created_by_id, userId))
+		.where(and(...conditions))
 		.orderBy(desc(table.invitationTokens.created_at));
 	if (options?.limit != null) {
-		return await q.limit(options.limit);
+		return await base.limit(options.limit);
 	}
-	return await q;
+	return await base;
 }

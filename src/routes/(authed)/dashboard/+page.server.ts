@@ -19,8 +19,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		throw redirect(302, "/login");
 	}
 
-	// Most recent invitation links only (dashboard UI)
-	const invitations = await getInvitationsByUser(locals.user.id, { limit: 3 });
+	const invitationYear = new Date().getUTCFullYear();
+	// Latest 3 invites created in the current calendar year (UTC), for dashboard card
+	const invitations = await getInvitationsByUser(locals.user.id, {
+		limit: 3,
+		year: invitationYear
+	});
 
 	// IBC-20: For admins only — up to 3 most recent Prospects (oldest-first) + total count
 	let pendingMembers:
@@ -103,6 +107,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	return {
 		user: locals.user,
 		invitations,
+		invitationYear,
 		...(pendingMembers !== undefined && { pendingMembers }),
 		...(pendingMembersCount !== undefined && { pendingMembersCount }),
 		baseUrl: url.origin,
