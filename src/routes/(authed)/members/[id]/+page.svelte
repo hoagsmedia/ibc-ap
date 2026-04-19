@@ -9,9 +9,6 @@
 
 	let { data }: { data: PageData } = $props();
 
-	// Slug for member links (username when set, else id for pending users)
-	const memberSlug = $derived(data.member.username ?? data.member.id);
-
 	// Format date helper
 	function formatDate(date: Date | string | null): string {
 		if (!date) return "Not set";
@@ -178,7 +175,7 @@
 					</Card.Header>
 					<Card.Content>
 						<div class="flex flex-col gap-2 md:flex-row">
-							<Button variant="outline" href={`/members/${memberSlug}/edit`}>Edit Member</Button>
+							<Button variant="outline" href={`/members/${data.member.id}/edit`}>Edit Member</Button>
 							<!-- <Button disabled variant="outline">Send Message</Button> -->
 						</div>
 					</Card.Content>

@@ -1,18 +1,20 @@
 import type { Actions, PageServerLoad } from "./$types";
-import { error, redirect, fail } from "@sveltejs/kit";
+import { error, fail, isRedirect, redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
-import { getMemberByUsernameOrId } from "$lib/server/member-lookup";
+import { getMemberById, isMemberRecordId } from "$lib/server/member-lookup";
 import { getUsernameForMemberWithMbr } from "$lib/server/username";
 import { eq } from "drizzle-orm";
-import { superValidate, message } from "sveltekit-superforms";
+import { getEmailConflictMessage, getMbrConflictMessage } from "$lib/server/mbr-uniqueness";
+import { superValidate } from "sveltekit-superforms";
 import { memberSchema } from "./edit-member-schema";
 import { zod } from "sveltekit-superforms/adapters";
 import { hash } from "argon2";
 import { encodeBase32LowerCase } from "@oslojs/encoding";
 import { userWithoutPasswordHash } from "$lib/server/user-client";
 
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Must match the main `superForm` `id` on the edit page (multiple forms share `data.form`). */
+const MEMBER_EDIT_FORM_ID = "member-edit";
 
 export const load: PageServerLoad = async ({ locals, params }) => {
 	if (!locals.user) {
@@ -22,20 +24,14 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		throw error(403, "Access denied. Admin role required.");
 	}
 
-	const identifier = params.username;
-	if (!identifier) {
-		throw error(400, "Member identifier is required");
+	const id = params.id;
+	if (!id || !isMemberRecordId(id)) {
+		throw error(400, "Invalid member id");
 	}
 
-	const member = await getMemberByUsernameOrId(identifier);
+	const member = await getMemberById(id);
 	if (!member) {
 		throw error(404, "Member not found");
-	}
-
-	// Canonical URL: if they used id but member has username, redirect to username URL
-	const isUuid = UUID_REGEX.test(identifier);
-	if (isUuid && member.username) {
-		throw redirect(302, `/members/${member.username}/edit`);
 	}
 
 	const memberData = {
@@ -62,7 +58,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	return {
 		member: userWithoutPasswordHash(member),
 		user: locals.user,
-		form: await superValidate(memberData, zod(memberSchema))
+		form: await superValidate(memberData, zod(memberSchema), { id: MEMBER_EDIT_FORM_ID })
 	};
 };
 
@@ -71,10 +67,19 @@ export const actions: Actions = {
 		if (!locals.user) throw redirect(302, "/login");
 		if (locals.user.role !== "admin") throw error(403, "Access denied. Admin role required.");
 
-		const form = await superValidate(request, zod(memberSchema));
+		const routeId = params.id;
+		if (!routeId || !isMemberRecordId(routeId)) {
+			return fail(400, { message: "Invalid member id" });
+		}
+
+		const form = await superValidate(request, zod(memberSchema), { id: MEMBER_EDIT_FORM_ID });
 		if (!form.valid) return fail(400, { form });
 
-		const member = await getMemberByUsernameOrId(params.username);
+		if (form.data.id !== routeId) {
+			return fail(400, { form, message: "Form data does not match this member profile." });
+		}
+
+		const member = await getMemberById(routeId);
 		if (!member) return fail(404, { form, message: "Member not found" });
 		const id = member.id;
 
@@ -97,27 +102,35 @@ export const actions: Actions = {
 			} = form.data;
 
 			const newRole = (role as "guest" | "member" | "admin") || "member";
+			const mbrNum = mbr || 0;
+			const resolvedRole: "guest" | "member" | "admin" =
+				mbrNum > 0 && newRole !== "admin" ? "member" : newRole;
+
 			const testPassedValue =
-				newRole === "admin"
+				resolvedRole === "admin"
 					? new Date()
 					: test_passed && test_passed.trim() !== ""
 						? new Date(test_passed)
 						: (member.test_passed ?? null);
-
-			const mbrNum = mbr || 0;
 			let setUsername: string | undefined;
 			if (mbrNum > 0) {
+				const mbrConflict = await getMbrConflictMessage(db, mbrNum, id);
+				if (mbrConflict) return fail(400, { form, message: mbrConflict });
 				setUsername = await getUsernameForMemberWithMbr(name || member.name, mbrNum, id);
 			}
 
+			const emailNorm = (email && email.trim()) || null;
+			const emailConflict = await getEmailConflictMessage(db, emailNorm, id);
+			if (emailConflict) return fail(400, { form, message: emailConflict });
+
 			const updatePayload: Record<string, unknown> = {
 				name: name || "",
-				email: (email && email.trim()) || null,
+				email: emailNorm,
 				phone: phone || null,
 				address: address || null,
 				bio: bio || "",
 				hobbies: hobbies || null,
-				role: newRole,
+				role: resolvedRole,
 				likes: likes || null,
 				mbr: mbrNum,
 				msd: msd || new Date().toISOString().split("T")[0],
@@ -132,8 +145,9 @@ export const actions: Actions = {
 			const updated = await db.update(users).set(updatePayload).where(eq(users.id, id)).returning();
 
 			if (!updated.length) return fail(500, { form, message: "Failed to update member" });
-			return message(form, "Member updated successfully!");
+			throw redirect(303, `/members/${updated[0].id}/edit`);
 		} catch (err) {
+			if (isRedirect(err)) throw err;
 			console.error("Error updating member:", err);
 			return fail(500, { form, message: "An error occurred while updating the member" });
 		}
@@ -143,12 +157,22 @@ export const actions: Actions = {
 		if (!locals.user) throw redirect(302, "/login");
 		if (locals.user.role !== "admin") throw error(403, "Access denied. Admin role required.");
 
+		const routeId = params.id;
+		if (!routeId || !isMemberRecordId(routeId)) {
+			return fail(400, { message: "Invalid member id" });
+		}
+
 		const formData = await request.formData();
 		if (formData.get("confirmText") !== "DELETE") {
 			return fail(400, { message: "Incorrect confirmation text" });
 		}
 
-		const member = await getMemberByUsernameOrId(params.username);
+		const idFromForm = formData.get("id")?.toString();
+		if (idFromForm !== routeId) {
+			return fail(400, { message: "Form data does not match this member profile." });
+		}
+
+		const member = await getMemberById(routeId);
 		if (!member) return fail(404, { message: "Member not found" });
 		if (member.id === locals.user.id) {
 			return fail(400, { message: "You cannot delete your own account" });
@@ -163,11 +187,22 @@ export const actions: Actions = {
 		throw redirect(302, "/members");
 	},
 
-	resetPassword: async ({ locals, params }) => {
+	resetPassword: async ({ request, locals, params }) => {
 		if (!locals.user) throw redirect(302, "/login");
 		if (locals.user.role !== "admin") throw error(403, "Access denied. Admin role required.");
 
-		const member = await getMemberByUsernameOrId(params.username);
+		const routeId = params.id;
+		if (!routeId || !isMemberRecordId(routeId)) {
+			return fail(400, { message: "Invalid member id" });
+		}
+
+		const resetFormData = await request.formData();
+		const idFromForm = resetFormData.get("userId")?.toString();
+		if (idFromForm !== routeId) {
+			return fail(400, { message: "Form data does not match this member profile." });
+		}
+
+		const member = await getMemberById(routeId);
 		if (!member) return fail(404, { message: "Member not found" });
 		if (member.id === locals.user.id) {
 			return fail(400, {

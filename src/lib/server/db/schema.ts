@@ -43,6 +43,8 @@ export const users = pgTable("users", {
 export const invitationTokens = pgTable("invitation_tokens", {
 	id: text("id").primaryKey(),
 	token: text("token").notNull().unique(),
+	/** Label for who the invite is for (required on new invites). */
+	invite_name: text("invite_name"),
 	created_by_id: text("created_by_id")
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),

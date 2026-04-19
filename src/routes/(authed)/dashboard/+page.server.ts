@@ -11,7 +11,7 @@ import { db } from "$lib/server/db";
 import { getDashboardClubStats } from "$lib/server/dashboard-club-stats-cache";
 import { events, users } from "$lib/server/db/schema";
 import { ibcDebugEnabled } from "$lib/server/ibc-debug";
-import { requiresIbcTest } from "$lib/ibc-test";
+import { canViewMembersOnlyClubEvents, requiresIbcTest } from "$lib/ibc-test";
 import { and, asc, count, desc, eq, gte, isNotNull, isNull } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -66,23 +66,20 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		});
 	}
 
-	const canViewMembersOnlyEvents = locals.user.role === "member" || locals.user.role === "admin";
+	const canViewMemberEvents = canViewMembersOnlyClubEvents(locals.user);
 
 	const cached = await getDashboardClubStats(db);
-	const eventsThisYear = canViewMembersOnlyEvents
+	const eventsThisYear = canViewMemberEvents
 		? cached.eventsThisYearMember
 		: cached.eventsThisYearGuest;
-	const eventsThisMonth = canViewMembersOnlyEvents
+	const eventsThisMonth = canViewMemberEvents
 		? cached.eventsThisMonthMember
 		: cached.eventsThisMonthGuest;
 
 	const startOfToday = new Date();
 	startOfToday.setUTCHours(0, 0, 0, 0);
 
-	const membersOnlyVisibility =
-		locals.user.role === "member" || locals.user.role === "admin"
-			? undefined
-			: eq(events.members_only, false);
+	const membersOnlyVisibility = canViewMemberEvents ? undefined : eq(events.members_only, false);
 
 	const upcomingEvents = await db
 		.select({
@@ -125,16 +122,33 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 };
 
 export const actions: Actions = {
-	createInvitation: async ({ locals, url }) => {
+	createInvitation: async ({ locals, request }) => {
 		if (!locals.user) {
 			return fail(401, { message: "Must be logged in to create invitations" });
 		}
 
-		// Only full members (role + test passed + MBR assigned) can create invite links
+		const formData = await request.formData();
+		const inviteName = String(formData.get("inviteName") ?? "").trim();
+		if (!inviteName) {
+			return fail(400, {
+				message: "Add a name for this invite so you remember who it’s for."
+			});
+		}
+		if (inviteName.length > 120) {
+			return fail(400, { message: "Invite name must be 120 characters or fewer." });
+		}
+
+		// Only full members (role + MBR assigned) or admins can create invite links
 		if (locals.user.role !== "member" && locals.user.role !== "admin") {
+			if (requiresIbcTest(locals.user)) {
+				return fail(403, {
+					message:
+						"You must be an accepted member with a member number before you can create invitation links. An admin will review your profile after you pass the test."
+				});
+			}
 			return fail(403, {
 				message:
-					"You must be an accepted member with a member number before you can create invitation links. An admin will review your profile after you pass the test."
+					"You must be an accepted member with a member number before you can create invitation links. You’ve passed the IBC test — an admin will assign your member number when you’re accepted."
 			});
 		}
 		if (requiresIbcTest(locals.user)) {
@@ -163,8 +177,7 @@ export const actions: Actions = {
 		}
 
 		try {
-			const invitation = await createInvitationToken(locals.user.id);
-			const inviteUrl = `${url.origin}/invite/${invitation.token}`;
+			const invitation = await createInvitationToken(locals.user.id, inviteName);
 
 			if (dev && ibcDebugEnabled()) {
 				console.log("[IBC-LOG] [dashboard] Invitation created", {
@@ -172,12 +185,7 @@ export const actions: Actions = {
 				});
 			}
 
-			return {
-				success: true,
-				invitation,
-				inviteUrl,
-				message: "Invitation link created successfully!"
-			};
+			return { invitation };
 		} catch (error) {
 			console.error("Error creating invitation:", error);
 			return fail(500, { message: "Failed to create invitation link" });

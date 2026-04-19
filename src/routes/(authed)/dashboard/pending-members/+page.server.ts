@@ -2,8 +2,9 @@ import type { Actions, PageServerLoad } from "./$types";
 import { error, fail, redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
+import { getMbrConflictMessage } from "$lib/server/mbr-uniqueness";
 import { getUsernameForMemberWithMbr } from "$lib/server/username";
-import { and, asc, eq, isNotNull, isNull, ne } from "drizzle-orm";
+import { and, asc, eq, isNotNull, isNull } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -56,13 +57,8 @@ export const actions: Actions = {
 		const [member] = await db.select().from(users).where(eq(users.id, userId));
 		if (!member) return fail(404, { message: "Member not found" });
 
-		// MBR must be unique (no other user already has this number)
-		const [existing] = await db
-			.select({ id: users.id })
-			.from(users)
-			.where(and(eq(users.mbr, mbr), ne(users.id, userId)));
-		if (existing)
-			return fail(400, { message: `Member #${mbr} is already assigned to another member.` });
+		const mbrConflict = await getMbrConflictMessage(db, mbr, userId);
+		if (mbrConflict) return fail(400, { message: mbrConflict });
 
 		const username = await getUsernameForMemberWithMbr(member.name, mbr, userId);
 
@@ -80,7 +76,7 @@ export const actions: Actions = {
 			success: true,
 			message: `${member.name} is now member #${mbr}.`,
 			assignedId: userId,
-			memberSlug: username
+			memberId: userId
 		};
 	}
 };

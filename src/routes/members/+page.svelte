@@ -338,7 +338,7 @@
 								</Table.Cell>
 								<Table.Cell class="text-sm">
 									<a
-										href={`/members/${member.username ?? member.id}`}
+										href={`/members/${member.id}`}
 										class="text-foreground font-medium underline-offset-4 hover:text-primary hover:underline"
 									>
 										{member.name || "N/A"}
@@ -356,7 +356,7 @@
 											<Button
 												variant="outline"
 												size="icon"
-												href={`/members/${member.username ?? member.id}/edit`}
+												href={`/members/${member.id}/edit`}
 												title="Edit"
 												aria-label="Edit member"
 											>
@@ -366,7 +366,7 @@
 											<Button
 												variant="outline"
 												size="icon"
-												href={`/members/${member.username ?? member.id}`}
+												href={`/members/${member.id}`}
 												title="View"
 												aria-label="View member"
 											>

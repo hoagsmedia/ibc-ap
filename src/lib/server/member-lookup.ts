@@ -4,9 +4,22 @@ import { eq } from "drizzle-orm";
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+export function isMemberRecordId(value: string | undefined): value is string {
+	return Boolean(value && UUID_REGEX.test(value));
+}
+
+/** Member profile/edit routes use `/members/{uuid}`. */
+export async function getMemberById(id: string) {
+	if (!isMemberRecordId(id)) return null;
+	const member = await db.query.users.findFirst({
+		where: eq(users.id, id)
+	});
+	return member ?? null;
+}
+
 /**
- * Resolve a member by username or by id (UUID).
- * Use for dynamic route [username] so URLs work with either /members/john-doe-42 or /members/{id} (e.g. pending users).
+ * Resolve by UUID or legacy username (e.g. scripts, old bookmarks).
+ * Prefer {@link getMemberById} for route handlers.
  */
 export async function getMemberByUsernameOrId(identifier: string) {
 	if (!identifier) return null;

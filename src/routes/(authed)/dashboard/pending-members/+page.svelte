@@ -57,10 +57,11 @@
 				<ul class="space-y-2">
 					{#each data.pendingMembers as pending (pending.id)}
 						<li
-							class="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between sm:gap-4"
+							id="prospect-{pending.id}"
+							class="flex flex-col gap-3 scroll-mt-24 rounded-lg border p-4 sm:flex-row sm:flex-nowrap sm:items-center sm:justify-between sm:gap-4"
 						>
 							<a
-								href="/members/{pending.username ?? pending.id}/edit"
+								href="/members/{pending.id}/edit"
 								class="text-primary hover:bg-muted/50 flex min-w-0 flex-1 items-start gap-3 rounded transition-colors sm:items-center"
 							>
 								<div
@@ -94,17 +95,17 @@
 										) {
 											const data = result.data as {
 												message?: string;
-												memberSlug?: string;
+												memberId?: string;
 											};
 											const msg = data.message ?? "Member assigned";
-											const slug = data.memberSlug;
+											const memberId = data.memberId;
 											toast.success(msg, {
 												duration: 12_000,
-												action: slug
+												action: memberId
 													? {
 															label: "View profile",
 															onClick: () => {
-																void goto(`/members/${slug}`);
+																void goto(`/members/${memberId}`);
 															}
 														}
 													: undefined
@@ -115,7 +116,11 @@
 											result.data &&
 											"message" in result.data
 										) {
-											toast.error((result.data as { message: string }).message);
+											const errMsg = (result.data as { message: string }).message;
+											toast.error(errMsg, {
+												duration: 10_000,
+												position: "bottom-right"
+											});
 										}
 									};
 								}}

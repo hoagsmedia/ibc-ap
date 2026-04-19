@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page } from "$app/state";
+	import { cn } from "$lib/utils.js";
 	import * as Card from "$lib/components/ui/card/index.js";
 	import * as Table from "$lib/components/ui/table/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
@@ -11,6 +13,8 @@
 	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
+
+	const viewer = $derived(page.data.user);
 
 	function fmtNum(n: number, digits = 1) {
 		if (!Number.isFinite(n)) return "—";
@@ -47,7 +51,14 @@
 	/>
 </svelte:head>
 
-<section class="w-full space-y-10 py-10 md:py-14">
+<section
+	class={cn(
+		"w-full space-y-10",
+		viewer
+			? "max-w-6xl py-4 md:py-6 xl:max-w-none"
+			: "max-w-4xl py-10 md:py-14"
+	)}
+>
 	<header class="space-y-3">
 		<h1 class="text-foreground text-3xl font-bold tracking-tight md:text-4xl">IBC Keg Credits &amp; Consumption</h1>
 		<p class="text-muted-foreground max-w-3xl text-pretty text-sm leading-relaxed md:text-base">
@@ -84,7 +95,9 @@
 							</time>
 						</p>
 					{/if}
-					<Button href="/login" size="sm" variant="secondary">Sign in</Button>
+					{#if !viewer}
+						<Button href="/login" size="sm" variant="secondary">Sign in</Button>
+					{/if}
 				</div>
 			{/if}
 		</Card.Header>
@@ -116,7 +129,7 @@
 		</Card.Content>
 	</Card.Root>
 
-	<Card.Root>
+	<Card.Root id="keg-credits-section" class="scroll-mt-24">
 		<Card.Header>
 			<Card.Title>Keg credits since inception</Card.Title>
 			<Card.Description>
@@ -162,7 +175,7 @@
 		</Card.Content>
 	</Card.Root>
 
-	<Card.Root>
+	<Card.Root id="beer-consumed-section" class="scroll-mt-24">
 		<Card.Header>
 			<Card.Title>Beer consumed since inception</Card.Title>
 			<Card.Description>One row per keg: dates, gallons, and beer name.</Card.Description>

@@ -8,7 +8,11 @@ import { db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
 import { eq } from "drizzle-orm";
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
+	if (locals.user) {
+		throw redirect(302, "/dashboard");
+	}
+
 	const { token } = params;
 
 	if (!token) {
@@ -36,6 +40,10 @@ export const load: PageServerLoad = async ({ params }) => {
 
 export const actions: Actions = {
 	register: async (event) => {
+		if (event.locals.user) {
+			throw redirect(302, "/dashboard");
+		}
+
 		const { params, request } = event;
 		const { token } = params;
 

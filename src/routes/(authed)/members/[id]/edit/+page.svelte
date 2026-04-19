@@ -29,12 +29,13 @@
 	// Check if current user is admin (for delete access)
 	const isAdmin = $derived(data.user?.role === "admin");
 
-	// Update form
+	// Update form (explicit id: same page uses multiple superForms with the same `data.form`)
 	const form = superForm(data.form, {
+		id: "member-edit",
 		validators: zodClient(memberSchema),
 		resetForm: false,
 		onResult: ({ result }) => {
-			if (result.type === "success") {
+			if (result.type === "redirect" || result.type === "success") {
 				toast.success("Member updated successfully!", {
 					icon: Check,
 					duration: 3000,
@@ -45,6 +46,20 @@
 						onClick: () => toast.dismiss()
 					}
 				});
+			} else if (result.type === "failure") {
+				const data = result.data as { message?: string } | undefined;
+				const msg = data?.message?.trim();
+				if (msg) {
+					toast.error(msg, {
+						duration: 10_000,
+						position: "bottom-right"
+					});
+				} else {
+					toast.error("Could not save changes. Check the form for errors.", {
+						duration: 8000,
+						position: "bottom-right"
+					});
+				}
 			}
 		}
 	});
@@ -64,6 +79,13 @@
 				});
 				// Redirect to members list after successful deletion
 				window.location.href = "/members";
+			} else if (result.type === "failure") {
+				const data = result.data as { message?: string } | undefined;
+				const msg = data?.message?.trim();
+				toast.error(msg || "Could not delete this member.", {
+					duration: 10_000,
+					position: "bottom-right"
+				});
 			} else if (result.type === "error") {
 				toast.error("Failed to delete member. Please try again.", {
 					duration: 5000,
@@ -80,7 +102,7 @@
 
 	// Reset password form
 	const resetPasswordForm = superForm(data.form, {
-		id: "reset-password",
+		id: "member-edit-reset-password",
 		resetForm: false,
 		onResult: ({ result }) => {
 			if (result.type === "success" && result.data?.tempPassword) {
@@ -581,6 +603,7 @@
 		{:else}
 			<!-- Confirmation before reset -->
 			<form method="POST" action="?/resetPassword" use:enhanceResetPassword>
+				<input type="hidden" name="userId" value={data.member.id} />
 				<div class="space-y-4">
 					<div class="rounded-md bg-amber-50 p-4 dark:bg-amber-950">
 						<div class="text-sm text-amber-800 dark:text-amber-200">

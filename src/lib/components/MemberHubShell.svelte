@@ -26,6 +26,7 @@
 	import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
 	import LogOut from "@lucide/svelte/icons/log-out";
 	import Home from "@lucide/svelte/icons/home";
+	import BarChart3 from "@lucide/svelte/icons/bar-chart-3";
 
 	let { children }: { children: Snippet } = $props();
 
@@ -153,6 +154,21 @@
 								{/snippet}
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
+						{#if user?.role !== "admin"}
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton
+									isActive={navActive("/stats")}
+									tooltipContent="Keg credits and beer consumed"
+								>
+									{#snippet child({ props })}
+										<a href="/stats" {...props}>
+											<BarChart3 />
+											<span>Keg & beer stats</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
+						{/if}
 					</Sidebar.Menu>
 				</Sidebar.GroupContent>
 			</Sidebar.Group>
