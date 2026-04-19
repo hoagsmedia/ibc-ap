@@ -57,6 +57,11 @@
 
 	const sidebar = useSidebar();
 
+	/** Tooltips only apply in collapsed desktop rail; skip Floating UI entirely on mobile sheet. */
+	const wrapWithTooltip = $derived(
+		tooltipContent != null && !sidebar.isMobile && sidebar.state === "collapsed"
+	);
+
 	const buttonProps = $derived({
 		class: cn(sidebarMenuButtonVariants({ variant, size }), className),
 		"data-slot": "sidebar-menu-button",
@@ -78,21 +83,14 @@
 	{/if}
 {/snippet}
 
-{#if !tooltipContent}
-	{@render Button({})}
-{:else}
+{#if wrapWithTooltip}
 	<Tooltip.Root>
 		<Tooltip.Trigger>
 			{#snippet child({ props })}
 				{@render Button({ props })}
 			{/snippet}
 		</Tooltip.Trigger>
-		<Tooltip.Content
-			side="right"
-			align="center"
-			hidden={sidebar.state !== "collapsed" || sidebar.isMobile}
-			{...tooltipContentProps}
-		>
+		<Tooltip.Content side="right" align="center" {...tooltipContentProps}>
 			{#if typeof tooltipContent === "string"}
 				{tooltipContent}
 			{:else if tooltipContent}
@@ -100,4 +98,6 @@
 			{/if}
 		</Tooltip.Content>
 	</Tooltip.Root>
+{:else}
+	{@render Button({})}
 {/if}
