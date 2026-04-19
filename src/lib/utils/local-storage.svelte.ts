@@ -1,5 +1,7 @@
 import { browser } from "$app/environment";
 
+const WRITE_DEBOUNCE_MS = 250;
+
 export class LocalStorage<T> {
 	value = $state<T>();
 	key = "";
@@ -13,9 +15,19 @@ export class LocalStorage<T> {
 		}
 
 		$effect(() => {
-			if (browser && this.value !== undefined) {
-				localStorage.setItem(this.key, this.serialize(this.value));
-			}
+			if (!browser || this.value === undefined) return;
+
+			const key = this.key;
+			const payload = this.serialize(this.value);
+			const id = window.setTimeout(() => {
+				try {
+					localStorage.setItem(key, payload);
+				} catch (e) {
+					console.warn("[localStorage] write failed:", e);
+				}
+			}, WRITE_DEBOUNCE_MS);
+
+			return () => window.clearTimeout(id);
 		});
 	}
 

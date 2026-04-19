@@ -11,8 +11,6 @@
 	import { dev } from "$app/environment";
 	import { goto } from "$app/navigation";
 	import type { PageProps } from "./$types";
-	import { IsMobile } from "$lib/hooks/is-mobile.svelte";
-	import { cn } from "$lib/utils";
 	import { LocalStorage } from "$lib/utils/local-storage.svelte";
 
 	let { data }: PageProps = $props();
@@ -34,6 +32,7 @@
 
 	const memberCache = new LocalStorage<Record<string, CachedMemberData>>("member-search-cache", {});
 	const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+	const MAX_CACHE_KEYS = 24;
 
 	// --- Reactive State ---
 	let searchTerm = $state(data.isAuthenticated ? data.searchTerm || "" : "");
@@ -43,9 +42,7 @@
 			? data.pagination
 			: { page: 1, perPage: 10, totalCount: 0, totalPages: 0 }
 	);
-	const pageData = $state(page);
-	const isAdmin = $derived(pageData.data.user?.role === "admin");
-	const isMobile = new IsMobile();
+	const isAdmin = $derived(page.data.user?.role === "admin");
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	function isCacheValid(timestamp: number): boolean {
@@ -69,7 +66,7 @@
 		totalCount: number
 	): void {
 		const cache = memberCache.value || {};
-		memberCache.value = {
+		const next: Record<string, CachedMemberData> = {
 			...cache,
 			[searchKey]: {
 				members,
@@ -78,6 +75,15 @@
 				totalCount
 			}
 		};
+		const keys = Object.keys(next);
+		if (keys.length > MAX_CACHE_KEYS) {
+			const drop = keys
+				.map((k) => ({ k, t: next[k]!.timestamp }))
+				.sort((a, b) => a.t - b.t)
+				.slice(0, keys.length - MAX_CACHE_KEYS);
+			for (const { k } of drop) delete next[k];
+		}
+		memberCache.value = next;
 	}
 
 	async function performSearch(term: string, pageNum: number = 1): Promise<void> {
@@ -225,7 +231,6 @@
 				<Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
 				<Input
 					bind:value={searchTerm}
-					autofocus
 					oninput={handleSearch}
 					type="search"
 					placeholder="Search members by name, email, or member #..."
@@ -241,10 +246,8 @@
 					<Table.Row>
 						<Table.Head>Profile</Table.Head>
 						<Table.Head>Name</Table.Head>
-						<Table.Head class={cn("p-5", isMobile.current && "text-center")}>Member #</Table.Head>
-						{#if !isMobile.current}
-							<Table.Head>Email</Table.Head>
-						{/if}
+						<Table.Head class="p-5 text-center md:text-left">Member #</Table.Head>
+						<Table.Head class="hidden md:table-cell">Email</Table.Head>
 						<Table.Head class="text-end">Actions</Table.Head>
 					</Table.Row>
 				</Table.Header>
@@ -274,12 +277,10 @@
 										{member.name || "N/A"}
 									</a>
 								</Table.Cell>
-								<Table.Cell class={cn("", isMobile.current && "text-center")}
-									>{member.mbr || "N/A"}</Table.Cell
+								<Table.Cell class="text-center md:text-left">{member.mbr || "N/A"}</Table.Cell>
+								<Table.Cell class="hidden md:table-cell"
+									>{member.email ?? member.username ?? "N/A"}</Table.Cell
 								>
-								{#if !isMobile.current}
-									<Table.Cell>{member.email ?? member.username ?? "N/A"}</Table.Cell>
-								{/if}
 								<Table.Cell class="text-end">
 									{#if isAdmin}
 										<div class="flex flex-wrap items-center justify-end gap-1">

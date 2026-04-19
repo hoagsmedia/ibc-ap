@@ -215,7 +215,7 @@
 	</Sidebar.Root>
 	<Sidebar.Inset class="bg-background min-w-0">
 		<header
-			class="border-border/60 bg-card/40 supports-[backdrop-filter]:bg-card/30 sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b px-3 backdrop-blur-md md:px-4"
+			class="border-border/60 bg-card/40 supports-[backdrop-filter]:bg-card/30 sticky top-0 z-40 flex h-14 shrink-0 items-center gap-2 border-b px-3 backdrop-blur-md md:px-4"
 		>
 			<Sidebar.Trigger class="-ml-1" />
 			<Separator orientation="vertical" class="mr-1 h-6" />
