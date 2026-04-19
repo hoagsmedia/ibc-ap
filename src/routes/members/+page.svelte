@@ -48,15 +48,6 @@
 	/** Avoids redundant cacheResults when the same server payload is applied more than once. */
 	let lastServerFingerprint = "";
 
-	function paginationEqual(a: PaginationData, b: PaginationData): boolean {
-		return (
-			a.page === b.page &&
-			a.perPage === b.perPage &&
-			a.totalCount === b.totalCount &&
-			a.totalPages === b.totalPages
-		);
-	}
-
 	function isCacheValid(timestamp: number): boolean {
 		return Date.now() - timestamp < CACHE_EXPIRY;
 	}
@@ -170,16 +161,8 @@
 						serverSearchTerm,
 						serverPagination.totalCount
 					);
-				}
-
-				if (searchTerm !== serverSearchTerm) {
 					searchTerm = serverSearchTerm;
-				}
-
-				if (members !== serverMembers) {
 					members = serverMembers;
-				}
-				if (!paginationEqual(pagination, serverPagination)) {
 					pagination = serverPagination;
 				}
 			}
