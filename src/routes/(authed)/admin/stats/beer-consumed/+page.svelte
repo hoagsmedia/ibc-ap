@@ -11,9 +11,20 @@
 		return p <= 1 ? "/admin/stats/beer-consumed" : `/admin/stats/beer-consumed?page=${p}`;
 	}
 
-	function fmt(d: Date | null) {
+	function fmtShort(d: Date | null) {
 		if (!d) return "—";
-		return new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric", timeZone: "UTC" }).format(d);
+		return new Intl.DateTimeFormat("en-US", {
+			month: "2-digit",
+			day: "2-digit",
+			year: "2-digit",
+			timeZone: "UTC"
+		}).format(d);
+	}
+
+	function beerDisplay(name: string | null): { label: string; title: string | undefined } {
+		if (!name) return { label: "—", title: undefined };
+		if (name.length <= 25) return { label: name, title: undefined };
+		return { label: `${name.slice(0, 25)}…`, title: name };
 	}
 </script>
 
@@ -43,7 +54,7 @@
 				<Table.Row>
 					<Table.Head class="w-20">Keg</Table.Head>
 					<Table.Head class="min-w-[7rem]">Purchased</Table.Head>
-					<Table.Head class="min-w-[7rem]">Delivered</Table.Head>
+					<Table.Head class="hidden min-w-[7rem] md:table-cell">Delivered</Table.Head>
 					<Table.Head class="min-w-[7rem]">Finished</Table.Head>
 					<Table.Head class="w-24 text-right">Gal</Table.Head>
 					<Table.Head class="min-w-[12rem]">Beer</Table.Head>
@@ -52,13 +63,14 @@
 			</Table.Header>
 			<Table.Body>
 				{#each data.rows as row (row.id)}
+					{@const beer = beerDisplay(row.beer_name)}
 					<Table.Row>
 						<Table.Cell class="tabular-nums">{row.keg_number}</Table.Cell>
-						<Table.Cell class="text-sm">{fmt(row.purchased_on)}</Table.Cell>
-						<Table.Cell class="text-sm">{fmt(row.delivered_on)}</Table.Cell>
-						<Table.Cell class="text-sm">{fmt(row.finished_on)}</Table.Cell>
+						<Table.Cell class="text-sm tabular-nums">{fmtShort(row.purchased_on)}</Table.Cell>
+						<Table.Cell class="hidden text-sm tabular-nums md:table-cell">{fmtShort(row.delivered_on)}</Table.Cell>
+						<Table.Cell class="text-sm tabular-nums">{fmtShort(row.finished_on)}</Table.Cell>
 						<Table.Cell class="text-right tabular-nums">{row.gallons}</Table.Cell>
-						<Table.Cell class="max-w-xs whitespace-normal text-sm">{row.beer_name ?? "—"}</Table.Cell>
+						<Table.Cell class="text-sm" title={beer.title}>{beer.label}</Table.Cell>
 						<Table.Cell class="text-right">
 							<div class="flex justify-end gap-1">
 								<Button variant="outline" size="icon" href="/admin/stats/beer-consumed/{row.id}/edit" title="Edit">
