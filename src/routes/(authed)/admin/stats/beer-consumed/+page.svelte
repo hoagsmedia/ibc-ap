@@ -48,8 +48,8 @@
 		</Button>
 	</div>
 
-	<div class="overflow-x-auto rounded-md border">
-		<Table.Root>
+	<div class="overflow-hidden rounded-md border">
+		<Table.Root class="border-separate border-spacing-0">
 			<Table.Header>
 				<Table.Row>
 					<Table.Head class="w-20">Keg</Table.Head>
@@ -58,20 +58,26 @@
 					<Table.Head class="min-w-[7rem]">Finished</Table.Head>
 					<Table.Head class="w-24 text-right">Gal</Table.Head>
 					<Table.Head class="min-w-[12rem]">Beer</Table.Head>
-					<Table.Head class="w-28 text-right">Actions</Table.Head>
+					<Table.Head
+						class="bg-background sticky right-0 z-30 w-28 border-l border-border text-right shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.12)] dark:shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.35)]"
+					>
+						Actions
+					</Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
 				{#each data.rows as row (row.id)}
 					{@const beer = beerDisplay(row.beer_name)}
-					<Table.Row>
+					<Table.Row class="group">
 						<Table.Cell class="tabular-nums">{row.keg_number}</Table.Cell>
 						<Table.Cell class="text-sm tabular-nums">{fmtShort(row.purchased_on)}</Table.Cell>
 						<Table.Cell class="hidden text-sm tabular-nums md:table-cell">{fmtShort(row.delivered_on)}</Table.Cell>
 						<Table.Cell class="text-sm tabular-nums">{fmtShort(row.finished_on)}</Table.Cell>
 						<Table.Cell class="text-right tabular-nums">{row.gallons}</Table.Cell>
 						<Table.Cell class="text-sm" title={beer.title}>{beer.label}</Table.Cell>
-						<Table.Cell class="text-right">
+						<Table.Cell
+							class="bg-background group-hover:bg-muted/50 sticky right-0 z-20 w-28 border-l border-border text-right shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.12)] transition-colors dark:shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.35)]"
+						>
 							<div class="flex justify-end gap-1">
 								<Button variant="outline" size="icon" href="/admin/stats/beer-consumed/{row.id}/edit" title="Edit">
 									<Pencil class="h-4 w-4" />
