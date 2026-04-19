@@ -57,10 +57,12 @@
 				{/if}
 				<ul class="space-y-2">
 					{#each data.pendingMembers as pending (pending.id)}
-						<li class="flex flex-wrap items-center gap-3 rounded-lg border p-4 sm:flex-nowrap">
+						<li
+							class="flex flex-col gap-3 rounded-lg border p-4 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+						>
 							<a
 								href="/members/{pending.username ?? pending.id}/edit"
-								class="text-primary hover:bg-muted/50 flex min-w-0 flex-1 items-center gap-3 rounded transition-colors"
+								class="text-primary hover:bg-muted/50 flex min-w-0 flex-1 items-start gap-3 rounded transition-colors sm:items-center"
 							>
 								<div
 									class="bg-muted flex size-10 shrink-0 items-center justify-center rounded-full"
@@ -73,10 +75,10 @@
 										<span class="text-muted-foreground block truncate text-sm">{pending.email}</span
 										>
 									{/if}
+									<span class="text-muted-foreground mt-1 block text-sm">
+										Passed {formatDate(pending.test_passed)}
+									</span>
 								</div>
-								<span class="text-muted-foreground shrink-0 text-sm">
-									Passed {formatDate(pending.test_passed)}
-								</span>
 							</a>
 							<form
 								method="post"
@@ -103,7 +105,7 @@
 										}
 									};
 								}}
-								class="flex shrink-0 items-center gap-2"
+								class="flex w-full shrink-0 flex-wrap items-center gap-2 sm:w-auto sm:justify-end"
 							>
 								<input type="hidden" name="userId" value={pending.id} />
 								<label for="mbr-{pending.id}" class="sr-only">Member number</label>
