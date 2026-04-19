@@ -7,6 +7,7 @@
 	import { Button } from "$lib/components/ui/button";
 	import { Input } from "$lib/components/ui/input";
 	import { UserPlusIcon, UserCogIcon, CheckIcon, ArrowLeftIcon } from "@lucide/svelte/icons";
+	import { toastAdminActionFailure } from "$lib/admin-action-toast";
 	import { formatDate } from "$lib/utils";
 	import { toast } from "svelte-sonner";
 
@@ -111,16 +112,11 @@
 													: undefined
 											});
 											await invalidateAll();
-										} else if (
-											result.type === "failure" &&
-											result.data &&
-											"message" in result.data
-										) {
-											const errMsg = (result.data as { message: string }).message;
-											toast.error(errMsg, {
-												duration: 10_000,
-												position: "bottom-right"
-											});
+										} else if (result.type === "failure") {
+											toastAdminActionFailure(
+												result.data,
+												"Could not assign member number."
+											);
 										}
 									};
 								}}

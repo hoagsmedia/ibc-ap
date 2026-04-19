@@ -12,6 +12,7 @@
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
 	import { ArrowLeft, Check, Trash2, KeyRound, Copy } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
+	import { toastAdminActionFailure } from "$lib/admin-action-toast";
 	import { memberSchema } from "./edit-member-schema";
 	import { superForm } from "sveltekit-superforms";
 	import { createUploadThing } from "$lib/utils";
@@ -47,19 +48,11 @@
 					}
 				});
 			} else if (result.type === "failure") {
-				const data = result.data as { message?: string } | undefined;
-				const msg = data?.message?.trim();
-				if (msg) {
-					toast.error(msg, {
-						duration: 10_000,
-						position: "bottom-right"
-					});
-				} else {
-					toast.error("Could not save changes. Check the form for errors.", {
-						duration: 8000,
-						position: "bottom-right"
-					});
-				}
+				toastAdminActionFailure(
+					result.data,
+					"Could not save changes. Check the form for errors.",
+					{ duration: 8000 }
+				);
 			}
 		}
 	});
@@ -80,12 +73,7 @@
 				// Redirect to members list after successful deletion
 				window.location.href = "/members";
 			} else if (result.type === "failure") {
-				const data = result.data as { message?: string } | undefined;
-				const msg = data?.message?.trim();
-				toast.error(msg || "Could not delete this member.", {
-					duration: 10_000,
-					position: "bottom-right"
-				});
+				toastAdminActionFailure(result.data, "Could not delete this member.");
 			} else if (result.type === "error") {
 				toast.error("Failed to delete member. Please try again.", {
 					duration: 5000,
@@ -113,11 +101,12 @@
 					duration: 5000,
 					position: "bottom-right"
 				});
-			} else if (result.type === "failure" && result.data?.message) {
-				toast.error(result.data.message, {
-					duration: 5000,
-					position: "bottom-right"
-				});
+			} else if (result.type === "failure") {
+				toastAdminActionFailure(
+					result.data,
+					"Failed to reset password. Please try again.",
+					{ duration: 5000 }
+				);
 			} else if (result.type === "error") {
 				toast.error("Failed to reset password. Please try again.", {
 					duration: 5000,

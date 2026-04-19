@@ -34,6 +34,17 @@
 		Users
 	} from "@lucide/svelte/icons";
 	import { requiresIbcTest } from "$lib/ibc-test";
+	import {
+		hubCardMidWashClass,
+		hubHeroActionBtnClass,
+		hubHeroScrimLrClass,
+		hubHeroScrimTbClass,
+		hubTableColSepClass,
+		inviteCopyBtnClass,
+		inviteRowHighlightClass,
+		inviteRowIdleClass,
+		inviteRowShellClass
+	} from "$lib/dashboard-hub-classes";
 	import { formatDate, formatDateTime } from "$lib/utils";
 	import CustomCopy from "$lib/components/Custom-Copy.svelte";
 
@@ -72,26 +83,6 @@
 					(data.user.role === "member" && data.user.mbr != null))
 		)
 	);
-
-	/** Shared chrome so icon actions read clearly as buttons on dark hero cards. */
-	const hubHeroActionBtnClass =
-		"gap-1.5 shadow-md transition-all duration-150 hover:shadow-lg hover:brightness-105 active:translate-y-px active:brightness-95 focus-visible:ring-2 focus-visible:ring-amber-200/90 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent min-h-9 px-2.5 sm:px-3";
-
-	/** Vertical rule between columns (shorter than row height, centered). */
-	const hubTableColSepClass =
-		"!h-5 w-px shrink-0 bg-white/25 data-[orientation=vertical]:!h-5 dark:bg-border";
-
-	const inviteRowIdleClass =
-		"bg-transparent hover:bg-white/[0.04] dark:hover:bg-white/[0.05]";
-
-	const inviteRowHighlightClass =
-		"bg-emerald-500/[0.07] shadow-[inset_0_0_0_1px_rgba(52,211,153,0.22)] hover:bg-emerald-500/[0.1] dark:bg-emerald-500/[0.08] dark:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.2)] dark:hover:bg-emerald-500/[0.11]";
-
-	const inviteRowShellClass =
-		"flex min-h-10 flex-nowrap items-center border-b border-white/10 transition-colors last:border-b-0 dark:border-border/35";
-
-	const inviteCopyBtnClass =
-		"min-h-8 min-w-8 shrink-0 border-white/35 bg-black/35 text-white shadow-sm hover:bg-black/50 hover:text-white";
 
 </script>
 
@@ -245,14 +236,8 @@
 					class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/welcome-island-sunset-bg.jpg')] bg-cover bg-[position:right_center] bg-no-repeat opacity-[0.55] saturate-[1.05]"
 					aria-hidden="true"
 				></div>
-				<div
-					class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-black/78 via-black/45 to-black/10"
-					aria-hidden="true"
-				></div>
-				<div
-					class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/55 via-transparent to-black/25"
-					aria-hidden="true"
-				></div>
+				<div class={hubHeroScrimLrClass} aria-hidden="true"></div>
+				<div class={hubHeroScrimTbClass} aria-hidden="true"></div>
 				<div class="relative z-10 flex flex-1 flex-col justify-between gap-8 p-6 sm:p-8 lg:min-h-[280px]">
 					<div class="flex w-full flex-col gap-4 sm:gap-5">
 						<div class="flex w-full items-start justify-between gap-3">
@@ -378,15 +363,9 @@
 							>
 								<span class="text-foreground font-semibold tabular-nums sm:font-bold"
 									>{data.clubStats.eventsThisYear}</span
-								>
-								{" "}
-								events this year ·
-								{" "}
-								<span class="text-foreground font-semibold tabular-nums sm:font-bold"
+								> events this year · <span class="text-foreground font-semibold tabular-nums sm:font-bold"
 									>{data.clubStats.kegsConsumed}</span
-								>
-								{" "}
-								kegs recorded — keep the island pouring.
+								> kegs recorded — keep the island pouring.
 							</p>
 						</Card.Content>
 					</Card.Root>
@@ -407,14 +386,8 @@
 							class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/pending-members-hop-bg.png')] bg-cover bg-[position:right_bottom] bg-no-repeat opacity-[0.55] saturate-[1.05]"
 							aria-hidden="true"
 						></div>
-						<div
-							class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-black/78 via-black/45 to-black/10"
-							aria-hidden="true"
-						></div>
-						<div
-							class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/55 via-transparent to-black/25"
-							aria-hidden="true"
-						></div>
+						<div class={hubHeroScrimLrClass} aria-hidden="true"></div>
+						<div class={hubHeroScrimTbClass} aria-hidden="true"></div>
 						<div class="relative z-10 flex w-full min-w-0 flex-col gap-2 px-6">
 							<div
 								class="flex w-full min-w-0 flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2"
@@ -512,18 +485,9 @@
 						class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/invitation-barrels-bg.png')] bg-cover bg-[position:85%_center] bg-no-repeat opacity-[0.55] saturate-[1.05] dark:opacity-[0.64]"
 						aria-hidden="true"
 					></div>
-					<div
-						class="ibc-invites-card-bg pointer-events-none absolute inset-0 z-[1] opacity-[0.12] dark:opacity-[0.35]"
-						aria-hidden="true"
-					></div>
-					<div
-						class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-black/78 via-black/45 to-black/10"
-						aria-hidden="true"
-					></div>
-					<div
-						class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/55 via-transparent to-black/25"
-						aria-hidden="true"
-					></div>
+					<div class={hubCardMidWashClass} aria-hidden="true"></div>
+					<div class={hubHeroScrimLrClass} aria-hidden="true"></div>
+					<div class={hubHeroScrimTbClass} aria-hidden="true"></div>
 					<div class="relative z-10 flex w-full min-w-0 flex-col gap-3 px-6">
 						<div
 							class="flex w-full min-w-0 flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2"
@@ -818,18 +782,9 @@
 						class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/upcoming-events-bg.png')] bg-cover bg-[position:center_28%] bg-no-repeat opacity-[0.55] saturate-[1.05] dark:opacity-[0.58]"
 						aria-hidden="true"
 					></div>
-					<div
-						class="ibc-invites-card-bg pointer-events-none absolute inset-0 z-[1] opacity-[0.12] dark:opacity-[0.35]"
-						aria-hidden="true"
-					></div>
-					<div
-						class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r from-black/78 via-black/45 to-black/10"
-						aria-hidden="true"
-					></div>
-					<div
-						class="pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t from-black/55 via-transparent to-black/25"
-						aria-hidden="true"
-					></div>
+					<div class={hubCardMidWashClass} aria-hidden="true"></div>
+					<div class={hubHeroScrimLrClass} aria-hidden="true"></div>
+					<div class={hubHeroScrimTbClass} aria-hidden="true"></div>
 					<div class="relative z-10 flex w-full min-w-0 flex-col gap-3 px-6">
 						<div
 							class="flex w-full min-w-0 flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2"
