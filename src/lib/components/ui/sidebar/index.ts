@@ -1,4 +1,5 @@
 import { useSidebar } from "./context.svelte.js";
+import CloseMobileOnNav from "./sidebar-close-mobile-on-nav.svelte";
 import Content from "./sidebar-content.svelte";
 import Footer from "./sidebar-footer.svelte";
 import GroupAction from "./sidebar-group-action.svelte";
@@ -24,6 +25,7 @@ import Trigger from "./sidebar-trigger.svelte";
 import Root from "./sidebar.svelte";
 
 export {
+	CloseMobileOnNav,
 	Content,
 	Footer,
 	Group,
@@ -48,6 +50,7 @@ export {
 	Separator,
 	//
 	Root as Sidebar,
+	CloseMobileOnNav as SidebarCloseMobileOnNav,
 	Content as SidebarContent,
 	Footer as SidebarFooter,
 	Group as SidebarGroup,

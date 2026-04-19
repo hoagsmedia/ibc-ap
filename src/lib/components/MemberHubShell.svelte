@@ -60,6 +60,7 @@
 </script>
 
 <Sidebar.Provider>
+	<Sidebar.SidebarCloseMobileOnNav />
 	<Sidebar.Root collapsible="icon" class="border-sidebar-border border-r">
 		<Sidebar.Header
 			class={cn(
