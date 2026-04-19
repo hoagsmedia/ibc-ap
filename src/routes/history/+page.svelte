@@ -376,7 +376,7 @@
 				<p class="text-base leading-relaxed">
 					From our humble beginnings with four friends and a kegerator to a 407-member strong
 					community, we have maintained our founding principle: "More Time than Money." We continue
-					to welcome new members who share our passion for hand-crafted beer and the camaraderie
+					to welcome Prospects who share our passion for hand-crafted beer and the camaraderie
 					that comes with it.
 				</p>
 				<p class="text-base leading-relaxed">

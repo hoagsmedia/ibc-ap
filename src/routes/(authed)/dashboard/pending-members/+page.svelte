@@ -13,8 +13,8 @@
 </script>
 
 <svelte:head>
-	<title>New members | Island Beer Club</title>
-	<meta name="description" content="Manage new members who passed the test" />
+	<title>Prospects | Island Beer Club</title>
+	<meta name="description" content="Manage Prospects who passed the test" />
 </svelte:head>
 
 <div class="px-4 py-6 sm:px-0">
@@ -29,17 +29,17 @@
 		<Card.Header>
 			<Card.Title class="flex items-center gap-2">
 				<UserPlusIcon class="size-5" />
-				New potential members
+				Prospects
 			</Card.Title>
 			<Card.Description>
-				People who passed the test and don’t have a member number yet. Open a profile to accept them
+				Prospects who passed the test and don’t have a member number yet. Open a profile to accept them
 				and assign a member number (MBR).
 			</Card.Description>
 		</Card.Header>
 		<Card.Content>
 			{#if data.pendingMembers.length === 0}
 				<p class="text-muted-foreground py-8 text-center text-sm">
-					No new members waiting. When someone signs up and passes the test, they’ll appear here.
+					No Prospects waiting. When someone signs up and passes the test, they’ll appear here.
 				</p>
 			{:else}
 				{#if form?.success}

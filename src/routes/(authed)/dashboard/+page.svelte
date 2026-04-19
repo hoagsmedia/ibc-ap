@@ -12,6 +12,7 @@
 		BarChart3,
 		Beer,
 		BookUser,
+		Calendar,
 		CalendarDays,
 		CalendarRange,
 		CheckIcon,
@@ -27,6 +28,7 @@
 		UserCheck,
 		Users
 	} from "@lucide/svelte/icons";
+	import { requiresIbcTest } from "$lib/ibc-test";
 	import { formatDate, formatDateTime } from "$lib/utils";
 	import CustomCopy from "$lib/components/Custom-Copy.svelte";
 
@@ -53,6 +55,104 @@
 </svelte:head>
 
 <div class="mx-auto flex max-w-[1600px] flex-col gap-8">
+	{#if data.user}
+		<section
+			class="grid grid-cols-1 gap-4 sm:grid-cols-3 md:gap-5"
+			aria-labelledby="club-overview-heading"
+		>
+			<h2 id="club-overview-heading" class="sr-only">Club snapshot</h2>
+			<article
+				class="border-border/50 from-sidebar/25 to-card relative overflow-hidden rounded-2xl border bg-gradient-to-br p-5 shadow-sm"
+			>
+				<div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:gap-4">
+					<div class="min-w-0">
+						<p
+							class="text-muted-foreground text-[0.7rem] font-medium tracking-wide uppercase sm:text-xs"
+						>
+							Total members
+						</p>
+						<p class="text-foreground mt-2 text-3xl font-bold tracking-tight tabular-nums">
+							{data.clubStats.totalMembers.toLocaleString()}
+						</p>
+						{#if data.clubStats.membersJoinedThisMonth > 0}
+							<p class="mt-2 text-sm text-emerald-600 dark:text-emerald-400/90">
+								+{data.clubStats.membersJoinedThisMonth} this month
+							</p>
+						{:else}
+							<p class="text-muted-foreground mt-2 text-sm">None this month</p>
+						{/if}
+					</div>
+					<div
+						class="border-primary/45 bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-xl border shadow-sm"
+						aria-hidden="true"
+					>
+						<Users class="size-5" />
+					</div>
+				</div>
+			</article>
+			<article
+				class="border-border/50 from-sidebar/25 to-card relative overflow-hidden rounded-2xl border bg-gradient-to-br p-5 shadow-sm"
+			>
+				<div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:gap-4">
+					<div class="min-w-0">
+						<p
+							class="text-muted-foreground text-[0.7rem] font-medium tracking-wide uppercase sm:text-xs"
+						>
+							Kegs consumed
+						</p>
+						<p class="text-foreground mt-2 text-3xl font-bold tracking-tight tabular-nums">
+							{data.clubStats.kegsConsumed.toLocaleString()}
+						</p>
+						{#if data.clubStats.kegsAddedThisMonth > 0}
+							<p class="mt-2 text-sm text-emerald-600 dark:text-emerald-400/90">
+								+{data.clubStats.kegsAddedThisMonth} this month
+							</p>
+						{:else}
+							<p class="text-muted-foreground mt-2 text-sm">None this month</p>
+						{/if}
+					</div>
+					<div
+						class="border-primary/45 bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-xl border shadow-sm"
+						aria-hidden="true"
+					>
+						<Beer class="size-5" />
+					</div>
+				</div>
+			</article>
+			<article
+				class="border-border/50 from-sidebar/25 to-card relative overflow-hidden rounded-2xl border bg-gradient-to-br p-5 shadow-sm"
+			>
+				<div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-3 sm:gap-4">
+					<div class="min-w-0">
+						<p
+							class="text-muted-foreground text-[0.7rem] font-medium tracking-wide uppercase sm:text-xs"
+						>
+							Events this year
+						</p>
+						<p class="text-foreground mt-2 text-3xl font-bold tracking-tight tabular-nums">
+							{data.clubStats.eventsThisYear.toLocaleString()}
+						</p>
+						{#if data.clubStats.eventsThisYear === 0}
+							<p class="text-muted-foreground mt-2 text-sm">No events yet</p>
+						{:else if data.clubStats.eventsThisMonth > 0}
+							<p class="mt-2 text-sm text-emerald-600 dark:text-emerald-400/90">
+								+{data.clubStats.eventsThisMonth} this month
+							</p>
+						{:else}
+							<p class="text-muted-foreground mt-2 text-sm">None scheduled this month</p>
+						{/if}
+					</div>
+					<div
+						class="border-primary/45 bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-xl border shadow-sm"
+						aria-hidden="true"
+					>
+						<Calendar class="size-5" />
+					</div>
+				</div>
+			</article>
+		</section>
+	{/if}
+
 	<!-- Hero + insights -->
 	{#if data.user}
 		<section
@@ -63,7 +163,7 @@
 				class="ibc-lounge-hero border-border/50 relative col-span-1 flex min-h-[260px] flex-col overflow-hidden rounded-2xl border shadow-md lg:col-span-2"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/welcome-island-sunset-bg.png')] bg-cover bg-[position:58%_center] bg-no-repeat opacity-[0.55] saturate-[1.05]"
+					class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/welcome-island-sunset-bg.jpg')] bg-cover bg-[position:right_center] bg-no-repeat opacity-[0.55] saturate-[1.05]"
 					aria-hidden="true"
 				></div>
 				<div
@@ -83,7 +183,7 @@
 						</p>
 						<h1
 							id="welcome-heading"
-							class="text-foam text-3xl font-bold tracking-tight drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-4xl"
+							class="text-3xl font-bold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-4xl"
 						>
 							Welcome back
 						</h1>
@@ -123,7 +223,7 @@
 						<Card.Description>Members with numbers vs total roster</Card.Description>
 					</Card.Header>
 					<Card.Content>
-						<p class="text-foam text-4xl font-bold tabular-nums">{engagementPct}%</p>
+						<p class="text-foreground text-4xl font-bold tabular-nums">{engagementPct}%</p>
 						<p class="text-muted-foreground mt-2 text-xs leading-relaxed">
 							Higher means more of the club is fully onboarded with member numbers.
 						</p>
@@ -143,11 +243,11 @@
 					</Card.Header>
 					<Card.Content>
 						<p class="text-muted-foreground text-sm leading-relaxed">
-							<span class="text-foam font-semibold tabular-nums"
+							<span class="text-foreground font-semibold tabular-nums"
 								>{data.clubStats.eventsThisYear}</span
 							>
 							events this year ·
-							<span class="text-foam font-semibold tabular-nums">{data.clubStats.kegsConsumed}</span
+							<span class="text-foreground font-semibold tabular-nums">{data.clubStats.kegsConsumed}</span
 							>
 							kegs recorded — keep the island pouring.
 						</p>
@@ -175,7 +275,7 @@
 					</div>
 					<Card.Title
 						id="member-info-heading"
-						class="text-foam text-lg font-semibold tracking-tight"
+						class="text-foreground text-lg font-semibold tracking-tight"
 					>
 						Member information
 					</Card.Title>
@@ -189,11 +289,11 @@
 						>
 							Member number
 						</p>
-						<p class="text-foam mt-1 text-3xl font-bold tracking-tight tabular-nums">
+						<p class="text-foreground mt-1 text-3xl font-bold tracking-tight tabular-nums">
 							{#if data.user.mbr != null}
 								{data.user.mbr}
-							{:else if data.user.test_passed}
-								<span class="text-primary">Pending</span>
+							{:else if !requiresIbcTest(data.user)}
+								<span class="text-primary">Prospect</span>
 							{:else}
 								—
 							{/if}
@@ -203,11 +303,11 @@
 					<div class="space-y-4">
 						<div>
 							<p class="text-muted-foreground text-xs font-medium tracking-wide uppercase">Name</p>
-							<p class="text-foam mt-0.5 text-sm font-semibold">{data.user.name}</p>
+							<p class="text-foreground mt-0.5 text-sm font-semibold">{data.user.name}</p>
 						</div>
 						<div>
 							<p class="text-muted-foreground text-xs font-medium tracking-wide uppercase">Email</p>
-							<p class="text-foam mt-0.5 text-sm font-semibold break-all">
+							<p class="text-foreground mt-0.5 text-sm font-semibold break-all">
 								{data.user.email ?? data.user.username ?? "—"}
 							</p>
 						</div>
@@ -225,7 +325,7 @@
 							<p class="text-muted-foreground text-xs font-medium tracking-wide uppercase">
 								Member since
 							</p>
-							<p class="text-foam mt-0.5 text-sm font-semibold tabular-nums">
+							<p class="text-foreground mt-0.5 text-sm font-semibold tabular-nums">
 								{#if data.user.msd}
 									{formatDate(new Date(data.user.msd))}
 								{:else}
@@ -249,7 +349,7 @@
 						<LayoutGrid class="text-primary size-5" />
 					</div>
 					<div class="min-w-0">
-						<Card.Title id="actions-heading" class="text-foam text-lg font-semibold tracking-tight">
+						<Card.Title id="actions-heading" class="text-foreground text-lg font-semibold tracking-tight">
 							Quick actions
 						</Card.Title>
 						<Card.Description class="text-muted-foreground text-sm leading-snug">
@@ -261,7 +361,7 @@
 					<Button
 						href="/members"
 						variant="outline"
-						class="border-border/55 bg-muted/20 text-foam hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
+						class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
 					>
 						<BookUser class="text-primary size-[1.15rem] shrink-0" />
 						{data.user.role === "admin" ? "Manage members" : "Member directory"}
@@ -270,40 +370,35 @@
 						<Button
 							href="/admin/events"
 							variant="outline"
-							class="border-border/55 bg-muted/20 text-foam hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
+							class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
 						>
 							<CalendarDays class="text-primary size-[1.15rem] shrink-0" />
 							Manage events
 						</Button>
 						<Button
-							href="/admin/stats/keg-credits"
-							variant="outline"
-							class="border-border/55 bg-muted/20 text-foam hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
-						>
-							<Package class="text-primary size-[1.15rem] shrink-0" />
-							Manage keg credits
-						</Button>
-						<Button
 							href="/admin/stats/beer-consumed"
 							variant="outline"
-							class="border-border/55 bg-muted/20 text-foam hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
+							class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium whitespace-normal shadow-sm"
 						>
 							<Beer class="text-primary size-[1.15rem] shrink-0" />
-							Manage beer consumed
+							<span class="min-w-0 text-left leading-snug">
+								<span class="sm:hidden">Beer consumed</span>
+								<span class="hidden sm:inline">Manage Beer Consumed</span>
+							</span>
 						</Button>
 						<Button
-							href="/admin/stats"
+							href="/admin/stats/keg-credits"
 							variant="outline"
-							class="border-border/55 bg-muted/20 text-foam hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
+							class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
 						>
-							<BarChart3 class="text-primary size-[1.15rem] shrink-0" />
-							Club stats data
+							<Package class="text-primary size-[1.15rem] shrink-0" />
+							Manage Keg Credits
 						</Button>
 					{:else}
 						<Button
 							href="/events"
 							variant="outline"
-							class="border-border/55 bg-muted/20 text-foam hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
+							class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
 						>
 							<CalendarRange class="text-primary size-[1.15rem] shrink-0" />
 							View events
@@ -326,7 +421,7 @@
 					<div class="min-w-0">
 						<Card.Title
 							id="club-stats-heading"
-							class="text-foam text-lg font-semibold tracking-tight"
+							class="text-foreground text-lg font-semibold tracking-tight"
 						>
 							Club stats
 						</Card.Title>
@@ -337,40 +432,40 @@
 				</Card.Header>
 				<Card.Content class="flex flex-1 flex-col gap-2 pt-0">
 					<div
-						class="border-border/50 bg-muted/15 flex items-center gap-3 rounded-xl border px-3 py-2.5"
+						class="border-border/50 bg-muted/15 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 rounded-xl border px-3 py-2.5"
 					>
 						<Users class="text-primary size-5 shrink-0" aria-hidden="true" />
-						<span class="text-foam min-w-0 flex-1 text-sm leading-tight"
+						<span class="text-foreground min-w-0 text-sm leading-tight"
 							>Members &amp; officers</span
 						>
-						<span class="text-foam shrink-0 text-sm font-semibold tabular-nums">
+						<span class="text-foreground text-right text-sm font-semibold tabular-nums">
 							{data.clubStats.totalMembers.toLocaleString()}
 						</span>
 					</div>
 					<div
-						class="border-border/50 bg-muted/15 flex items-center gap-3 rounded-xl border px-3 py-2.5"
+						class="border-border/50 bg-muted/15 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 rounded-xl border px-3 py-2.5"
 					>
 						<UserCheck class="text-primary size-5 shrink-0" aria-hidden="true" />
-						<span class="text-foam min-w-0 flex-1 text-sm leading-tight">With member number</span>
-						<span class="text-foam shrink-0 text-sm font-semibold tabular-nums">
+						<span class="text-foreground min-w-0 text-sm leading-tight">With member number</span>
+						<span class="text-foreground text-right text-sm font-semibold tabular-nums">
 							{data.clubStats.activeMembers.toLocaleString()}
 						</span>
 					</div>
 					<div
-						class="border-border/50 bg-muted/15 flex items-center gap-3 rounded-xl border px-3 py-2.5"
+						class="border-border/50 bg-muted/15 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 rounded-xl border px-3 py-2.5"
 					>
 						<CalendarDays class="text-primary size-5 shrink-0" aria-hidden="true" />
-						<span class="text-foam min-w-0 flex-1 text-sm leading-tight">Events this year</span>
-						<span class="text-foam shrink-0 text-sm font-semibold tabular-nums">
+						<span class="text-foreground min-w-0 text-sm leading-tight">Events this year</span>
+						<span class="text-foreground text-right text-sm font-semibold tabular-nums">
 							{data.clubStats.eventsThisYear.toLocaleString()}
 						</span>
 					</div>
 					<div
-						class="border-border/50 bg-muted/15 flex items-center gap-3 rounded-xl border px-3 py-2.5"
+						class="border-border/50 bg-muted/15 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-3 gap-y-1 rounded-xl border px-3 py-2.5"
 					>
 						<Beer class="text-primary size-5 shrink-0" aria-hidden="true" />
-						<span class="text-foam min-w-0 flex-1 text-sm leading-tight">Kegs consumed</span>
-						<span class="text-foam shrink-0 text-sm font-semibold tabular-nums">
+						<span class="text-foreground min-w-0 text-sm leading-tight">Kegs consumed</span>
+						<span class="text-foreground text-right text-sm font-semibold tabular-nums">
 							{data.clubStats.kegsConsumed.toLocaleString()}
 						</span>
 					</div>
@@ -384,18 +479,18 @@
 			class="grid grid-cols-1 gap-4 sm:gap-5 lg:items-stretch {data.user.role === 'admin'
 				? 'lg:grid-cols-2'
 				: ''}"
-			aria-label="New members and invitation links"
+			aria-label="Prospects and invitation links"
 		>
 			{#if data.user.role === "admin"}
 				<Card.Root
 					class="border-border/50 border-primary/15 relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border shadow-sm lg:h-full"
 				>
 					<div
-						class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/pending-members-hop-bg.png')] bg-cover bg-[position:right_65%_bottom] bg-no-repeat opacity-[0.62] saturate-[1.08]"
+						class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/pending-members-hop-bg.png')] bg-cover bg-[position:right_bottom] bg-no-repeat opacity-[0.62] saturate-[1.08]"
 						aria-hidden="true"
 					></div>
 					<div
-						class="from-card/88 via-card/50 to-card/25 pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r"
+						class="from-card/88 via-card/40 to-transparent pointer-events-none absolute inset-0 z-[1] bg-gradient-to-r"
 						aria-hidden="true"
 					></div>
 					<div
@@ -405,13 +500,13 @@
 					<Card.Header class="relative z-10">
 						<Card.Title
 							id="pending-heading"
-							class="text-foam flex items-center gap-2 text-lg font-semibold tracking-tight"
+							class="text-foreground flex items-center gap-2 text-lg font-semibold tracking-tight"
 						>
 							<UserPlusIcon class="text-primary size-5" />
-							New potential members
+							Prospects
 						</Card.Title>
 						<Card.Description class="text-muted-foreground max-w-xl leading-snug text-pretty">
-							People who passed the test but don’t have a member number yet. Manage them and assign
+							Prospects who passed the test but don’t have a member number yet. Manage them and assign
 							member numbers.
 						</Card.Description>
 					</Card.Header>
@@ -421,7 +516,7 @@
 								<div
 									class="space-y-3"
 									aria-busy="true"
-									aria-label="Loading new potential members"
+									aria-label="Loading Prospects"
 								>
 									<Skeleton class="h-4 w-36" />
 									<Skeleton class="h-4 w-full max-w-md" />
@@ -430,7 +525,7 @@
 								</div>
 							{:else if (data.pendingMembersCount ?? 0) > 0}
 								<p class="text-muted-foreground text-sm">
-									<span class="text-foam font-semibold tabular-nums">{data.pendingMembersCount}</span>
+									<span class="text-foreground font-semibold tabular-nums">{data.pendingMembersCount}</span>
 									waiting for acceptance.
 								</p>
 								{#if data.pendingMembers && data.pendingMembers.length > 0}
@@ -447,7 +542,7 @@
 									{/if}
 								{/if}
 							{:else}
-								<p class="text-muted-foreground text-sm">No pending applicants right now.</p>
+								<p class="text-muted-foreground text-sm">No Prospects right now.</p>
 							{/if}
 						</div>
 						<Button
@@ -456,7 +551,7 @@
 							class="gap-2 self-start shadow-md"
 						>
 							<UserPlusIcon class="size-4" />
-							Manage new members
+							Manage Prospects
 						</Button>
 					</Card.Content>
 				</Card.Root>
@@ -467,31 +562,33 @@
 				aria-labelledby="invites-heading"
 			>
 				<div
-					class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/invitation-barrels-bg.png')] bg-cover bg-[position:85%_center] bg-no-repeat opacity-[0.64] saturate-[1.06]"
+					class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/invitation-barrels-bg.png')] bg-cover bg-[position:85%_center] bg-no-repeat opacity-[0.88] saturate-[1.06] dark:opacity-[0.64]"
 					aria-hidden="true"
 				></div>
 				<div
-					class="ibc-invites-card-bg pointer-events-none absolute inset-0 z-[1] opacity-[0.35]"
+					class="ibc-invites-card-bg pointer-events-none absolute inset-0 z-[1] opacity-[0.22] dark:opacity-[0.35]"
 					aria-hidden="true"
 				></div>
 				<div
-					class="from-card/86 via-card/45 pointer-events-none absolute inset-0 z-[1] bg-gradient-to-l to-transparent"
+					class="from-card/62 via-card/28 pointer-events-none absolute inset-0 z-[1] bg-gradient-to-l to-transparent dark:from-card/86 dark:via-card/45"
 					aria-hidden="true"
 				></div>
 				<div
-					class="from-card/40 pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t via-transparent to-transparent"
+					class="from-card/24 pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t via-transparent to-transparent dark:from-card/40"
 					aria-hidden="true"
 				></div>
 				<Card.Header class="relative z-10">
 					<Card.Title
 						id="invites-heading"
-						class="text-foam flex items-center gap-2 text-lg font-semibold tracking-tight"
+						class="flex items-center gap-2 text-lg font-semibold tracking-tight text-white drop-shadow-sm dark:text-foreground"
 					>
-						<LinkIcon class="text-primary size-5" />
+						<LinkIcon class="size-5 text-white dark:text-primary" />
 						Invitation links
 					</Card.Title>
-					<Card.Description class="text-muted-foreground max-w-xl leading-snug text-pretty">
-						Create secure, one-time signup links to invite new members.
+					<Card.Description
+						class="max-w-xl text-pretty leading-snug text-white/88 dark:text-muted-foreground"
+					>
+						Create secure, one-time signup links to invite Prospects.
 					</Card.Description>
 				</Card.Header>
 				<Card.Content class="relative z-10 flex flex-1 flex-col p-2 md:p-6">
@@ -524,7 +621,7 @@
 					{/if}
 
 					<div class="space-y-4">
-						{#if !data.user?.test_passed}
+						{#if data.user && requiresIbcTest(data.user)}
 							<Alert.Root class="mb-4" variant="destructive">
 								<ClockIcon class="size-4" />
 								<Alert.Title>Test required</Alert.Title>
@@ -533,7 +630,7 @@
 								</Alert.Description>
 							</Alert.Root>
 							<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-								<p class="text-muted-foreground text-sm">
+								<p class="text-sm text-white/88 dark:text-muted-foreground">
 									Complete the IBC test to unlock invitations.
 								</p>
 								<Button class="shrink-0 shadow-md">
@@ -543,53 +640,48 @@
 						{:else if data.user?.role !== "admin" && (data.user?.role !== "member" || data.user?.mbr == null)}
 							<Alert.Root class="mb-4" variant="default">
 								<ClockIcon class="size-4" />
-								<Alert.Title>Member acceptance required</Alert.Title>
+								<Alert.Title>Prospect acceptance required</Alert.Title>
 								<Alert.Description>
-									You must be accepted and assigned a member number before creating invitation
-									links.
+									You must be accepted as a member and assigned a member number before creating
+									invitation links.
 								</Alert.Description>
 							</Alert.Root>
-							<p class="text-muted-foreground text-sm">
+							<p class="text-sm text-white/88 dark:text-muted-foreground">
 								An admin will review your profile after you pass the test.
 							</p>
 						{:else}
-							<div
-								class="flex flex-col items-stretch justify-between gap-4 md:flex-row md:items-center"
+							<form
+								method="post"
+								action="?/createInvitation"
+								use:enhance={() => {
+									creating = true;
+									return async ({ update }) => {
+										await update();
+										creating = false;
+									};
+								}}
+								class="shrink-0"
 							>
-								<p class="text-muted-foreground text-sm">
-									Create secure, one-time signup links for new members.
-								</p>
-								<form
-									method="post"
-									action="?/createInvitation"
-									use:enhance={() => {
-										creating = true;
-										return async ({ update }) => {
-											await update();
-											creating = false;
-										};
-									}}
-									class="shrink-0"
-								>
-									<Button type="submit" disabled={creating} class="shadow-md">
-										{creating ? "Creating..." : "Create invite link"}
-									</Button>
-								</form>
-							</div>
+								<Button type="submit" disabled={creating} class="shadow-md">
+									{creating ? "Creating..." : "Create invite link"}
+								</Button>
+							</form>
 
 							{#if data.invitations && data.invitations.length > 0}
 								<div class="mt-6 space-y-3">
-									<h4 class="text-foam text-sm font-semibold">Recent invitations</h4>
+									<h4 class="text-sm font-semibold text-white drop-shadow-sm dark:text-foreground">
+										Recent invitations
+									</h4>
 									<ul class="space-y-2">
 										{#each data.invitations as invitation (invitation.token)}
 											<li
-												class="border-border/50 bg-muted/15 flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between"
+												class="flex flex-col gap-3 rounded-xl border border-white/25 bg-black/25 p-3 backdrop-blur-[2px] sm:flex-row sm:items-center sm:justify-between dark:border-border/50 dark:bg-muted/15"
 											>
 												<div class="min-w-0 flex-1">
-													<span class="text-muted-foreground font-mono text-xs">
+													<span class="font-mono text-xs text-white/92 dark:text-muted-foreground">
 														{invitation.token.slice(0, 8)}…
 													</span>
-													<div class="text-muted-foreground mt-1 text-xs">
+													<div class="mt-1 text-xs text-white/78 dark:text-muted-foreground">
 														Created: {formatDateTime(invitation.created_at)}
 													</div>
 												</div>
@@ -635,55 +727,69 @@
 			<h2 id="tables-heading" class="sr-only">Upcoming events</h2>
 			<Card.Root class="border-border/50 relative overflow-hidden rounded-2xl border shadow-sm">
 				<div
-					class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/upcoming-events-bg.png')] bg-cover bg-[position:center_28%] bg-no-repeat opacity-[0.58] saturate-[1.05]"
+					class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/upcoming-events-bg.png')] bg-cover bg-[position:center_28%] bg-no-repeat opacity-[0.86] saturate-[1.05] dark:opacity-[0.58]"
 					aria-hidden="true"
 				></div>
 				<div
-					class="from-card/82 via-card/48 to-card/72 pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b"
+					class="from-card/58 via-card/32 to-card/55 pointer-events-none absolute inset-0 z-[1] bg-gradient-to-b dark:from-card/82 dark:via-card/48 dark:to-card/72"
 					aria-hidden="true"
 				></div>
 				<div
-					class="from-card/45 pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t via-transparent to-transparent"
+					class="from-card/28 pointer-events-none absolute inset-0 z-[1] bg-gradient-to-t via-transparent to-transparent dark:from-card/45"
 					aria-hidden="true"
 				></div>
 				<Card.Header class="relative z-10">
-					<Card.Title class="text-foam text-lg font-semibold tracking-tight"
+					<Card.Title
+						class="text-lg font-semibold tracking-tight text-white drop-shadow-sm dark:text-foreground"
 						>Upcoming events</Card.Title
 					>
-					<Card.Description class="text-muted-foreground max-w-lg text-pretty">
+					<Card.Description
+						class="max-w-lg text-pretty text-white/88 dark:text-muted-foreground"
+					>
 						Next on the club calendar
 					</Card.Description>
 				</Card.Header>
 				<Card.Content class="relative z-10 px-0 pb-2">
 					{#if data.upcomingEvents.length === 0}
-						<p class="text-muted-foreground px-6 text-sm">No upcoming published events.</p>
+						<p class="px-6 text-sm text-white/88 dark:text-muted-foreground">
+							No upcoming published events.
+						</p>
 					{:else}
 						<Table.Root>
 							<Table.Header>
-								<Table.Row class="border-border/45 hover:bg-card/35 bg-card/45 backdrop-blur-sm">
-									<Table.Head class="text-muted-foreground">Event</Table.Head>
-									<Table.Head class="text-muted-foreground">When</Table.Head>
-									<Table.Head class="text-muted-foreground hidden sm:table-cell">Where</Table.Head>
+								<Table.Row
+									class="border-white/20 bg-black/22 backdrop-blur-sm hover:bg-black/28 dark:border-border/45 dark:bg-card/45 dark:hover:bg-card/35"
+								>
+									<Table.Head class="text-white/82 dark:text-muted-foreground">Event</Table.Head>
+									<Table.Head class="text-white/82 dark:text-muted-foreground">When</Table.Head>
+									<Table.Head class="hidden text-white/82 dark:text-muted-foreground sm:table-cell"
+										>Where</Table.Head
+									>
 								</Table.Row>
 							</Table.Header>
 							<Table.Body>
 								{#each data.upcomingEvents as ev (ev.id)}
 									<Table.Row
-										class="border-border/35 hover:bg-card/40 bg-card/25 backdrop-blur-[2px]"
+										class="border-white/15 bg-black/18 backdrop-blur-[2px] hover:bg-black/26 dark:border-border/35 dark:bg-card/25 dark:hover:bg-card/40"
 									>
 										<Table.Cell class="font-medium">
-											<a href="/events" class="text-foam hover:text-primary transition-colors">
+											<a
+												href="/events"
+												class="text-white transition-colors hover:text-white/95 dark:text-foreground dark:hover:text-primary"
+											>
 												{ev.title}
 											</a>
 											{#if ev.members_only}
 												<Badge variant="secondary" class="ml-2 text-[10px]">Members</Badge>
 											{/if}
 										</Table.Cell>
-										<Table.Cell class="text-muted-foreground text-sm tabular-nums">
+										<Table.Cell
+											class="text-sm tabular-nums text-white/85 dark:text-muted-foreground"
+										>
 											{ev.event_date ? formatDate(new Date(ev.event_date)) : "—"}
 										</Table.Cell>
 										<Table.Cell
-											class="text-muted-foreground hidden max-w-[10rem] truncate text-sm sm:table-cell"
+											class="hidden max-w-[10rem] truncate text-sm text-white/85 dark:text-muted-foreground sm:table-cell"
 										>
 											{ev.location ?? "—"}
 										</Table.Cell>

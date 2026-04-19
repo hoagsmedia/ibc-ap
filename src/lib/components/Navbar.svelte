@@ -131,7 +131,10 @@
 										<a href="/admin/events" class="w-full">Manage Events</a>
 									</DropdownMenu.Item>
 									<DropdownMenu.Item>
-										<a href="/admin/stats" class="w-full">Club stats data</a>
+										<a href="/admin/stats/beer-consumed" class="w-full">Manage Beer Consumed</a>
+									</DropdownMenu.Item>
+									<DropdownMenu.Item>
+										<a href="/admin/stats/keg-credits" class="w-full">Manage Keg Credits</a>
 									</DropdownMenu.Item>
 									<DropdownMenu.Item>
 										<a href="/members" class="w-full">Manage Members</a>

@@ -104,7 +104,7 @@
 				<!-- Left: Let's connect -->
 				<div class="relative flex flex-col">
 					<div
-						class="absolute inset-0 bg-[url('/images/welcome-island-sunset-bg.png')] bg-cover bg-bottom opacity-[0.2] dark:opacity-[0.28]"
+						class="absolute inset-0 bg-[url('/images/welcome-island-sunset-bg.jpg')] bg-cover bg-bottom opacity-[0.2] dark:opacity-[0.28]"
 						aria-hidden="true"
 					></div>
 					<div
@@ -112,7 +112,7 @@
 						aria-hidden="true"
 					></div>
 					<div class="relative flex flex-1 flex-col p-8 md:p-10">
-						<h2 class="text-foam text-2xl font-semibold tracking-tight md:text-[1.35rem]">
+						<h2 class="text-foreground text-2xl font-semibold tracking-tight md:text-[1.35rem]">
 							Let's connect
 						</h2>
 						<Sparkles class="text-primary mt-2 size-5 opacity-80" strokeWidth={1.5} aria-hidden="true" />
@@ -150,7 +150,7 @@
 
 				<!-- Right: Form -->
 				<div class="bg-card/80 p-8 backdrop-blur-[2px] md:p-10 dark:bg-card/60">
-					<h2 class="text-foam text-2xl font-semibold tracking-tight md:text-[1.35rem]">
+					<h2 class="text-foreground text-2xl font-semibold tracking-tight md:text-[1.35rem]">
 						Send us a message
 					</h2>
 					<form method="POST" use:enhance class="mt-8 space-y-6">
@@ -250,7 +250,7 @@
 				<span class={cn(iconBox, "size-12 rounded-xl")}>
 					<Beer class="size-6" strokeWidth={1.5} />
 				</span>
-				<h3 class="text-foam text-lg font-semibold tracking-tight">Great beer</h3>
+				<h3 class="text-foreground text-lg font-semibold tracking-tight">Great beer</h3>
 				<p class="text-muted-foreground max-w-xs text-sm leading-relaxed">
 					Craft brews, good pours, and room to explore what’s in your glass.
 				</p>
@@ -259,7 +259,7 @@
 				<span class={cn(iconBox, "size-12 rounded-xl")}>
 					<Users class="size-6" strokeWidth={1.5} />
 				</span>
-				<h3 class="text-foam text-lg font-semibold tracking-tight">Great people</h3>
+				<h3 class="text-foreground text-lg font-semibold tracking-tight">Great people</h3>
 				<p class="text-muted-foreground max-w-xs text-sm leading-relaxed">
 					Friends who showed up as kids and kept showing up as members.
 				</p>
@@ -268,7 +268,7 @@
 				<span class={cn(iconBox, "size-12 rounded-xl")}>
 					<TreePalm class="size-6" strokeWidth={1.5} />
 				</span>
-				<h3 class="text-foam text-lg font-semibold tracking-tight">Stronger island</h3>
+				<h3 class="text-foreground text-lg font-semibold tracking-tight">Stronger island</h3>
 				<p class="text-muted-foreground max-w-xs text-sm leading-relaxed">
 					Rooted in Coronado — open to members wherever they roam.
 				</p>

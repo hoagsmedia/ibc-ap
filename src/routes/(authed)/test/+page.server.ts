@@ -3,6 +3,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { testQuestions } from '$lib/test-questions';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
+import { requiresIbcTest } from '$lib/ibc-test';
 import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -10,9 +11,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		return fail(401);
 	}
 
-	// If user has already passed, redirect to dashboard (unless they just passed)
+	// If user does not need the test (passed, or full member), redirect unless showing post-pass UI
 	const justPassed = url.searchParams.get('passed') === 'true';
-	if (locals.user.test_passed && !justPassed) {
+	if (!requiresIbcTest(locals.user) && !justPassed) {
 		throw redirect(302, '/dashboard');
 	}
 
@@ -28,8 +29,13 @@ export const actions: Actions = {
 			return fail(401, { message: 'Must be logged in to take the test' });
 		}
 
-		if (locals.user.test_passed) {
-			return fail(400, { message: 'You have already passed the test' });
+		if (!requiresIbcTest(locals.user)) {
+			return fail(400, {
+				message:
+					locals.user.role === 'member'
+						? 'Members do not need to take this test'
+						: 'You have already passed the test'
+			});
 		}
 
 		const formData = await request.formData();
