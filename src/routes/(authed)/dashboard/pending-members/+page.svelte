@@ -3,6 +3,7 @@
 	import { enhance } from "$app/forms";
 	import { invalidateAll } from "$app/navigation";
 	import * as Card from "$lib/components/ui/card";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button";
 	import { Input } from "$lib/components/ui/input";
 	import { UserPlusIcon, ArrowLeftIcon, UserCogIcon, CheckIcon } from "@lucide/svelte/icons";
@@ -19,10 +20,10 @@
 
 <div class="px-4 py-6 sm:px-0">
 	<div class="mb-6 flex items-center justify-between gap-4">
-		<Button href="/dashboard" variant="ghost" size="sm" class="ibc-hub-back-link gap-2">
+		<HubBackLink href="/dashboard" size="sm" class="gap-2">
 			<ArrowLeftIcon class="size-4" />
 			Back to dashboard
-		</Button>
+		</HubBackLink>
 	</div>
 
 	<Card.Root class="ibc-hub-surface bg-card/50 dark:bg-card/35">

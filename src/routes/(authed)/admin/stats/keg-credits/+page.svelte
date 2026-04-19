@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import * as Table from "$lib/components/ui/table/index.js";
@@ -22,10 +23,10 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-5xl py-8">
-	<Button href="/admin/stats" variant="ghost" class="ibc-hub-back-link mb-4 gap-2">
+	<HubBackLink href="/admin/stats" class="mb-4 gap-2">
 		<ArrowLeft class="h-4 w-4" />
 		Club stats
-	</Button>
+	</HubBackLink>
 	<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
 		<div>
 			<h1 class="text-3xl font-bold">Keg credits</h1>

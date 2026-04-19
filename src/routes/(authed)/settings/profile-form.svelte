@@ -1,7 +1,7 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form';
 	import * as Card from '$lib/components/ui/card';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import HubBackLink from '$lib/components/HubBackLink.svelte';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { profileSchema, type ProfileSchema } from './settings-schema';
@@ -163,9 +163,7 @@
 					{$submitting ? 'Updating...' : 'Update Profile'}
 				</Form.Button>
 
-				<Button href="/dashboard" variant="ghost" class="ibc-hub-back-link">
-					← Back to Dashboard
-				</Button>
+				<HubBackLink href="/dashboard">← Back to Dashboard</HubBackLink>
 			</div>
 		</form>
 	</Card.Content>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import {
 		Card,
@@ -17,10 +18,10 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-3xl py-8">
-	<Button href="/dashboard" variant="ghost" class="ibc-hub-back-link mb-6 gap-2">
+	<HubBackLink href="/dashboard" class="mb-6 gap-2">
 		<ArrowLeft class="h-4 w-4" />
 		Back to dashboard
-	</Button>
+	</HubBackLink>
 	<h1 class="mb-2 text-3xl font-bold">Club statistics data</h1>
 	<p class="text-muted-foreground mb-8">
 		Edit the two legacy tables shown on the public <a class="text-primary underline" href="/stats">/stats</a> page.

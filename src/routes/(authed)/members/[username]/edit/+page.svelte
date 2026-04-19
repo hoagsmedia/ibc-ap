@@ -4,6 +4,7 @@
 	import * as Card from "$lib/components/ui/card/index.js";
 	import * as Select from "$lib/components/ui/select/index.js";
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Checkbox } from "$lib/components/ui/checkbox/index.js";
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
@@ -179,10 +180,10 @@
 
 <!-- Header with back button -->
 <div class="mb-6 flex flex-col items-center gap-4 md:flex-row">
-	<Button variant="outline" size="sm" class="ibc-hub-back-link" onclick={() => history.back()}>
+	<HubBackLink size="sm" onclick={() => history.back()}>
 		<ArrowLeft class="size-4" />
 		Back to Members
-	</Button>
+	</HubBackLink>
 	<h1 class="text-3xl font-bold">Edit Member</h1>
 </div>
 

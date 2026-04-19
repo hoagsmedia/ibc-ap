@@ -2,6 +2,7 @@
 	import { superForm } from "sveltekit-superforms";
 	import { zodClient } from "sveltekit-superforms/adapters";
 	import { kegCreditsFormSchema } from "$lib/keg-credits-form-schema.js";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import {
 		Card,
@@ -30,10 +31,10 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-lg py-8">
-	<Button href="/admin/stats/keg-credits" variant="ghost" class="ibc-hub-back-link mb-4 gap-2">
+	<HubBackLink href="/admin/stats/keg-credits" class="mb-4 gap-2">
 		<ArrowLeft class="h-4 w-4" />
 		Keg credits
-	</Button>
+	</HubBackLink>
 	<Card>
 		<CardHeader>
 			<CardTitle>Add credit row</CardTitle>

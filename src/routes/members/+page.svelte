@@ -5,6 +5,7 @@
 	import * as Card from "$lib/components/ui/card/index.js";
 	import Avatar from "$lib/components/Avatar.svelte";
 	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon } from "@lucide/svelte";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Search } from "@lucide/svelte";
@@ -274,10 +275,10 @@
 	{:else}
 		<!-- Header with back button -->
 		<div class="mb-6 flex flex-col items-center gap-4 md:flex-row">
-			<Button variant="outline" size="sm" href="/dashboard" class="ibc-hub-back-link gap-2">
+			<HubBackLink href="/dashboard" size="sm" class="gap-2">
 				<ArrowLeft class="size-4" />
 				Back to Dashboard
-			</Button>
+			</HubBackLink>
 			<h1 class="text-3xl font-bold">Members</h1>
 		</div>
 

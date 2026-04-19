@@ -2,6 +2,7 @@
 	import * as Card from "$lib/components/ui/card/index.js";
 	import Avatar from "$lib/components/Avatar.svelte";
 	import { Badge } from "$lib/components/ui/badge/index.js";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { ArrowLeft, Mail, Calendar, Hash, Heart } from "@lucide/svelte";
 	import type { PageData } from "./$types";
@@ -45,10 +46,10 @@
 <div class="container py-8 md:w-full">
 	<!-- Header with back button -->
 	<div class="mb-6 flex flex-col items-center gap-4 md:flex-row">
-		<Button variant="outline" size="sm" class="ibc-hub-back-link" onclick={() => history.back()}>
+		<HubBackLink size="sm" onclick={() => history.back()}>
 			<ArrowLeft class="size-4" />
 			Back to Members
-		</Button>
+		</HubBackLink>
 		<h1 class="text-3xl font-bold">Member Details</h1>
 	</div>
 

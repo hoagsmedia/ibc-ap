@@ -2,6 +2,7 @@
 	import { superForm } from "sveltekit-superforms";
 	import { zodClient } from "sveltekit-superforms/adapters";
 	import { z } from "zod";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import {
 		Card,
@@ -36,10 +37,10 @@
 </svelte:head>
 
 <div class="container mx-auto max-w-lg py-8">
-	<Button href="/admin/stats/beer-consumed" variant="ghost" class="ibc-hub-back-link mb-4 gap-2">
+	<HubBackLink href="/admin/stats/beer-consumed" class="mb-4 gap-2">
 		<ArrowLeft class="h-4 w-4" />
 		Beer consumed
-	</Button>
+	</HubBackLink>
 	<Card>
 		<CardHeader>
 			<CardTitle>Edit keg row</CardTitle>
