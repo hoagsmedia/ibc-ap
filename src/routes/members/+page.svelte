@@ -8,8 +8,8 @@
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Search } from "@lucide/svelte";
-	import { dev } from "$app/environment";
 	import { goto } from "$app/navigation";
+	import { untrack } from "svelte";
 	import type { PageProps } from "./$types";
 	import { LocalStorage } from "$lib/utils/local-storage.svelte";
 
@@ -45,12 +45,23 @@
 	const isAdmin = $derived(page.data.user?.role === "admin");
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
+	/** Avoids redundant cacheResults when the same server payload is applied more than once. */
+	let lastServerFingerprint = "";
+
+	function paginationEqual(a: PaginationData, b: PaginationData): boolean {
+		return (
+			a.page === b.page &&
+			a.perPage === b.perPage &&
+			a.totalCount === b.totalCount &&
+			a.totalPages === b.totalPages
+		);
+	}
+
 	function isCacheValid(timestamp: number): boolean {
 		return Date.now() - timestamp < CACHE_EXPIRY;
 	}
 
 	function getCachedResults(searchKey: string): CachedMemberData | null {
-		if (dev) console.log("Checking cache for:", searchKey);
 		const cache = memberCache.value || {};
 		const cached = cache[searchKey];
 		if (cached && isCacheValid(cached.timestamp)) {
@@ -92,7 +103,6 @@
 
 		const cached = getCachedResults(searchKey);
 		if (cached && cached.members.length > 0) {
-			if (dev) console.log("Using cached results for:", searchKey);
 			members = cached.members;
 			pagination = {
 				...pagination,
@@ -103,7 +113,6 @@
 			return;
 		}
 
-		if (dev) console.log("Fetching from server for:", searchKey);
 		navigateToServer(pageNum);
 	}
 
@@ -134,23 +143,47 @@
 
 		searchTimeout = setTimeout(() => {
 			performSearch(searchTerm, 1);
-		}, 1000);
+		}, 300);
 	}
 
 	$effect(() => {
-		if (!data.isAuthenticated) return;
-
-		if (!("cached" in data) || (!data.cached && data.members.length > 0)) {
-			if (dev) console.log("[Effect]:Processing server data:", data);
-			const searchKey = `${data.searchTerm}-${data.pagination.page}-${data.pagination.perPage}`;
-			cacheResults(searchKey, data.members, data.searchTerm, data.pagination.totalCount);
+		if (!data.isAuthenticated) {
+			lastServerFingerprint = "";
+			return;
 		}
 
-		if (!("cached" in data) || !data.cached) {
-			if (dev) console.log("[Effect]:Updating members and pagination");
-			members = data.members;
-			pagination = data.pagination;
-		}
+		const serverCached = "cached" in data && data.cached === true;
+		const serverMembers = data.members;
+		const serverPagination = data.pagination;
+		const serverSearchTerm = data.searchTerm ?? "";
+
+		untrack(() => {
+			if (!serverCached) {
+				const nextSearchKey = `${serverSearchTerm}-${serverPagination.page}-${serverPagination.perPage}`;
+				const fingerprint = `${nextSearchKey}|${serverPagination.totalCount}|${serverMembers.map((m) => m.id).join(",")}`;
+
+				if (fingerprint !== lastServerFingerprint) {
+					lastServerFingerprint = fingerprint;
+					cacheResults(
+						nextSearchKey,
+						serverMembers,
+						serverSearchTerm,
+						serverPagination.totalCount
+					);
+				}
+
+				if (searchTerm !== serverSearchTerm) {
+					searchTerm = serverSearchTerm;
+				}
+
+				if (members !== serverMembers) {
+					members = serverMembers;
+				}
+				if (!paginationEqual(pagination, serverPagination)) {
+					pagination = serverPagination;
+				}
+			}
+		});
 	});
 </script>
 
@@ -332,19 +365,19 @@
 								<span class="hidden sm:block">Previous</span>
 							</Pagination.PrevButton>
 						</Pagination.Item>
-						{#each pages as page (page.key)}
-							{#if page.type === "ellipsis"}
+						{#each pages as pageItem (pageItem.key)}
+							{#if pageItem.type === "ellipsis"}
 								<Pagination.Item>
 									<Pagination.Ellipsis />
 								</Pagination.Item>
 							{:else}
 								<Pagination.Item>
 									<Pagination.Link
-										{page}
-										isActive={currentPage === page.value}
-										onclick={() => handlePageChange(page.value)}
+										page={pageItem}
+										isActive={currentPage === pageItem.value}
+										onclick={() => handlePageChange(pageItem.value)}
 									>
-										{page.value}
+										{pageItem.value}
 									</Pagination.Link>
 								</Pagination.Item>
 							{/if}
