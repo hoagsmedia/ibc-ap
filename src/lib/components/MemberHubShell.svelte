@@ -10,7 +10,7 @@
 	import Avatar from "$lib/components/Avatar.svelte";
 	import { toggleMode } from "mode-watcher";
 	import { enhance } from "$app/forms";
-	import logo from "$lib/assets/ibc-logo.svg";
+	import IbcLogo from "$lib/components/IbcLogo.svelte";
 	import Search from "@lucide/svelte/icons/search";
 	import Sun from "@lucide/svelte/icons/sun";
 	import Moon from "@lucide/svelte/icons/moon";
@@ -81,10 +81,9 @@
 				)}
 			>
 				<a href="/" class="flex w-full flex-col items-center gap-2 overflow-hidden py-1 text-center">
-					<img
-						src={logo}
-						alt="Island Beer Club"
-						class="h-auto w-[min(90%,15rem)] max-w-full shrink-0 object-contain"
+					<IbcLogo
+						class="h-auto w-[min(90%,15rem)] max-w-full shrink-0 [&>svg]:h-auto [&>svg]:w-full"
+						decorative
 					/>
 					<div class="flex w-full min-w-0 flex-col leading-tight">
 						<span class="w-full truncate text-sm font-semibold tracking-tight text-foreground"

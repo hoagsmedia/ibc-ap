@@ -8,7 +8,7 @@
 	import { zodClient } from "sveltekit-superforms/adapters";
 	import { superForm } from "sveltekit-superforms";
 	import { contactSchema } from "./contact-schema";
-	import logo from "$lib/assets/ibc-logo.svg";
+	import IbcLogo from "$lib/components/IbcLogo.svelte";
 	import { cn } from "$lib/utils.js";
 	import MapPin from "@lucide/svelte/icons/map-pin";
 	import Mail from "@lucide/svelte/icons/mail";
@@ -76,9 +76,13 @@
 		<header class="text-center">
 			<a
 				href="/"
+				aria-label="Island Beer Club home"
 				class="inline-flex flex-col items-center gap-3 outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring/50"
 			>
-				<img src={logo} alt="Island Beer Club" class="h-[4.5rem] w-auto object-contain md:h-[5.25rem]" />
+				<IbcLogo
+					class="h-[4.5rem] w-auto md:h-[5.25rem] [&>svg]:h-full [&>svg]:w-auto"
+					decorative
+				/>
 			</a>
 			<p
 				class="text-muted-foreground mt-6 text-[0.7rem] font-semibold tracking-[0.22em] uppercase sm:text-xs sm:tracking-[0.18em]"
