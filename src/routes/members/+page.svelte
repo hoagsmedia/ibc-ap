@@ -15,9 +15,12 @@
 
 	let { data }: PageProps = $props();
 
+	type AuthData = Extract<PageProps["data"], { isAuthenticated: true }>;
+	type MemberRow = AuthData["members"][number];
+
 	// --- LocalStorage for caching search results ---
 	interface CachedMemberData {
-		members: (typeof data & { isAuthenticated: true })["members"];
+		members: AuthData["members"];
 		searchTerm: string;
 		timestamp: number;
 		totalCount: number;
@@ -34,14 +37,48 @@
 	const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 	const MAX_CACHE_KEYS = 24;
 
-	// --- Reactive State ---
-	let searchTerm = $state(data.isAuthenticated ? data.searchTerm || "" : "");
-	let members = $state(data.isAuthenticated ? data.members : []);
-	let pagination = $state<PaginationData>(
-		data.isAuthenticated
-			? data.pagination
-			: { page: 1, perPage: 10, totalCount: 0, totalPages: 0 }
+	const emptyPagination = (): PaginationData => ({
+		page: 1,
+		perPage: 10,
+		totalCount: 0,
+		totalPages: 0
+	});
+
+	/** Client-only hit from localStorage (no navigation). */
+	let cacheHit = $state<{ members: AuthData["members"]; pagination: PaginationData } | null>(null);
+	/**
+	 * Last full server payload; when the server returns the `cached` stub (empty body), keep showing this
+	 * so the sheet matches pre-navigation behavior.
+	 */
+	let rosterFallback = $state<{ members: AuthData["members"]; pagination: PaginationData } | null>(null);
+
+	const isStubLoad = $derived(
+		Boolean(data.isAuthenticated && "cached" in data && data.cached === true)
 	);
+
+	const members = $derived.by((): MemberRow[] => {
+		if (!data.isAuthenticated) return [];
+		if (cacheHit) return cacheHit.members;
+		if (isStubLoad && rosterFallback) return rosterFallback.members;
+		return data.members;
+	});
+
+	const pagination = $derived.by((): PaginationData => {
+		if (!data.isAuthenticated) return emptyPagination();
+		if (cacheHit) return cacheHit.pagination;
+		if (isStubLoad && rosterFallback) return rosterFallback.pagination;
+		return data.pagination;
+	});
+
+	const urlSearchTerm = $derived(data.isAuthenticated ? (data.searchTerm ?? "") : "");
+
+	/** Draft search box; kept in sync with the URL when `data.searchTerm` changes (navigation), not while typing. */
+	let searchTerm = $state("");
+
+	$effect.pre(() => {
+		searchTerm = urlSearchTerm;
+	});
+
 	const isAdmin = $derived(page.data.user?.role === "admin");
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
@@ -90,16 +127,19 @@
 
 	async function performSearch(term: string, pageNum: number = 1): Promise<void> {
 		if (!data.isAuthenticated) return;
-		const searchKey = `${term}-${pageNum}-${pagination.perPage}`;
+		const perPage = pagination.perPage;
+		const searchKey = `${term}-${pageNum}-${perPage}`;
 
 		const cached = getCachedResults(searchKey);
 		if (cached && cached.members.length > 0) {
-			members = cached.members;
-			pagination = {
-				...pagination,
-				page: pageNum,
-				totalCount: cached.totalCount,
-				totalPages: Math.ceil(cached.totalCount / pagination.perPage)
+			cacheHit = {
+				members: cached.members,
+				pagination: {
+					page: pageNum,
+					perPage,
+					totalCount: cached.totalCount,
+					totalPages: Math.ceil(cached.totalCount / perPage)
+				}
 			};
 			return;
 		}
@@ -107,9 +147,9 @@
 		navigateToServer(pageNum);
 	}
 
-	function navigateToServer(page: number): void {
+	function navigateToServer(pageNum: number): void {
 		const params = new URLSearchParams();
-		params.set("page", page.toString());
+		params.set("page", pageNum.toString());
 		params.set("perPage", pagination.perPage.toString());
 		if (searchTerm) {
 			params.set("search", searchTerm);
@@ -140,31 +180,31 @@
 	$effect(() => {
 		if (!data.isAuthenticated) {
 			lastServerFingerprint = "";
+			cacheHit = null;
+			rosterFallback = null;
 			return;
 		}
 
-		const serverCached = "cached" in data && data.cached === true;
+		if (isStubLoad) return;
+
 		const serverMembers = data.members;
 		const serverPagination = data.pagination;
 		const serverSearchTerm = data.searchTerm ?? "";
+		const nextSearchKey = `${serverSearchTerm}-${serverPagination.page}-${serverPagination.perPage}`;
+		const fingerprint = `${nextSearchKey}|${serverPagination.totalCount}|${serverMembers.map((m) => m.id).join(",")}`;
 
 		untrack(() => {
-			if (!serverCached) {
-				const nextSearchKey = `${serverSearchTerm}-${serverPagination.page}-${serverPagination.perPage}`;
-				const fingerprint = `${nextSearchKey}|${serverPagination.totalCount}|${serverMembers.map((m) => m.id).join(",")}`;
+			rosterFallback = { members: serverMembers, pagination: serverPagination };
+			cacheHit = null;
 
-				if (fingerprint !== lastServerFingerprint) {
-					lastServerFingerprint = fingerprint;
-					cacheResults(
-						nextSearchKey,
-						serverMembers,
-						serverSearchTerm,
-						serverPagination.totalCount
-					);
-					searchTerm = serverSearchTerm;
-					members = serverMembers;
-					pagination = serverPagination;
-				}
+			if (fingerprint !== lastServerFingerprint) {
+				lastServerFingerprint = fingerprint;
+				cacheResults(
+					nextSearchKey,
+					serverMembers,
+					serverSearchTerm,
+					serverPagination.totalCount
+				);
 			}
 		});
 	});
