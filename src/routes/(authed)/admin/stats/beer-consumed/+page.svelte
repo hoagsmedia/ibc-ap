@@ -1,11 +1,15 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
+	import * as Dialog from "$lib/components/ui/dialog/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import * as Table from "$lib/components/ui/table/index.js";
-	import { ArrowLeft, Plus, Trash2, Pencil } from "@lucide/svelte";
+	import { ArrowLeft, Plus, Trash2, Pencil, Loader2 } from "@lucide/svelte";
 	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
+
+	let rowToDelete = $state<string | null>(null);
+	let deleteLoading = $state(false);
 
 	function pageHref(p: number) {
 		return p <= 1 ? "/admin/stats/beer-consumed" : `/admin/stats/beer-consumed?page=${p}`;
@@ -82,31 +86,16 @@
 								<Button variant="outline" size="icon" href="/admin/stats/beer-consumed/{row.id}/edit" title="Edit">
 									<Pencil class="h-4 w-4" />
 								</Button>
-								<form
-									method="POST"
-									action="?/delete"
-									use:enhance={({ cancel }) => {
-										const label = row.beer_name?.trim() || `keg ${row.keg_number}`;
-										if (
-											!confirm(
-												`Delete this row (${label})? This cannot be undone.`
-											)
-										) {
-											cancel();
-										}
-									}}
+								<Button
+									variant="outline"
+									size="icon"
+									type="button"
+									title="Delete"
+									aria-label="Delete row"
+									onclick={() => (rowToDelete = row.id)}
 								>
-									<input type="hidden" name="id" value={row.id} />
-									<Button
-										variant="outline"
-										size="icon"
-										type="submit"
-										title="Delete"
-										aria-label="Delete row"
-									>
-										<Trash2 class="text-destructive h-4 w-4" />
-									</Button>
-								</form>
+									<Trash2 class="text-destructive h-4 w-4" />
+								</Button>
 							</div>
 						</Table.Cell>
 					</Table.Row>
@@ -127,3 +116,59 @@
 		</nav>
 	{/if}
 </div>
+
+{#if rowToDelete}
+	{@const deleteRow = data.rows.find((r) => r.id === rowToDelete)}
+	<Dialog.Root open={true} onOpenChange={() => (rowToDelete = null)}>
+		<Dialog.Content>
+			<Dialog.Header>
+				<Dialog.Title>Delete keg row</Dialog.Title>
+				<Dialog.Description>
+					{#if deleteRow}
+						Are you sure you want to delete
+						{#if deleteRow.beer_name?.trim()}
+							<span class="font-medium text-foreground">“{deleteRow.beer_name.trim()}”</span>
+							(keg {deleteRow.keg_number})
+						{:else}
+							keg row <span class="font-medium text-foreground">#{deleteRow.keg_number}</span>
+						{/if}
+						? This cannot be undone.
+					{:else}
+						Are you sure you want to delete this row? This cannot be undone.
+					{/if}
+				</Dialog.Description>
+			</Dialog.Header>
+			<div class="flex justify-end gap-3 pt-6">
+				<Button variant="outline" onclick={() => (rowToDelete = null)} disabled={deleteLoading}>
+					Cancel
+				</Button>
+				<form
+					method="POST"
+					action="?/delete"
+					class="inline"
+					use:enhance={() => {
+						deleteLoading = true;
+						return async ({ update }) => {
+							try {
+								await update();
+							} finally {
+								deleteLoading = false;
+							}
+							rowToDelete = null;
+						};
+					}}
+				>
+					<input type="hidden" name="id" value={rowToDelete} />
+					<Button type="submit" variant="destructive" class="gap-1" disabled={deleteLoading}>
+						{#if deleteLoading}
+							<Loader2 class="h-3 w-3 animate-spin" />
+							Deleting…
+						{:else}
+							Delete row
+						{/if}
+					</Button>
+				</form>
+			</div>
+		</Dialog.Content>
+	</Dialog.Root>
+{/if}
