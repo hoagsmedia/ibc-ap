@@ -393,6 +393,7 @@
 
 	/*
 		Member hub back / “up” links — frosted pane (overrides outline/ghost utilities via layer + specificity).
+		Typically placed in page content next to the primary heading.
 	*/
 	.hub-back-chip {
 		@apply text-foreground shadow-sm;

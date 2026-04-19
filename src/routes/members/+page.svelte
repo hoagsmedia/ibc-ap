@@ -4,7 +4,7 @@
 	import * as Pagination from "$lib/components/ui/pagination/index.js";
 	import * as Card from "$lib/components/ui/card/index.js";
 	import Avatar from "$lib/components/Avatar.svelte";
-	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon } from "@lucide/svelte";
+	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon, Eye, Pencil } from "@lucide/svelte";
 	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
@@ -221,8 +221,8 @@
 	/>
 </svelte:head>
 
-<div class="container py-8 md:w-full">
-	{#if !data.isAuthenticated}
+{#if !data.isAuthenticated}
+	<div class="container py-8 md:w-full">
 		<div class="mb-8 flex flex-col gap-2">
 			<h1 class="text-3xl font-bold">Members</h1>
 			<p class="text-muted-foreground max-w-2xl text-pretty">
@@ -272,52 +272,62 @@
 				<Button variant="outline" href="/">Back to home</Button>
 			</Card.Footer>
 		</Card.Root>
-	{:else}
-		<!-- Header with back button -->
-		<div class="mb-6 flex flex-col items-center gap-4 md:flex-row">
-			<HubBackLink href="/dashboard" size="sm" class="gap-2">
+	</div>
+{:else}
+	<div class="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-6 md:w-full">
+		<div class="flex flex-wrap items-center justify-between gap-4">
+			<div class="min-w-0">
+				<h1 class="text-3xl font-bold">Members</h1>
+				<p class="text-muted-foreground text-sm">
+					{pagination.totalCount} member{pagination.totalCount === 1 ? "" : "s"}{#if pagination.totalPages > 1}
+						· page {pagination.page} of {pagination.totalPages}{/if}
+				</p>
+			</div>
+			<HubBackLink href="/dashboard" size="sm" class="shrink-0 gap-2 self-start sm:self-center">
 				<ArrowLeft class="size-4" />
 				Back to Dashboard
 			</HubBackLink>
-			<h1 class="text-3xl font-bold">Members</h1>
 		</div>
 
-		<!-- Search Bar -->
-		<div class="mb-4 flex items-center gap-2">
+		<div class="flex items-center gap-2">
 			<div class="relative flex-1">
-				<Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+				<Search class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
 				<Input
 					bind:value={searchTerm}
 					oninput={handleSearch}
 					type="search"
 					placeholder="Search members by name, email, or member #..."
-					class="pl-9"
+					class="border-border/60 bg-muted/30 focus-visible:ring-primary/40 h-9 pl-9 text-sm shadow-none"
 					aria-label="Search members"
 				/>
 			</div>
 		</div>
 
 		<div class="ibc-hub-surface overflow-hidden">
-			<Table.Root>
-				<Table.Header class="bg-muted/80">
+			<Table.Root class="border-separate border-spacing-0">
+				<Table.Header>
 					<Table.Row>
-						<Table.Head>Profile</Table.Head>
-						<Table.Head>Name</Table.Head>
-						<Table.Head class="p-5 text-center md:text-left">Member #</Table.Head>
-						<Table.Head class="hidden md:table-cell">Email</Table.Head>
-						<Table.Head class="text-end">Actions</Table.Head>
+						<Table.Head class="w-14">Profile</Table.Head>
+						<Table.Head class="min-w-[10rem]">Name</Table.Head>
+						<Table.Head class="w-24 text-center md:text-left">Member #</Table.Head>
+						<Table.Head class="hidden min-w-[12rem] md:table-cell">Email</Table.Head>
+						<Table.Head
+							class="sticky right-0 z-30 w-28 border-l border-border/60 bg-card/90 text-center shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.12)] backdrop-blur-sm dark:bg-card/80 dark:shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.35)]"
+						>
+							Actions
+						</Table.Head>
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
 					{#if members.length === 0}
 						<Table.Row>
-							<Table.Cell class="py-6 text-center">
+							<Table.Cell class="py-6 text-center text-sm" colspan={5}>
 								{searchTerm ? "No members found for your search" : "No members found"}
 							</Table.Cell>
 						</Table.Row>
 					{:else}
 						{#each members as member (member.id)}
-							<Table.Row>
+							<Table.Row class="group">
 								<Table.Cell>
 									<Avatar
 										class="size-8"
@@ -326,7 +336,7 @@
 										dops={member.dops ?? undefined}
 									/>
 								</Table.Cell>
-								<Table.Cell>
+								<Table.Cell class="text-sm">
 									<a
 										href={`/members/${member.username ?? member.id}`}
 										class="text-foreground font-medium underline-offset-4 hover:text-primary hover:underline"
@@ -334,35 +344,36 @@
 										{member.name || "N/A"}
 									</a>
 								</Table.Cell>
-								<Table.Cell class="text-center md:text-left">{member.mbr || "N/A"}</Table.Cell>
-								<Table.Cell class="hidden md:table-cell"
+								<Table.Cell class="text-center text-sm tabular-nums md:text-left">{member.mbr || "N/A"}</Table.Cell>
+								<Table.Cell class="hidden text-sm md:table-cell"
 									>{member.email ?? member.username ?? "N/A"}</Table.Cell
 								>
-								<Table.Cell class="text-end">
-									{#if isAdmin}
-										<div class="flex flex-wrap items-center justify-end gap-1">
+								<Table.Cell
+									class="group-hover:bg-muted/50 sticky right-0 z-20 w-28 border-l border-border/60 bg-card/90 text-center shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.12)] backdrop-blur-sm transition-colors dark:bg-card/80 dark:shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.35)]"
+								>
+									<div class="flex justify-center gap-1">
+										{#if isAdmin}
 											<Button
-												variant="ghost"
-												size="sm"
-												href={`/members/${member.username ?? member.id}`}
-											>
-												View
-											</Button>
-											<Button
-												variant="ghost"
-												size="sm"
+												variant="outline"
+												size="icon"
 												href={`/members/${member.username ?? member.id}/edit`}
+												title="Edit"
+												aria-label="Edit member"
 											>
-												Edit
+												<Pencil class="h-4 w-4" />
 											</Button>
-										</div>
-									{:else}
-										<Button
-											variant="ghost"
-											href={`/members/${member.username ?? member.id}`}
-											size="sm">View</Button
-										>
-									{/if}
+										{:else}
+											<Button
+												variant="outline"
+												size="icon"
+												href={`/members/${member.username ?? member.id}`}
+												title="View"
+												aria-label="View member"
+											>
+												<Eye class="h-4 w-4" />
+											</Button>
+										{/if}
+									</div>
 								</Table.Cell>
 							</Table.Row>
 						{/each}
@@ -372,7 +383,7 @@
 		</div>
 
 		<!-- Pagination -->
-		<div class="mt-8 flex items-center justify-center">
+		<div class="mt-6 flex items-center justify-center">
 			<Pagination.Root
 				count={pagination.totalCount}
 				perPage={pagination.perPage}
@@ -419,5 +430,5 @@
 				{/snippet}
 			</Pagination.Root>
 		</div>
-	{/if}
-</div>
+	</div>
+{/if}

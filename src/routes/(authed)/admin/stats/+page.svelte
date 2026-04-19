@@ -17,16 +17,18 @@
 	<title>Club stats (admin) | Island Beer Club</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-3xl py-8">
-	<HubBackLink href="/dashboard" class="mb-6 gap-2">
-		<ArrowLeft class="h-4 w-4" />
-		Back to dashboard
-	</HubBackLink>
-	<h1 class="mb-2 text-3xl font-bold">Club statistics data</h1>
-	<p class="text-muted-foreground mb-8">
-		Edit the two legacy tables shown on the public <a class="text-primary underline" href="/stats">/stats</a> page.
-	</p>
-	<div class="grid gap-6 md:grid-cols-2">
+<div class="mx-auto w-full min-w-0 max-w-3xl">
+		<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+			<h1 class="min-w-0 text-3xl font-bold">Club statistics data</h1>
+			<HubBackLink href="/dashboard" size="sm" class="shrink-0 gap-2">
+				<ArrowLeft class="h-4 w-4" />
+				Back to dashboard
+			</HubBackLink>
+		</div>
+		<p class="text-muted-foreground mb-8">
+			Edit the two legacy tables shown on the public <a class="text-primary underline" href="/stats">/stats</a> page.
+		</p>
+		<div class="grid gap-6 md:grid-cols-2">
 		<Card class="ibc-hub-surface bg-card/50 dark:bg-card/35">
 			<CardHeader>
 				<CardTitle class="flex items-center gap-2">
@@ -51,5 +53,5 @@
 				<Button href="/admin/stats/beer-consumed" class="w-full">Manage beer consumed</Button>
 			</CardContent>
 		</Card>
-	</div>
+		</div>
 </div>

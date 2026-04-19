@@ -37,20 +37,22 @@
 	<title>Beer consumed (admin) | IBC</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-6xl py-8">
-	<HubBackLink href="/admin/stats" class="mb-4 gap-2">
-		<ArrowLeft class="h-4 w-4" />
-		Club stats
-	</HubBackLink>
-	<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-		<div>
+<div class="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-6">
+	<div class="flex flex-wrap items-center justify-between gap-4">
+		<div class="min-w-0">
 			<h1 class="text-3xl font-bold">Beer consumed</h1>
 			<p class="text-muted-foreground text-sm">{data.total} rows · page {data.page} of {data.totalPages}</p>
 		</div>
-		<Button href="/admin/stats/beer-consumed/create" class="gap-2">
-			<Plus class="h-4 w-4" />
-			Add keg row
-		</Button>
+		<div class="flex flex-wrap items-center justify-end gap-2">
+			<HubBackLink href="/admin/stats" size="sm" class="gap-2 shrink-0">
+				<ArrowLeft class="h-4 w-4" />
+				Club stats
+			</HubBackLink>
+			<Button href="/admin/stats/beer-consumed/create" class="gap-2">
+				<Plus class="h-4 w-4" />
+				Add keg row
+			</Button>
+		</div>
 	</div>
 
 	<div class="ibc-hub-surface overflow-hidden">

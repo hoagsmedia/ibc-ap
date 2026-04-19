@@ -178,14 +178,14 @@
 	}
 </script>
 
-<!-- Header with back button -->
-<div class="mb-6 flex flex-col items-center gap-4 md:flex-row">
-	<HubBackLink size="sm" onclick={() => history.back()}>
-		<ArrowLeft class="size-4" />
-		Back to Members
-	</HubBackLink>
-	<h1 class="text-3xl font-bold">Edit Member</h1>
-</div>
+<div class="flex w-full min-w-0 flex-col gap-6">
+	<div class="flex flex-wrap items-center justify-between gap-4">
+		<h1 class="min-w-0 text-3xl font-bold">Edit Member</h1>
+		<HubBackLink size="sm" onclick={() => history.back()} class="shrink-0 gap-2">
+			<ArrowLeft class="size-4" />
+			Back to Members
+		</HubBackLink>
+	</div>
 
 <!-- Profile Image Section -->
 <Card.Root class="mb-6">
@@ -444,6 +444,7 @@
 		</form>
 	</Card.Content>
 </Card.Root>
+</div>
 
 <!-- Delete Confirmation Dialog -->
 <Dialog.Root bind:open={deleteDialogOpen}>

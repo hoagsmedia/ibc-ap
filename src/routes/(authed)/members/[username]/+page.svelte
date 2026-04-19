@@ -43,17 +43,16 @@
 	<meta name="description" content="Member details for {data.member.name}" />
 </svelte:head>
 
-<div class="container py-8 md:w-full">
-	<!-- Header with back button -->
-	<div class="mb-6 flex flex-col items-center gap-4 md:flex-row">
-		<HubBackLink size="sm" onclick={() => history.back()}>
+<div class="flex w-full min-w-0 flex-col gap-6">
+	<div class="flex flex-wrap items-center justify-between gap-4">
+		<h1 class="min-w-0 text-3xl font-bold">Member Details</h1>
+		<HubBackLink size="sm" onclick={() => history.back()} class="shrink-0 gap-2">
 			<ArrowLeft class="size-4" />
 			Back to Members
 		</HubBackLink>
-		<h1 class="text-3xl font-bold">Member Details</h1>
 	</div>
 
-	<div class="grid gap-2 md:gap-6 lg:grid-cols-3">
+	<div class="grid w-full min-w-0 gap-2 md:gap-6 lg:grid-cols-3">
 		<!-- Profile Card -->
 		<Card.Root class="w-full max-w-sm md:max-w-full lg:col-span-1">
 			<Card.Header class="text-center">

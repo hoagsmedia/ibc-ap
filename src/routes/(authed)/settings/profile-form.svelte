@@ -1,7 +1,6 @@
 <script lang="ts">
 	import * as Form from '$lib/components/ui/form';
 	import * as Card from '$lib/components/ui/card';
-	import HubBackLink from '$lib/components/HubBackLink.svelte';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { profileSchema, type ProfileSchema } from './settings-schema';
@@ -158,12 +157,10 @@
 				/>
 			</div>
 
-			<div class="flex flex-col justify-between gap-4 md:flex-row">
+			<div>
 				<Form.Button disabled={$submitting}>
 					{$submitting ? 'Updating...' : 'Update Profile'}
 				</Form.Button>
-
-				<HubBackLink href="/dashboard">← Back to Dashboard</HubBackLink>
 			</div>
 		</form>
 	</Card.Content>

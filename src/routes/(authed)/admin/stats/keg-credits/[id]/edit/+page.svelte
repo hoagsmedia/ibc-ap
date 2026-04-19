@@ -8,8 +8,7 @@
 		Card,
 		CardContent,
 		CardDescription,
-		CardHeader,
-		CardTitle
+		CardHeader
 	} from "$lib/components/ui/card/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
@@ -30,14 +29,16 @@
 	<title>Edit keg credit | IBC Admin</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-lg py-8">
-	<HubBackLink href="/admin/stats/keg-credits" class="mb-4 gap-2">
-		<ArrowLeft class="h-4 w-4" />
-		Keg credits
-	</HubBackLink>
+<div class="mx-auto w-full min-w-0 max-w-lg">
+	<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+		<h1 class="min-w-0 text-2xl font-bold tracking-tight sm:text-3xl">Edit credit row</h1>
+		<HubBackLink href="/admin/stats/keg-credits" size="sm" class="shrink-0 gap-2">
+			<ArrowLeft class="h-4 w-4" />
+			Keg credits
+		</HubBackLink>
+	</div>
 	<Card>
 		<CardHeader>
-			<CardTitle>Edit credit row</CardTitle>
 			<CardDescription>Update rank, label, credits, or CIK.</CardDescription>
 		</CardHeader>
 		<CardContent>

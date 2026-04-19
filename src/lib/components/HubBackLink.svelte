@@ -18,6 +18,7 @@
 
 <!--
 	Glass “chip” back / up navigation for member hub routes.
+	Place in the page body beside the main heading (hub shell header stays title-only).
 	Uses outline as a structural base; `.hub-back-chip` overrides with frosted glass (see app.css).
 -->
 <Button variant="outline" class={cn("hub-back-chip", className)} {...rest}>

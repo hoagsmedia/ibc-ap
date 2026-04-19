@@ -5,6 +5,8 @@
 	import * as Card from "$lib/components/ui/card";
 	import ProfileForm from "./profile-form.svelte";
 	import UpdatePasswordForm from "./update-password-form.svelte";
+	import { ArrowLeft } from "@lucide/svelte";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
 
 	let { data }: { data: PageData } = $props();
 	let uploading = $state(false);
@@ -51,13 +53,18 @@
 	<meta name="description" content="Update your profile settings" />
 </svelte:head>
 
-<div class="px-4 py-6 sm:px-0">
-	<div class="mx-auto max-w-2xl">
-		<div class="mb-8">
-			<h1 class="text-foreground text-3xl font-bold">Profile Settings</h1>
-			<p class="text-muted-foreground mt-2 text-sm">
-				Update your profile information and upload a profile image.
-			</p>
+<div class="mx-auto w-full max-w-2xl">
+		<div class="mb-8 flex flex-wrap items-start justify-between gap-4">
+			<div class="min-w-0">
+				<h1 class="text-foreground text-3xl font-bold">Profile Settings</h1>
+				<p class="text-muted-foreground mt-2 text-sm">
+					Update your profile information and upload a profile image.
+				</p>
+			</div>
+			<HubBackLink href="/dashboard" size="sm" class="shrink-0 gap-2">
+				<ArrowLeft class="size-4" />
+				Back to dashboard
+			</HubBackLink>
 		</div>
 
 		<div class="space-y-8">
@@ -138,4 +145,3 @@
 			<UpdatePasswordForm {data} />
 		</div>
 	</div>
-</div>

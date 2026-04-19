@@ -8,12 +8,11 @@
 		Card,
 		CardContent,
 		CardDescription,
-		CardHeader,
-		CardTitle
+		CardHeader
 	} from "$lib/components/ui/card/index.js";
+	import { ArrowLeft } from "@lucide/svelte";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
-	import { ArrowLeft } from "@lucide/svelte";
 	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
@@ -36,14 +35,16 @@
 	<title>Add keg consumption | IBC Admin</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-lg py-8">
-	<HubBackLink href="/admin/stats/beer-consumed" class="mb-4 gap-2">
-		<ArrowLeft class="h-4 w-4" />
-		Beer consumed
-	</HubBackLink>
+<div class="mx-auto w-full min-w-0 max-w-lg">
+	<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+		<h1 class="min-w-0 text-2xl font-bold tracking-tight sm:text-3xl">Add keg row</h1>
+		<HubBackLink href="/admin/stats/beer-consumed" size="sm" class="shrink-0 gap-2">
+			<ArrowLeft class="h-4 w-4" />
+			Beer consumed
+		</HubBackLink>
+	</div>
 	<Card>
 		<CardHeader>
-			<CardTitle>Add keg row</CardTitle>
 			<CardDescription>Dates optional; gallons required.</CardDescription>
 		</CardHeader>
 		<CardContent>

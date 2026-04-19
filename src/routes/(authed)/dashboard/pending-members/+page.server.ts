@@ -76,6 +76,11 @@ export const actions: Actions = {
 			})
 			.where(eq(users.id, userId));
 
-		return { success: true, message: `Member #${mbr} assigned.`, assignedId: userId };
+		return {
+			success: true,
+			message: `${member.name} is now member #${mbr}.`,
+			assignedId: userId,
+			memberSlug: username
+		};
 	}
 };
