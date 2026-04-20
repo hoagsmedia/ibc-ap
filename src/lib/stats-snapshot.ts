@@ -10,6 +10,8 @@ export type ClubStatsSnapshotFile = {
 export type SnapshotKegCreditRow = Omit<StatsKegCredit, "created_at" | "updated_at"> & {
 	created_at: string;
 	updated_at: string;
+	/** From export: `users.dops` when matched by `member_number` ↔ `mbr` — deceased, excluded from duty. */
+	dops?: boolean;
 };
 
 export type SnapshotBeerRow = Omit<
@@ -61,29 +63,49 @@ export function computeBeerTotals(beerRows: StatsBeerConsumedRow[]) {
 	};
 }
 
+/** Gallon aggregate from SQL — same derived figures as {@link computeBeerTotals}. */
+export function beerTotalsFromGallonSum(totalGallonsRaw: unknown) {
+	const totalGallons = Number(totalGallonsRaw ?? 0);
+	const g = Number.isFinite(totalGallons) ? totalGallons : 0;
+	return {
+		totalGallons: g,
+		totalPintGlasses16oz: g * 8,
+		totalBarrels55Gal: g / 55,
+		sixPersonHotTubs450Gal: g / 450
+	};
+}
+
+export type KegCreditsDisplay =
+	| { mode: "all"; rows: StatsKegCredit[] }
+	| { mode: "split"; top: StatsKegCredit[]; bottom: StatsKegCredit[] };
+
+/** Top 5 + bottom 5 by `sort_order`; if there are 10 or fewer rows, returns a single list (no overlap). */
+export function buildKegCreditsDisplay(allCredits: StatsKegCredit[]): KegCreditsDisplay {
+	const sorted = [...allCredits].sort((a, b) => a.sort_order - b.sort_order);
+	const n = sorted.length;
+	if (n === 0) return { mode: "all", rows: [] };
+	if (n <= 10) return { mode: "all", rows: sorted };
+	return {
+		mode: "split",
+		top: sorted.slice(0, 5),
+		bottom: sorted.slice(-5)
+	};
+}
+
+export function beerPreviewLatest3(allBeer: StatsBeerConsumedRow[]): StatsBeerConsumedRow[] {
+	return [...allBeer].sort((a, b) => b.keg_number - a.keg_number).slice(0, 3);
+}
+
 export function pageDataFromSnapshot(s: ClubStatsSnapshotFile) {
 	const credits = s.kegCredits.map(reviveKegCreditRow);
 	const beerRows = s.beerConsumed.map(reviveBeerRow);
 	return {
-		credits,
-		beerRows,
 		totals: computeBeerTotals(beerRows),
+		kegCreditsDisplay: buildKegCreditsDisplay(credits),
+		beerPreview: beerPreviewLatest3(beerRows),
 		/** Anonymous users read bundled snapshot — not live DB. */
 		statsSource: "snapshot" as const,
 		/** ISO 8601 — when `club-stats.json` was exported. */
 		snapshotExportedAt: s.exportedAt
-	};
-}
-
-export function pageDataFromDatabase(
-	credits: StatsKegCredit[],
-	beerRows: StatsBeerConsumedRow[]
-) {
-	return {
-		credits,
-		beerRows,
-		totals: computeBeerTotals(beerRows),
-		statsSource: "database" as const,
-		snapshotExportedAt: null as string | null
 	};
 }

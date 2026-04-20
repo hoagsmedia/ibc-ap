@@ -355,11 +355,14 @@
 				<Form.Field {form} name="dops">
 					<Form.Control>
 						{#snippet children({ props })}
-							<Form.Label>DOPS</Form.Label>
+							<Form.Label>Passed away (DOPS)</Form.Label>
 							<Checkbox {...props} bind:checked={$formData.dops} />
 						{/snippet}
 					</Form.Control>
-					<Form.Description>Check if member is DOPS.</Form.Description>
+					<Form.Description>
+						Deceased members are excluded from keg purchasing duty on the public stats page (matched by
+						MBR).
+					</Form.Description>
 					<Form.FieldErrors />
 				</Form.Field>
 			</div>

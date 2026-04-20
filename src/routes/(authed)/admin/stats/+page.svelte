@@ -1,57 +1,184 @@
 <script lang="ts">
 	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
-	import {
-		Card,
-		CardContent,
-		CardDescription,
-		CardHeader,
-		CardTitle
-	} from "$lib/components/ui/card/index.js";
-	import { ArrowLeft } from "@lucide/svelte";
+	import { ArrowLeft, ArrowRight } from "@lucide/svelte";
+	import Beer from "@lucide/svelte/icons/beer";
 	import Table2 from "@lucide/svelte/icons/table-2";
-	import Wine from "@lucide/svelte/icons/wine";
+	import type { PageData } from "./$types.js";
+
+	const { data }: { data: PageData } = $props();
+
+	function fmtNum(n: number, digits = 1) {
+		if (!Number.isFinite(n)) return "—";
+		return n.toLocaleString("en-US", { maximumFractionDigits: digits });
+	}
+
+	function fmtDate(d: Date | null) {
+		if (!d) return "—";
+		return new Intl.DateTimeFormat("en-US", {
+			year: "numeric",
+			month: "short",
+			day: "numeric",
+			timeZone: "UTC"
+		}).format(d);
+	}
 </script>
 
 <svelte:head>
 	<title>Club stats (admin) | Island Beer Club</title>
 </svelte:head>
 
-<div class="mx-auto w-full min-w-0 max-w-3xl">
-		<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
-			<h1 class="min-w-0 text-3xl font-bold">Club statistics data</h1>
-			<HubBackLink href="/dashboard" size="sm" class="shrink-0 gap-2">
-				<ArrowLeft class="h-4 w-4" />
-				Back to dashboard
-			</HubBackLink>
-		</div>
-		<p class="text-muted-foreground mb-8">
-			Edit the two legacy tables shown on the public <a class="text-primary underline" href="/stats">/stats</a> page.
-		</p>
-		<div class="grid gap-6 md:grid-cols-2">
-		<Card class="ibc-hub-surface bg-card/50 dark:bg-card/35">
-			<CardHeader>
-				<CardTitle class="flex items-center gap-2">
-					<Table2 class="h-5 w-5" />
-					Keg credits
-				</CardTitle>
-				<CardDescription>Member leaderboard &amp; CIK flags</CardDescription>
-			</CardHeader>
-			<CardContent>
-				<Button href="/admin/stats/keg-credits" class="w-full">Manage keg credits</Button>
-			</CardContent>
-		</Card>
-		<Card class="ibc-hub-surface bg-card/50 dark:bg-card/35">
-			<CardHeader>
-				<CardTitle class="flex items-center gap-2">
-					<Wine class="h-5 w-5" />
-					Beer consumed
-				</CardTitle>
-				<CardDescription>Per-keg dates, gallons, and names</CardDescription>
-			</CardHeader>
-			<CardContent>
-				<Button href="/admin/stats/beer-consumed" class="w-full">Manage beer consumed</Button>
-			</CardContent>
-		</Card>
-		</div>
+<div class="mx-auto w-full min-w-0 max-w-4xl">
+	<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+		<h1 class="min-w-0 text-3xl font-bold">Club statistics data</h1>
+		<HubBackLink href="/dashboard" size="sm" class="shrink-0 gap-2">
+			<ArrowLeft class="h-4 w-4" />
+			Back to dashboard
+		</HubBackLink>
+	</div>
+	<p class="text-muted-foreground mb-10 max-w-2xl text-pretty">
+		Legacy tables that power the public
+		<a class="text-primary font-medium underline underline-offset-2" href="/stats">/stats</a> page (static
+		export). Open a dataset to view and edit every row.
+	</p>
+
+	<div class="grid gap-6 lg:grid-cols-2 lg:items-stretch">
+		<article
+			class="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-card/80 shadow-sm dark:bg-card/40"
+		>
+			<div
+				class="pointer-events-none absolute inset-0 bg-gradient-to-br from-amber-500/[0.12] via-transparent to-transparent dark:from-amber-400/[0.08]"
+				aria-hidden="true"
+			></div>
+			<div class="relative flex min-h-0 flex-1 flex-col gap-5 p-6 sm:p-7">
+				<div class="flex items-start gap-4">
+					<div
+						class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-900 dark:bg-amber-400/20 dark:text-amber-100"
+					>
+						<Table2 class="h-6 w-6" aria-hidden="true" />
+					</div>
+					<div class="min-w-0 flex-1 space-y-1">
+						<h2 class="text-foreground text-lg font-semibold tracking-tight">Keg credits</h2>
+						<p class="text-muted-foreground text-sm leading-snug">
+							Lowest credits buys the next keg. Members marked deceased
+							(<span class="text-foreground">dops</span>) are excluded. MBR on each row is matched to
+							the member directory when possible.
+						</p>
+					</div>
+				</div>
+
+				<div class="space-y-3 text-sm">
+					<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+						<span class="text-muted-foreground">On the list</span>
+						<span class="text-foreground font-semibold tabular-nums">
+							{data.kegWidget.totalMembers.toLocaleString("en-US")}
+						</span>
+					</div>
+					<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+						<span class="text-muted-foreground">CIK (credits in kind)</span>
+						<span class="text-foreground font-semibold tabular-nums">
+							{data.kegWidget.cikCount.toLocaleString("en-US")}
+						</span>
+					</div>
+					<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+						<span class="text-muted-foreground">Eligible for next keg</span>
+						<span class="text-foreground font-semibold tabular-nums">
+							{data.kegWidget.duty.eligibleCount.toLocaleString("en-US")}
+						</span>
+					</div>
+
+					<div class="border-border/50 space-y-2 border-t pt-3">
+						<p class="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+							Next to buy (lowest credits)
+						</p>
+						{#if data.kegWidget.duty.nextToBuy.length === 0}
+							<p class="text-muted-foreground">None eligible</p>
+						{:else}
+							<ul class="space-y-2">
+								{#each data.kegWidget.duty.nextToBuy as p}
+									<li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+										<span class="text-foreground min-w-0 font-medium">{p.member_label}</span>
+										<span class="text-muted-foreground tabular-nums">
+											{p.credits} cr · rank {p.sort_order}
+										</span>
+									</li>
+								{/each}
+							</ul>
+						{/if}
+					</div>
+				</div>
+
+				<Button href="/admin/stats/keg-credits" class="mt-auto w-full shrink-0 gap-2 shadow-sm" size="lg">
+					Manage keg credits
+					<ArrowRight class="h-4 w-4 opacity-80" />
+				</Button>
+			</div>
+		</article>
+
+		<article
+			class="relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border border-border/80 bg-card/80 shadow-sm dark:bg-card/40"
+		>
+			<div
+				class="pointer-events-none absolute inset-0 bg-gradient-to-br from-sky-500/[0.11] via-transparent to-transparent dark:from-sky-400/[0.07]"
+				aria-hidden="true"
+			></div>
+			<div class="relative flex min-h-0 flex-1 flex-col gap-5 p-6 sm:p-7">
+				<div class="flex items-start gap-4">
+					<div
+						class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-sky-500/15 text-sky-950 dark:bg-sky-400/20 dark:text-sky-50"
+					>
+						<Beer class="h-6 w-6" aria-hidden="true" />
+					</div>
+					<div class="min-w-0 flex-1 space-y-1">
+						<h2 class="text-foreground text-lg font-semibold tracking-tight">Beer consumed</h2>
+						<p class="text-muted-foreground text-sm leading-snug">
+							Per-keg log — latest finished keg and all-time volume from the full table.
+						</p>
+					</div>
+				</div>
+
+				<div class="space-y-3 text-sm">
+					<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+						<span class="text-muted-foreground">Keg rows recorded</span>
+						<span class="text-foreground font-semibold tabular-nums">
+							{data.beerWidget.totalKegs.toLocaleString("en-US")}
+						</span>
+					</div>
+					<div class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+						<span class="text-muted-foreground">Total US gallons</span>
+						<span class="text-foreground font-semibold tabular-nums">
+							{fmtNum(data.beerWidget.totals.totalGallons, 2)}
+						</span>
+					</div>
+
+					<div class="border-border/50 space-y-2 border-t pt-3">
+						<p class="text-muted-foreground text-xs font-semibold uppercase tracking-wide">Latest keg</p>
+						{#if data.beerWidget.latestKeg}
+							<div class="space-y-1">
+								<p class="text-foreground font-medium leading-snug">
+									<span class="tabular-nums">#{data.beerWidget.latestKeg.keg_number}</span>
+									{#if data.beerWidget.latestKeg.beer_name}
+										<span class="text-muted-foreground font-normal"> · </span>
+										{data.beerWidget.latestKeg.beer_name}
+									{/if}
+								</p>
+								{#if data.beerWidget.latestKeg.finished_on}
+									<p class="text-muted-foreground">
+										Finished {fmtDate(data.beerWidget.latestKeg.finished_on)}
+									</p>
+								{/if}
+							</div>
+						{:else}
+							<p class="text-muted-foreground">No rows yet</p>
+						{/if}
+					</div>
+				</div>
+
+				<Button href="/admin/stats/beer-consumed" class="mt-auto w-full shrink-0 gap-2 shadow-sm" size="lg">
+					Manage beer consumed
+					<ArrowRight class="h-4 w-4 opacity-80" />
+				</Button>
+			</div>
+		</article>
+	</div>
 </div>

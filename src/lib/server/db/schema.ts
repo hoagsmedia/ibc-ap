@@ -30,8 +30,9 @@ export const users = pgTable("users", {
 	mbr: integer("mbr"),
 	msd: date("msd"), // member since date
 	sponsor: text("sponsor"),
+	/** When true, member is deceased (memorial) — excluded from keg buying duty on /stats. */
 	dops: boolean("dops").notNull().default(false),
-	dops_date: date("dops_date"), // date of permanent sobriety
+	dops_date: date("dops_date"),
 	bio: text("bio"),
 	hobbies: text("hobbies"),
 	likes: text("likes"),
@@ -80,7 +81,11 @@ export type InvitationToken = typeof invitationTokens.$inferSelect;
 
 export type Event = typeof events.$inferSelect;
 
-/** Legacy islandbeerclub.com/stats.htm — keg credits leaderboard (sort_order = rank / “who buys next”). */
+/**
+ * Legacy islandbeerclub.com/stats.htm — keg credits leaderboard.
+ * `sort_order` is a display rank; **who buys next** is whoever has the **lowest `credits`**
+ * among members not marked deceased (`users.dops`).
+ */
 export const statsKegCredits = pgTable("stats_keg_credits", {
 	id: text("id").primaryKey(),
 	sort_order: integer("sort_order").notNull().unique(),

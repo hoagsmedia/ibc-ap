@@ -5,11 +5,11 @@
 	import * as Table from "$lib/components/ui/table/index.js";
 	import { Badge } from "$lib/components/ui/badge/index.js";
 	import { Button } from "$lib/components/ui/button/index.js";
-	import { ScrollArea } from "$lib/components/ui/scroll-area/index.js";
 	import {
 		formatKegCreditsForDisplay,
 		isJeffWilkensFounderKegCredit
 	} from "$lib/stats-keg-credits-display.js";
+	import { statsPublicMemberLabel } from "$lib/stats-public-privacy.js";
 	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
@@ -62,9 +62,14 @@
 	<header class="space-y-3">
 		<h1 class="text-foreground text-3xl font-bold tracking-tight md:text-4xl">IBC Keg Credits &amp; Consumption</h1>
 		<p class="text-muted-foreground max-w-3xl text-pretty text-sm leading-relaxed md:text-base">
-			Legacy data from the original club stats page: keg credits (who&apos;s up next) and every keg
-			consumed since 22 March 2004. <span class="text-foreground font-medium">CIK</span> = credits in
-			kind.
+			Legacy data from the original club stats page: keg credits and every keg consumed since 22 March
+			2004. This page is served from a
+			<span class="text-foreground font-medium">static snapshot</span>
+			(export from the club database). The next keg is bought by whoever has the
+			<span class="text-foreground font-medium">lowest credits</span>
+			among members not marked deceased in that export.
+			<span class="text-foreground font-medium">CIK</span>
+			= credits in kind. Member names omit surnames.
 		</p>
 	</header>
 
@@ -72,34 +77,25 @@
 		<Card.Header class="flex flex-row flex-wrap items-start justify-between gap-3 space-y-0">
 			<div class="min-w-0 flex-1 space-y-1.5">
 				<Card.Title>Totals (from keg list)</Card.Title>
-				<Card.Description>Computed from the beer-consumed table.</Card.Description>
+				<Card.Description>Computed from the beer-consumed table in the snapshot.</Card.Description>
 			</div>
-			{#if data.statsSource === "database"}
-				<span
-					class="border-rose-200/70 bg-rose-100 text-rose-900 dark:bg-destructive dark:text-destructive-foreground dark:border-transparent shrink-0 rounded-md border px-2 py-1 text-[10px] font-bold uppercase leading-none tracking-wide shadow-sm"
-					title="Live data from the club database"
-				>
-					Live
-				</span>
-			{:else if data.statsSource === "snapshot"}
-				<div
-					class="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center sm:gap-3"
-					role="status"
-				>
-					{#if data.snapshotExportedAt}
-						<p class="text-muted-foreground text-right text-xs leading-snug sm:text-sm">
-							<span class="text-foreground font-medium">Snapshot</span>
-							<span class="text-muted-foreground/80"> · </span>
-							<time datetime={data.snapshotExportedAt} class="text-foreground font-medium">
-								{fmtSnapshotDateOnly(data.snapshotExportedAt)}
-							</time>
-						</p>
-					{/if}
-					{#if !viewer}
-						<Button href="/login" size="sm" variant="secondary">Sign in</Button>
-					{/if}
-				</div>
-			{/if}
+			<div
+				class="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center sm:gap-3"
+				role="status"
+			>
+				{#if data.snapshotExportedAt}
+					<p class="text-muted-foreground text-right text-xs leading-snug sm:text-sm">
+						<span class="text-foreground font-medium">Snapshot</span>
+						<span class="text-muted-foreground/80"> · </span>
+						<time datetime={data.snapshotExportedAt} class="text-foreground font-medium">
+							{fmtSnapshotDateOnly(data.snapshotExportedAt)}
+						</time>
+					</p>
+				{/if}
+				{#if !viewer}
+					<Button href="/login" size="sm" variant="secondary">Sign in</Button>
+				{/if}
+			</div>
 		</Card.Header>
 		<Card.Content>
 			<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -133,44 +129,127 @@
 		<Card.Header>
 			<Card.Title>Keg credits since inception</Card.Title>
 			<Card.Description>
-				Lower rank buys next. Pony keg = 1 credit, full keg = 2 credits.
+				Pony keg = 1 credit, full keg = 2 credits. The
+				<span class="text-foreground font-medium">rank</span>
+				column is legacy sort order. Showing the top and bottom five ranks (or everyone if there are 10
+				or fewer rows). Deceased members may still appear in the table but are not counted for the next
+				purchase.
 			</Card.Description>
 		</Card.Header>
 		<Card.Content class="p-0 sm:p-6">
-			{#if data.credits.length === 0}
-				<p class="text-muted-foreground px-6 py-8 text-center text-sm">No credit rows yet.</p>
-			{:else}
-				<ScrollArea class="h-[min(28rem,70vh)] w-full rounded-md border">
-					<Table.Root>
-						<Table.Header>
-							<Table.Row>
-								<Table.Head class="w-24">Rank</Table.Head>
-								<Table.Head>Member</Table.Head>
-								<Table.Head class="w-20 text-right">MBR</Table.Head>
-								<Table.Head class="w-32 text-right">Credits</Table.Head>
-							</Table.Row>
-						</Table.Header>
-						<Table.Body>
-							{#each data.credits as row (row.id)}
+			{#if data.kegCreditsDisplay.mode === "all"}
+				{#if data.kegCreditsDisplay.rows.length === 0}
+					<p class="text-muted-foreground px-6 py-8 text-center text-sm">No credit rows yet.</p>
+				{:else}
+					<div class="rounded-md border">
+						<Table.Root>
+							<Table.Header>
 								<Table.Row>
-									<Table.Cell class="tabular-nums">{row.sort_order}</Table.Cell>
-									<Table.Cell class="whitespace-normal">{row.member_label}</Table.Cell>
-									<Table.Cell class="text-right tabular-nums text-muted-foreground">
-										{row.member_number ?? "—"}
-									</Table.Cell>
-									<Table.Cell class="text-right">
-										<span
-											class={isJeffWilkensFounderKegCredit(row) ? '' : 'tabular-nums'}
-										>{formatKegCreditsForDisplay(row)}</span>
-										{#if row.is_cik}
-											<Badge variant="secondary" class="ml-2">CIK</Badge>
-										{/if}
-									</Table.Cell>
+									<Table.Head class="w-24">Rank</Table.Head>
+									<Table.Head>Member</Table.Head>
+									<Table.Head class="w-20 text-right">MBR</Table.Head>
+									<Table.Head class="w-32 text-right">Credits</Table.Head>
 								</Table.Row>
-							{/each}
-						</Table.Body>
-					</Table.Root>
-				</ScrollArea>
+							</Table.Header>
+							<Table.Body>
+								{#each data.kegCreditsDisplay.rows as row (row.id)}
+									<Table.Row>
+										<Table.Cell class="tabular-nums">{row.sort_order}</Table.Cell>
+										<Table.Cell class="whitespace-normal">
+											{statsPublicMemberLabel(row.member_label)}
+										</Table.Cell>
+										<Table.Cell class="text-right tabular-nums text-muted-foreground">
+											{row.member_number ?? "—"}
+										</Table.Cell>
+										<Table.Cell class="text-right">
+											<span
+												class={isJeffWilkensFounderKegCredit(row) ? '' : 'tabular-nums'}
+											>{formatKegCreditsForDisplay(row)}</span>
+											{#if row.is_cik}
+												<Badge variant="secondary" class="ml-2">CIK</Badge>
+											{/if}
+										</Table.Cell>
+									</Table.Row>
+								{/each}
+							</Table.Body>
+						</Table.Root>
+					</div>
+				{/if}
+			{:else}
+				<div class="space-y-8 px-0 sm:px-0">
+					<div class="space-y-2">
+						<h3 class="text-foreground px-6 text-sm font-semibold sm:px-0">Top 5 by rank</h3>
+						<div class="rounded-md border">
+							<Table.Root>
+								<Table.Header>
+									<Table.Row>
+										<Table.Head class="w-24">Rank</Table.Head>
+										<Table.Head>Member</Table.Head>
+										<Table.Head class="w-20 text-right">MBR</Table.Head>
+										<Table.Head class="w-32 text-right">Credits</Table.Head>
+									</Table.Row>
+								</Table.Header>
+								<Table.Body>
+									{#each data.kegCreditsDisplay.top as row (row.id)}
+										<Table.Row>
+											<Table.Cell class="tabular-nums">{row.sort_order}</Table.Cell>
+											<Table.Cell class="whitespace-normal">
+												{statsPublicMemberLabel(row.member_label)}
+											</Table.Cell>
+											<Table.Cell class="text-right tabular-nums text-muted-foreground">
+												{row.member_number ?? "—"}
+											</Table.Cell>
+											<Table.Cell class="text-right">
+												<span
+													class={isJeffWilkensFounderKegCredit(row) ? '' : 'tabular-nums'}
+												>{formatKegCreditsForDisplay(row)}</span>
+												{#if row.is_cik}
+													<Badge variant="secondary" class="ml-2">CIK</Badge>
+												{/if}
+											</Table.Cell>
+										</Table.Row>
+									{/each}
+								</Table.Body>
+							</Table.Root>
+						</div>
+					</div>
+					<div class="space-y-2">
+						<h3 class="text-foreground px-6 text-sm font-semibold sm:px-0">Bottom 5 by rank</h3>
+						<div class="rounded-md border">
+							<Table.Root>
+								<Table.Header>
+									<Table.Row>
+										<Table.Head class="w-24">Rank</Table.Head>
+										<Table.Head>Member</Table.Head>
+										<Table.Head class="w-20 text-right">MBR</Table.Head>
+										<Table.Head class="w-32 text-right">Credits</Table.Head>
+									</Table.Row>
+								</Table.Header>
+								<Table.Body>
+									{#each data.kegCreditsDisplay.bottom as row (row.id)}
+										<Table.Row>
+											<Table.Cell class="tabular-nums">{row.sort_order}</Table.Cell>
+											<Table.Cell class="whitespace-normal">
+												{statsPublicMemberLabel(row.member_label)}
+											</Table.Cell>
+											<Table.Cell class="text-right tabular-nums text-muted-foreground">
+												{row.member_number ?? "—"}
+											</Table.Cell>
+											<Table.Cell class="text-right">
+												<span
+													class={isJeffWilkensFounderKegCredit(row) ? '' : 'tabular-nums'}
+												>{formatKegCreditsForDisplay(row)}</span>
+												{#if row.is_cik}
+													<Badge variant="secondary" class="ml-2">CIK</Badge>
+												{/if}
+											</Table.Cell>
+										</Table.Row>
+									{/each}
+								</Table.Body>
+							</Table.Root>
+						</div>
+					</div>
+				</div>
 			{/if}
 		</Card.Content>
 	</Card.Root>
@@ -178,13 +257,16 @@
 	<Card.Root id="beer-consumed-section" class="scroll-mt-24">
 		<Card.Header>
 			<Card.Title>Beer consumed since inception</Card.Title>
-			<Card.Description>One row per keg: dates, gallons, and beer name.</Card.Description>
+			<Card.Description>
+				One row per keg: dates, gallons, and beer name. Showing the three most recent kegs (highest keg
+				numbers). Totals above still include every keg in the list.
+			</Card.Description>
 		</Card.Header>
 		<Card.Content class="p-0 sm:p-6">
-			{#if data.beerRows.length === 0}
+			{#if data.beerPreview.length === 0}
 				<p class="text-muted-foreground px-6 py-8 text-center text-sm">No consumption rows yet.</p>
 			{:else}
-				<ScrollArea class="h-[min(28rem,70vh)] w-full rounded-md border">
+				<div class="rounded-md border">
 					<Table.Root>
 						<Table.Header>
 							<Table.Row>
@@ -197,7 +279,7 @@
 							</Table.Row>
 						</Table.Header>
 						<Table.Body>
-							{#each data.beerRows as row (row.id)}
+							{#each data.beerPreview as row (row.id)}
 								<Table.Row>
 									<Table.Cell class="tabular-nums">{row.keg_number}</Table.Cell>
 									<Table.Cell class="text-sm">{fmtDate(row.purchased_on)}</Table.Cell>
@@ -209,7 +291,7 @@
 							{/each}
 						</Table.Body>
 					</Table.Root>
-				</ScrollArea>
+				</div>
 			{/if}
 		</Card.Content>
 	</Card.Root>
