@@ -37,6 +37,8 @@
 		"db:ensure:invites:prod": "tsx scripts/ensure-invitation-tokens-schema.ts --prod",
 		"db:export:stats": "tsx scripts/export-club-stats-snapshot.ts",
 		"db:export:stats:prod": "tsx scripts/export-club-stats-snapshot.ts --prod",
+		"db:export:events": "tsx scripts/export-events-public-snapshot.ts",
+		"db:export:events:prod": "tsx scripts/export-events-public-snapshot.ts --prod",
 		"db:import:stats": "tsx scripts/import-legacy-stats-html.ts",
 		"db:import:stats:prod": "tsx scripts/import-legacy-stats-html.ts --prod",
 		"db:pull:neon": "bash scripts/pull-prod-to-local.sh",

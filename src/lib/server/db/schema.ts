@@ -46,6 +46,8 @@ export const invitationTokens = pgTable("invitation_tokens", {
 	token: text("token").notNull().unique(),
 	/** Label for who the invite is for (required on new invites). */
 	invite_name: text("invite_name"),
+	/** Display name of the member who created the link (avoids a `users` join on public invite page). */
+	inviter_name: text("inviter_name"),
 	created_by_id: text("created_by_id")
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),

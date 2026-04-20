@@ -5,7 +5,8 @@
 	const sidebar = useSidebar();
 
 	$effect(() => {
-		page.url.href;
-		sidebar.setOpenMobile(false);
+		if (page.url.pathname.length >= 0) {
+			sidebar.setOpenMobile(false);
+		}
 	});
 </script>

@@ -95,7 +95,7 @@
 							<p class="text-muted-foreground">None eligible</p>
 						{:else}
 							<ul class="space-y-2">
-								{#each data.kegWidget.duty.nextToBuy as p}
+								{#each data.kegWidget.duty.nextToBuy as p (p.sort_order)}
 									<li class="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
 										<span class="text-foreground min-w-0 font-medium">{p.member_label}</span>
 										<span class="text-muted-foreground tabular-nums">

@@ -177,7 +177,11 @@ export const actions: Actions = {
 		}
 
 		try {
-			const invitation = await createInvitationToken(locals.user.id, inviteName);
+			const invitation = await createInvitationToken(
+				locals.user.id,
+				inviteName,
+				locals.user.name?.trim() || "Member"
+			);
 
 			if (dev && ibcDebugEnabled()) {
 				console.log("[IBC-LOG] [dashboard] Invitation created", {

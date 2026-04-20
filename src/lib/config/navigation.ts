@@ -9,6 +9,7 @@ export const navLinks: NavLink[] = [
 	{ href: "/history", label: "History", description: "Our club history." },
 	{ href: "/members", label: "Members", description: "Meet our members." },
 	{ href: "/events", label: "Events", description: "Upcoming and past events." },
+	{ href: "/stats", label: "IBC Stats", description: "View club statistics and records." },
 	{ href: "/fun", label: "Fun", description: "Games, jokes, and more." },
 	{ href: "/contact", label: "Contact", description: "Get in touch with us." },
 	{ href: "/gallery", label: "Gallery", description: "Photo gallery of club events." }
@@ -24,6 +25,5 @@ export const dropdownLinks: NavLink[] = [
 		label: "Science Corner",
 		description: "Explore beer science and fun facts."
 	},
-	{ href: "/styles", label: "Beer Styles", description: "Learn about different beer styles." },
-	{ href: "/stats", label: "IBC Stats", description: "View club statistics and records." }
+	{ href: "/styles", label: "Beer Styles", description: "Learn about different beer styles." }
 ];

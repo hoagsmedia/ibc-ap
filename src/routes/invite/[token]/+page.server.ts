@@ -25,16 +25,10 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 		error(404, "Invalid or expired invitation link");
 	}
 
-	// Fetch the sponsor's name (user who created the invitation)
-	const [sponsor] = await db
-		.select({ name: table.users.name })
-		.from(table.users)
-		.where(eq(table.users.id, invitation.created_by_id));
-
 	return {
 		token,
 		invitation,
-		sponsorName: sponsor?.name || "Unknown"
+		sponsorName: invitation.inviter_name?.trim() || "Unknown"
 	};
 };
 

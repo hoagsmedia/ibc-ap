@@ -74,6 +74,7 @@
 	const urlSearchTerm = $derived(data.isAuthenticated ? (data.searchTerm ?? "") : "");
 
 	/** Draft search box; kept in sync with the URL when `data.searchTerm` changes (navigation), not while typing. */
+	// eslint-disable-next-line svelte/prefer-writable-derived -- draft must reset from URL on navigation; writable $derived fights intentional typing vs server search param.
 	let searchTerm = $state("");
 
 	$effect.pre(() => {

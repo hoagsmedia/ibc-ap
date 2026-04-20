@@ -1,5 +1,5 @@
 /**
- * Idempotent: adds invitation_tokens.invite_name if missing.
+ * Idempotent: adds invitation_tokens.invite_name / inviter_name if missing.
  * Safe to run on every Vercel build.
  */
 import dotenv from "dotenv";
@@ -29,7 +29,8 @@ if (!url) {
 const sql = postgres(url, { max: 1, onnotice: () => {} });
 
 const statements = [
-	`ALTER TABLE public.invitation_tokens ADD COLUMN IF NOT EXISTS invite_name text`
+	`ALTER TABLE public.invitation_tokens ADD COLUMN IF NOT EXISTS invite_name text`,
+	`ALTER TABLE public.invitation_tokens ADD COLUMN IF NOT EXISTS inviter_name text`
 ];
 
 async function main() {

@@ -25,6 +25,7 @@ export function generateInvitationToken(): string {
 export async function createInvitationToken(
 	createdById: string,
 	inviteName: string,
+	inviterName: string,
 	expirationDays = 7
 ): Promise<table.InvitationToken> {
 	const token = generateInvitationToken();
@@ -34,6 +35,7 @@ export async function createInvitationToken(
 		id,
 		token,
 		invite_name: inviteName,
+		inviter_name: inviterName,
 		created_by_id: createdById,
 		created_at: new Date(),
 		expires_at: new Date(Date.now() + DAY_IN_MS * expirationDays),
