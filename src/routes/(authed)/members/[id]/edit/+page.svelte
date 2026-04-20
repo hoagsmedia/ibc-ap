@@ -4,6 +4,7 @@
 	import * as Card from "$lib/components/ui/card/index.js";
 	import * as Select from "$lib/components/ui/select/index.js";
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Checkbox } from "$lib/components/ui/checkbox/index.js";
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
@@ -11,6 +12,7 @@
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
 	import { ArrowLeft, Check, Trash2, KeyRound, Copy } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
+	import { toastAdminActionFailure } from "$lib/admin-action-toast";
 	import { memberSchema } from "./edit-member-schema";
 	import { superForm } from "sveltekit-superforms";
 	import { createUploadThing } from "$lib/utils";
@@ -28,12 +30,13 @@
 	// Check if current user is admin (for delete access)
 	const isAdmin = $derived(data.user?.role === "admin");
 
-	// Update form
+	// Update form (explicit id: same page uses multiple superForms with the same `data.form`)
 	const form = superForm(data.form, {
+		id: "member-edit",
 		validators: zodClient(memberSchema),
 		resetForm: false,
 		onResult: ({ result }) => {
-			if (result.type === "success") {
+			if (result.type === "redirect" || result.type === "success") {
 				toast.success("Member updated successfully!", {
 					icon: Check,
 					duration: 3000,
@@ -44,6 +47,12 @@
 						onClick: () => toast.dismiss()
 					}
 				});
+			} else if (result.type === "failure") {
+				toastAdminActionFailure(
+					result.data,
+					"Could not save changes. Check the form for errors.",
+					{ duration: 8000 }
+				);
 			}
 		}
 	});
@@ -63,6 +72,8 @@
 				});
 				// Redirect to members list after successful deletion
 				window.location.href = "/members";
+			} else if (result.type === "failure") {
+				toastAdminActionFailure(result.data, "Could not delete this member.");
 			} else if (result.type === "error") {
 				toast.error("Failed to delete member. Please try again.", {
 					duration: 5000,
@@ -79,7 +90,7 @@
 
 	// Reset password form
 	const resetPasswordForm = superForm(data.form, {
-		id: "reset-password",
+		id: "member-edit-reset-password",
 		resetForm: false,
 		onResult: ({ result }) => {
 			if (result.type === "success" && result.data?.tempPassword) {
@@ -90,11 +101,12 @@
 					duration: 5000,
 					position: "bottom-right"
 				});
-			} else if (result.type === "failure" && result.data?.message) {
-				toast.error(result.data.message, {
-					duration: 5000,
-					position: "bottom-right"
-				});
+			} else if (result.type === "failure") {
+				toastAdminActionFailure(
+					result.data,
+					"Failed to reset password. Please try again.",
+					{ duration: 5000 }
+				);
 			} else if (result.type === "error") {
 				toast.error("Failed to reset password. Please try again.", {
 					duration: 5000,
@@ -177,14 +189,14 @@
 	}
 </script>
 
-<!-- Header with back button -->
-<div class="mb-6 flex flex-col items-center gap-4 md:flex-row">
-	<Button variant="outline" size="sm" onclick={() => history.back()}>
-		<ArrowLeft class="size-4" />
-		Back to Members
-	</Button>
-	<h1 class="text-3xl font-bold">Edit Member</h1>
-</div>
+<div class="flex w-full min-w-0 flex-col gap-6">
+	<div class="flex flex-wrap items-center justify-between gap-4">
+		<h1 class="min-w-0 text-3xl font-bold">Edit Member</h1>
+		<HubBackLink size="sm" onclick={() => history.back()} class="shrink-0 gap-2">
+			<ArrowLeft class="size-4" />
+			Back to Members
+		</HubBackLink>
+	</div>
 
 <!-- Profile Image Section -->
 <Card.Root class="mb-6">
@@ -343,11 +355,14 @@
 				<Form.Field {form} name="dops">
 					<Form.Control>
 						{#snippet children({ props })}
-							<Form.Label>DOPS</Form.Label>
+							<Form.Label>Passed away (DOPS)</Form.Label>
 							<Checkbox {...props} bind:checked={$formData.dops} />
 						{/snippet}
 					</Form.Control>
-					<Form.Description>Check if member is DOPS.</Form.Description>
+					<Form.Description>
+						Deceased members are excluded from keg purchasing duty on the public stats page (matched by
+						MBR).
+					</Form.Description>
 					<Form.FieldErrors />
 				</Form.Field>
 			</div>
@@ -443,6 +458,7 @@
 		</form>
 	</Card.Content>
 </Card.Root>
+</div>
 
 <!-- Delete Confirmation Dialog -->
 <Dialog.Root bind:open={deleteDialogOpen}>
@@ -579,6 +595,7 @@
 		{:else}
 			<!-- Confirmation before reset -->
 			<form method="POST" action="?/resetPassword" use:enhanceResetPassword>
+				<input type="hidden" name="userId" value={data.member.id} />
 				<div class="space-y-4">
 					<div class="rounded-md bg-amber-50 p-4 dark:bg-amber-950">
 						<div class="text-sm text-amber-800 dark:text-amber-200">

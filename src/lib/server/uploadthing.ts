@@ -135,16 +135,16 @@ export const ourFileRouter = {
 				throw new Error("Exactly one file must be uploaded");
 			}
 
-			// Extract member identifier (username or id) from the referer URL
 			const referer = req.headers.get("referer");
-			const memberSlugMatch = referer?.match(/\/members\/([a-zA-Z0-9_.-]+)/);
-
-			if (!memberSlugMatch?.[1]) {
-				throw new Error("Member not found in referer URL");
+			const { getMemberById, parseMemberRecordIdFromMembersUrl } = await import(
+				"$lib/server/member-lookup"
+			);
+			const memberId = parseMemberRecordIdFromMembersUrl(referer);
+			if (!memberId) {
+				throw new Error("Member id not found in referer URL");
 			}
 
-			const { getMemberByUsernameOrId } = await import("$lib/server/member-lookup");
-			const memberToUpdate = await getMemberByUsernameOrId(memberSlugMatch[1]);
+			const memberToUpdate = await getMemberById(memberId);
 
 			if (!memberToUpdate) {
 				throw new Error("Member not found");

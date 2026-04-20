@@ -21,7 +21,9 @@
 			p.startsWith("/admin") ||
 			p.startsWith("/test") ||
 			p === "/events" ||
-			p.startsWith("/events/")
+			p.startsWith("/events/") ||
+			p === "/stats" ||
+			p.startsWith("/stats/")
 		);
 	});
 

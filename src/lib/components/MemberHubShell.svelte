@@ -10,7 +10,8 @@
 	import Avatar from "$lib/components/Avatar.svelte";
 	import { toggleMode } from "mode-watcher";
 	import { enhance } from "$app/forms";
-	import IbcLogo from "$lib/components/IbcLogo.svelte";
+	/** URL logo in the shell: avoids parsing a huge inline SVG when the mobile sheet mounts (INP). */
+	import memberHubLogoUrl from "$lib/assets/ibc-logo.svg?url";
 	import Search from "@lucide/svelte/icons/search";
 	import Sun from "@lucide/svelte/icons/sun";
 	import Moon from "@lucide/svelte/icons/moon";
@@ -25,6 +26,7 @@
 	import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
 	import LogOut from "@lucide/svelte/icons/log-out";
 	import Home from "@lucide/svelte/icons/home";
+	import BarChart3 from "@lucide/svelte/icons/bar-chart-3";
 
 	let { children }: { children: Snippet } = $props();
 
@@ -37,6 +39,7 @@
 	}
 
 	function memberHubTitle(pathname: string): string {
+		if (pathname.startsWith("/dashboard/invitations")) return "Your invitations";
 		if (pathname.startsWith("/dashboard/pending-members")) return "Prospects";
 		if (pathname.startsWith("/dashboard")) return "Dashboard";
 		if (pathname.startsWith("/members")) return "Members";
@@ -59,6 +62,7 @@
 </script>
 
 <Sidebar.Provider>
+	<Sidebar.SidebarCloseMobileOnNav />
 	<Sidebar.Root collapsible="icon" class="border-sidebar-border border-r">
 		<Sidebar.Header
 			class={cn(
@@ -81,9 +85,14 @@
 				)}
 			>
 				<a href="/" class="flex w-full flex-col items-center gap-2 overflow-hidden py-1 text-center">
-					<IbcLogo
-						class="h-auto w-[min(90%,15rem)] max-w-full shrink-0 [&>svg]:h-auto [&>svg]:w-full"
-						decorative
+					<img
+						src={memberHubLogoUrl}
+						alt=""
+						width="862"
+						height="475"
+						decoding="async"
+						fetchpriority="low"
+						class="h-auto w-[min(90%,15rem)] max-w-full shrink-0 object-contain dark:brightness-[0.88] dark:saturate-[0.92]"
 					/>
 					<div class="flex w-full min-w-0 flex-col leading-tight">
 						<span class="w-full truncate text-sm font-semibold tracking-tight text-foreground"
@@ -145,6 +154,21 @@
 								{/snippet}
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
+						{#if user?.role !== "admin"}
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton
+									isActive={navActive("/stats")}
+									tooltipContent="Keg credits and beer consumed"
+								>
+									{#snippet child({ props })}
+										<a href="/stats" {...props}>
+											<BarChart3 />
+											<span>Keg & beer stats</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
+						{/if}
 					</Sidebar.Menu>
 				</Sidebar.GroupContent>
 			</Sidebar.Group>
@@ -213,9 +237,11 @@
 		</Sidebar.Footer>
 		<Sidebar.Rail />
 	</Sidebar.Root>
-	<Sidebar.Inset class="bg-background min-w-0">
+	<Sidebar.Inset
+		class="ibc-member-hub-canvas flex min-h-svh min-w-0 flex-1 flex-col"
+	>
 		<header
-			class="border-border/60 bg-card/40 supports-[backdrop-filter]:bg-card/30 sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 border-b px-3 backdrop-blur-md md:px-4"
+			class="border-border/50 bg-card/35 supports-[backdrop-filter]:bg-card/25 sticky top-0 z-40 flex h-14 shrink-0 items-center gap-2 border-b px-3 backdrop-blur-md md:px-4"
 		>
 			<Sidebar.Trigger class="-ml-1" />
 			<Separator orientation="vertical" class="mr-1 h-6" />

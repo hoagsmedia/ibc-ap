@@ -2,14 +2,12 @@
 	import * as Card from "$lib/components/ui/card/index.js";
 	import Avatar from "$lib/components/Avatar.svelte";
 	import { Badge } from "$lib/components/ui/badge/index.js";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { ArrowLeft, Mail, Calendar, Hash, Heart } from "@lucide/svelte";
 	import type { PageData } from "./$types";
 
 	let { data }: { data: PageData } = $props();
-
-	// Slug for member links (username when set, else id for pending users)
-	const memberSlug = $derived(data.member.username ?? data.member.id);
 
 	// Format date helper
 	function formatDate(date: Date | string | null): string {
@@ -42,17 +40,16 @@
 	<meta name="description" content="Member details for {data.member.name}" />
 </svelte:head>
 
-<div class="container py-8 md:w-full">
-	<!-- Header with back button -->
-	<div class="mb-6 flex flex-col items-center gap-4 md:flex-row">
-		<Button variant="outline" size="sm" onclick={() => history.back()}>
+<div class="flex w-full min-w-0 flex-col gap-6">
+	<div class="flex flex-wrap items-center justify-between gap-4">
+		<h1 class="min-w-0 text-3xl font-bold">Member Details</h1>
+		<HubBackLink size="sm" onclick={() => history.back()} class="shrink-0 gap-2">
 			<ArrowLeft class="size-4" />
 			Back to Members
-		</Button>
-		<h1 class="text-3xl font-bold">Member Details</h1>
+		</HubBackLink>
 	</div>
 
-	<div class="grid gap-2 md:gap-6 lg:grid-cols-3">
+	<div class="grid w-full min-w-0 gap-2 md:gap-6 lg:grid-cols-3">
 		<!-- Profile Card -->
 		<Card.Root class="w-full max-w-sm md:max-w-full lg:col-span-1">
 			<Card.Header class="text-center">
@@ -178,7 +175,7 @@
 					</Card.Header>
 					<Card.Content>
 						<div class="flex flex-col gap-2 md:flex-row">
-							<Button variant="outline" href={`/members/${memberSlug}/edit`}>Edit Member</Button>
+							<Button variant="outline" href={`/members/${data.member.id}/edit`}>Edit Member</Button>
 							<!-- <Button disabled variant="outline">Send Message</Button> -->
 						</div>
 					</Card.Content>

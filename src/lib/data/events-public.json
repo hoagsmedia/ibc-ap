@@ -1,0 +1,19 @@
+{
+	"exportedAt": "2026-04-20T00:49:34.044Z",
+	"events": [
+		{
+			"id": "mo4y3e11u3gmi5pqy",
+			"img": "https://utfs.io/f/j76WqJUGa3q7WUv4V6rhm98YDSyLHQ57CZXMGkOfdcnFoKRb",
+			"title": "Test event",
+			"description": "Description of test event",
+			"content": "Here some content. ",
+			"event_date": "2026-04-24T16:04:00.000Z",
+			"location": "IBC Homebase",
+			"members_only": false,
+			"is_published": 1,
+			"created_by_id": "207081fe-da03-4321-8c14-9c703c3d9295",
+			"created_at": "2026-04-18T23:05:16.005Z",
+			"updated_at": "2026-04-18T23:05:16.005Z"
+		}
+	]
+}

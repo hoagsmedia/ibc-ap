@@ -4,22 +4,24 @@
 	import * as Pagination from "$lib/components/ui/pagination/index.js";
 	import * as Card from "$lib/components/ui/card/index.js";
 	import Avatar from "$lib/components/Avatar.svelte";
-	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon } from "@lucide/svelte";
+	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon, Eye, Pencil } from "@lucide/svelte";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Search } from "@lucide/svelte";
-	import { dev } from "$app/environment";
 	import { goto } from "$app/navigation";
+	import { untrack } from "svelte";
 	import type { PageProps } from "./$types";
-	import { IsMobile } from "$lib/hooks/is-mobile.svelte";
-	import { cn } from "$lib/utils";
 	import { LocalStorage } from "$lib/utils/local-storage.svelte";
 
 	let { data }: PageProps = $props();
 
+	type AuthData = Extract<PageProps["data"], { isAuthenticated: true }>;
+	type MemberRow = AuthData["members"][number];
+
 	// --- LocalStorage for caching search results ---
 	interface CachedMemberData {
-		members: (typeof data & { isAuthenticated: true })["members"];
+		members: AuthData["members"];
 		searchTerm: string;
 		timestamp: number;
 		totalCount: number;
@@ -34,26 +36,62 @@
 
 	const memberCache = new LocalStorage<Record<string, CachedMemberData>>("member-search-cache", {});
 	const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
+	const MAX_CACHE_KEYS = 24;
 
-	// --- Reactive State ---
-	let searchTerm = $state(data.isAuthenticated ? data.searchTerm || "" : "");
-	let members = $state(data.isAuthenticated ? data.members : []);
-	let pagination = $state<PaginationData>(
-		data.isAuthenticated
-			? data.pagination
-			: { page: 1, perPage: 10, totalCount: 0, totalPages: 0 }
+	const emptyPagination = (): PaginationData => ({
+		page: 1,
+		perPage: 10,
+		totalCount: 0,
+		totalPages: 0
+	});
+
+	/** Client-only hit from localStorage (no navigation). */
+	let cacheHit = $state<{ members: AuthData["members"]; pagination: PaginationData } | null>(null);
+	/**
+	 * Last full server payload; when the server returns the `cached` stub (empty body), keep showing this
+	 * so the sheet matches pre-navigation behavior.
+	 */
+	let rosterFallback = $state<{ members: AuthData["members"]; pagination: PaginationData } | null>(null);
+
+	const isStubLoad = $derived(
+		Boolean(data.isAuthenticated && "cached" in data && data.cached === true)
 	);
-	const pageData = $state(page);
-	const isAdmin = $derived(pageData.data.user?.role === "admin");
-	const isMobile = new IsMobile();
+
+	const members = $derived.by((): MemberRow[] => {
+		if (!data.isAuthenticated) return [];
+		if (cacheHit) return cacheHit.members;
+		if (isStubLoad && rosterFallback) return rosterFallback.members;
+		return data.members;
+	});
+
+	const pagination = $derived.by((): PaginationData => {
+		if (!data.isAuthenticated) return emptyPagination();
+		if (cacheHit) return cacheHit.pagination;
+		if (isStubLoad && rosterFallback) return rosterFallback.pagination;
+		return data.pagination;
+	});
+
+	const urlSearchTerm = $derived(data.isAuthenticated ? (data.searchTerm ?? "") : "");
+
+	/** Draft search box; kept in sync with the URL when `data.searchTerm` changes (navigation), not while typing. */
+	// eslint-disable-next-line svelte/prefer-writable-derived -- draft must reset from URL on navigation; writable $derived fights intentional typing vs server search param.
+	let searchTerm = $state("");
+
+	$effect.pre(() => {
+		searchTerm = urlSearchTerm;
+	});
+
+	const isAdmin = $derived(page.data.user?.role === "admin");
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	/** Avoids redundant cacheResults when the same server payload is applied more than once. */
+	let lastServerFingerprint = "";
 
 	function isCacheValid(timestamp: number): boolean {
 		return Date.now() - timestamp < CACHE_EXPIRY;
 	}
 
 	function getCachedResults(searchKey: string): CachedMemberData | null {
-		if (dev) console.log("Checking cache for:", searchKey);
 		const cache = memberCache.value || {};
 		const cached = cache[searchKey];
 		if (cached && isCacheValid(cached.timestamp)) {
@@ -69,7 +107,7 @@
 		totalCount: number
 	): void {
 		const cache = memberCache.value || {};
-		memberCache.value = {
+		const next: Record<string, CachedMemberData> = {
 			...cache,
 			[searchKey]: {
 				members,
@@ -78,32 +116,42 @@
 				totalCount
 			}
 		};
+		const keys = Object.keys(next);
+		if (keys.length > MAX_CACHE_KEYS) {
+			const drop = keys
+				.map((k) => ({ k, t: next[k]!.timestamp }))
+				.sort((a, b) => a.t - b.t)
+				.slice(0, keys.length - MAX_CACHE_KEYS);
+			for (const { k } of drop) delete next[k];
+		}
+		memberCache.value = next;
 	}
 
 	async function performSearch(term: string, pageNum: number = 1): Promise<void> {
 		if (!data.isAuthenticated) return;
-		const searchKey = `${term}-${pageNum}-${pagination.perPage}`;
+		const perPage = pagination.perPage;
+		const searchKey = `${term}-${pageNum}-${perPage}`;
 
 		const cached = getCachedResults(searchKey);
 		if (cached && cached.members.length > 0) {
-			if (dev) console.log("Using cached results for:", searchKey);
-			members = cached.members;
-			pagination = {
-				...pagination,
-				page: pageNum,
-				totalCount: cached.totalCount,
-				totalPages: Math.ceil(cached.totalCount / pagination.perPage)
+			cacheHit = {
+				members: cached.members,
+				pagination: {
+					page: pageNum,
+					perPage,
+					totalCount: cached.totalCount,
+					totalPages: Math.ceil(cached.totalCount / perPage)
+				}
 			};
 			return;
 		}
 
-		if (dev) console.log("Fetching from server for:", searchKey);
 		navigateToServer(pageNum);
 	}
 
-	function navigateToServer(page: number): void {
+	function navigateToServer(pageNum: number): void {
 		const params = new URLSearchParams();
-		params.set("page", page.toString());
+		params.set("page", pageNum.toString());
 		params.set("perPage", pagination.perPage.toString());
 		if (searchTerm) {
 			params.set("search", searchTerm);
@@ -128,23 +176,39 @@
 
 		searchTimeout = setTimeout(() => {
 			performSearch(searchTerm, 1);
-		}, 1000);
+		}, 300);
 	}
 
 	$effect(() => {
-		if (!data.isAuthenticated) return;
-
-		if (!("cached" in data) || (!data.cached && data.members.length > 0)) {
-			if (dev) console.log("[Effect]:Processing server data:", data);
-			const searchKey = `${data.searchTerm}-${data.pagination.page}-${data.pagination.perPage}`;
-			cacheResults(searchKey, data.members, data.searchTerm, data.pagination.totalCount);
+		if (!data.isAuthenticated) {
+			lastServerFingerprint = "";
+			cacheHit = null;
+			rosterFallback = null;
+			return;
 		}
 
-		if (!("cached" in data) || !data.cached) {
-			if (dev) console.log("[Effect]:Updating members and pagination");
-			members = data.members;
-			pagination = data.pagination;
-		}
+		if (isStubLoad) return;
+
+		const serverMembers = data.members;
+		const serverPagination = data.pagination;
+		const serverSearchTerm = data.searchTerm ?? "";
+		const nextSearchKey = `${serverSearchTerm}-${serverPagination.page}-${serverPagination.perPage}`;
+		const fingerprint = `${nextSearchKey}|${serverPagination.totalCount}|${serverMembers.map((m) => m.id).join(",")}`;
+
+		untrack(() => {
+			rosterFallback = { members: serverMembers, pagination: serverPagination };
+			cacheHit = null;
+
+			if (fingerprint !== lastServerFingerprint) {
+				lastServerFingerprint = fingerprint;
+				cacheResults(
+					nextSearchKey,
+					serverMembers,
+					serverSearchTerm,
+					serverPagination.totalCount
+				);
+			}
+		});
 	});
 </script>
 
@@ -158,8 +222,8 @@
 	/>
 </svelte:head>
 
-<div class="container py-8 md:w-full">
-	{#if !data.isAuthenticated}
+{#if !data.isAuthenticated}
+	<div class="container py-8 md:w-full">
 		<div class="mb-8 flex flex-col gap-2">
 			<h1 class="text-3xl font-bold">Members</h1>
 			<p class="text-muted-foreground max-w-2xl text-pretty">
@@ -209,55 +273,62 @@
 				<Button variant="outline" href="/">Back to home</Button>
 			</Card.Footer>
 		</Card.Root>
-	{:else}
-		<!-- Header with back button -->
-		<div class="mb-6 flex flex-col items-center gap-4 md:flex-row">
-			<Button variant="outline" size="sm" href="/dashboard" class="gap-2">
+	</div>
+{:else}
+	<div class="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-6 md:w-full">
+		<div class="flex flex-wrap items-center justify-between gap-4">
+			<div class="min-w-0">
+				<h1 class="text-3xl font-bold">Members</h1>
+				<p class="text-muted-foreground text-sm">
+					{pagination.totalCount} member{pagination.totalCount === 1 ? "" : "s"}{#if pagination.totalPages > 1}
+						· page {pagination.page} of {pagination.totalPages}{/if}
+				</p>
+			</div>
+			<HubBackLink href="/dashboard" size="sm" class="shrink-0 gap-2 self-start sm:self-center">
 				<ArrowLeft class="size-4" />
 				Back to Dashboard
-			</Button>
-			<h1 class="text-3xl font-bold">Members</h1>
+			</HubBackLink>
 		</div>
 
-		<!-- Search Bar -->
-		<div class="mb-4 flex items-center gap-2">
+		<div class="flex items-center gap-2">
 			<div class="relative flex-1">
-				<Search class="text-muted-foreground absolute top-2.5 left-2.5 h-4 w-4" />
+				<Search class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
 				<Input
 					bind:value={searchTerm}
-					autofocus
 					oninput={handleSearch}
 					type="search"
 					placeholder="Search members by name, email, or member #..."
-					class="pl-9"
+					class="border-border/60 bg-muted/30 focus-visible:ring-primary/40 h-9 pl-9 text-sm shadow-none"
 					aria-label="Search members"
 				/>
 			</div>
 		</div>
 
-		<div class="rounded-md border">
-			<Table.Root>
-				<Table.Header class="bg-muted">
+		<div class="ibc-hub-surface overflow-hidden">
+			<Table.Root class="border-separate border-spacing-0">
+				<Table.Header>
 					<Table.Row>
-						<Table.Head>Profile</Table.Head>
-						<Table.Head>Name</Table.Head>
-						<Table.Head class={cn("p-5", isMobile.current && "text-center")}>Member #</Table.Head>
-						{#if !isMobile.current}
-							<Table.Head>Email</Table.Head>
-						{/if}
-						<Table.Head class="text-end">Actions</Table.Head>
+						<Table.Head class="w-14">Profile</Table.Head>
+						<Table.Head class="min-w-[10rem]">Name</Table.Head>
+						<Table.Head class="w-24 text-center md:text-left">Member #</Table.Head>
+						<Table.Head class="hidden min-w-[12rem] md:table-cell">Email</Table.Head>
+						<Table.Head
+							class="sticky right-0 z-30 w-28 border-l border-border/60 bg-card/90 text-center shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.12)] backdrop-blur-sm dark:bg-card/80 dark:shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.35)]"
+						>
+							Actions
+						</Table.Head>
 					</Table.Row>
 				</Table.Header>
 				<Table.Body>
 					{#if members.length === 0}
 						<Table.Row>
-							<Table.Cell class="py-6 text-center">
+							<Table.Cell class="py-6 text-center text-sm" colspan={5}>
 								{searchTerm ? "No members found for your search" : "No members found"}
 							</Table.Cell>
 						</Table.Row>
 					{:else}
 						{#each members as member (member.id)}
-							<Table.Row>
+							<Table.Row class="group">
 								<Table.Cell>
 									<Avatar
 										class="size-8"
@@ -266,45 +337,44 @@
 										dops={member.dops ?? undefined}
 									/>
 								</Table.Cell>
-								<Table.Cell>
+								<Table.Cell class="text-sm">
 									<a
-										href={`/members/${member.username ?? member.id}`}
+										href={`/members/${member.id}`}
 										class="text-foreground font-medium underline-offset-4 hover:text-primary hover:underline"
 									>
 										{member.name || "N/A"}
 									</a>
 								</Table.Cell>
-								<Table.Cell class={cn("", isMobile.current && "text-center")}
-									>{member.mbr || "N/A"}</Table.Cell
+								<Table.Cell class="text-center text-sm tabular-nums md:text-left">{member.mbr || "N/A"}</Table.Cell>
+								<Table.Cell class="hidden text-sm md:table-cell"
+									>{member.email ?? member.username ?? "N/A"}</Table.Cell
 								>
-								{#if !isMobile.current}
-									<Table.Cell>{member.email ?? member.username ?? "N/A"}</Table.Cell>
-								{/if}
-								<Table.Cell class="text-end">
-									{#if isAdmin}
-										<div class="flex flex-wrap items-center justify-end gap-1">
+								<Table.Cell
+									class="group-hover:bg-muted/50 sticky right-0 z-20 w-28 border-l border-border/60 bg-card/90 text-center shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.12)] backdrop-blur-sm transition-colors dark:bg-card/80 dark:shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.35)]"
+								>
+									<div class="flex justify-center gap-1">
+										{#if isAdmin}
 											<Button
-												variant="ghost"
-												size="sm"
-												href={`/members/${member.username ?? member.id}`}
+												variant="outline"
+												size="icon"
+												href={`/members/${member.id}/edit`}
+												title="Edit"
+												aria-label="Edit member"
 											>
-												View
+												<Pencil class="h-4 w-4" />
 											</Button>
+										{:else}
 											<Button
-												variant="ghost"
-												size="sm"
-												href={`/members/${member.username ?? member.id}/edit`}
+												variant="outline"
+												size="icon"
+												href={`/members/${member.id}`}
+												title="View"
+												aria-label="View member"
 											>
-												Edit
+												<Eye class="h-4 w-4" />
 											</Button>
-										</div>
-									{:else}
-										<Button
-											variant="ghost"
-											href={`/members/${member.username ?? member.id}`}
-											size="sm">View</Button
-										>
-									{/if}
+										{/if}
+									</div>
 								</Table.Cell>
 							</Table.Row>
 						{/each}
@@ -314,7 +384,7 @@
 		</div>
 
 		<!-- Pagination -->
-		<div class="mt-8 flex items-center justify-center">
+		<div class="mt-6 flex items-center justify-center">
 			<Pagination.Root
 				count={pagination.totalCount}
 				perPage={pagination.perPage}
@@ -331,19 +401,19 @@
 								<span class="hidden sm:block">Previous</span>
 							</Pagination.PrevButton>
 						</Pagination.Item>
-						{#each pages as page (page.key)}
-							{#if page.type === "ellipsis"}
+						{#each pages as pageItem (pageItem.key)}
+							{#if pageItem.type === "ellipsis"}
 								<Pagination.Item>
 									<Pagination.Ellipsis />
 								</Pagination.Item>
 							{:else}
 								<Pagination.Item>
 									<Pagination.Link
-										{page}
-										isActive={currentPage === page.value}
-										onclick={() => handlePageChange(page.value)}
+										page={pageItem}
+										isActive={currentPage === pageItem.value}
+										onclick={() => handlePageChange(pageItem.value)}
 									>
-										{page.value}
+										{pageItem.value}
 									</Pagination.Link>
 								</Pagination.Item>
 							{/if}
@@ -361,5 +431,5 @@
 				{/snippet}
 			</Pagination.Root>
 		</div>
-	{/if}
-</div>
+	</div>
+{/if}

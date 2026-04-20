@@ -30,8 +30,9 @@ export const users = pgTable("users", {
 	mbr: integer("mbr"),
 	msd: date("msd"), // member since date
 	sponsor: text("sponsor"),
+	/** When true, member is deceased (memorial) — excluded from keg buying duty on /stats. */
 	dops: boolean("dops").notNull().default(false),
-	dops_date: date("dops_date"), // date of permanent sobriety
+	dops_date: date("dops_date"),
 	bio: text("bio"),
 	hobbies: text("hobbies"),
 	likes: text("likes"),
@@ -43,6 +44,10 @@ export const users = pgTable("users", {
 export const invitationTokens = pgTable("invitation_tokens", {
 	id: text("id").primaryKey(),
 	token: text("token").notNull().unique(),
+	/** Label for who the invite is for (required on new invites). */
+	invite_name: text("invite_name"),
+	/** Display name of the member who created the link (avoids a `users` join on public invite page). */
+	inviter_name: text("inviter_name"),
 	created_by_id: text("created_by_id")
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
@@ -78,7 +83,11 @@ export type InvitationToken = typeof invitationTokens.$inferSelect;
 
 export type Event = typeof events.$inferSelect;
 
-/** Legacy islandbeerclub.com/stats.htm — keg credits leaderboard (sort_order = rank / “who buys next”). */
+/**
+ * Legacy islandbeerclub.com/stats.htm — keg credits leaderboard.
+ * `sort_order` is a display rank; **who buys next** is whoever has the **lowest `credits`**
+ * among members not marked deceased (`users.dops`).
+ */
 export const statsKegCredits = pgTable("stats_keg_credits", {
 	id: text("id").primaryKey(),
 	sort_order: integer("sort_order").notNull().unique(),

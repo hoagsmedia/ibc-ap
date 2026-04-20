@@ -2,18 +2,18 @@
 	import { superForm } from "sveltekit-superforms";
 	import { zodClient } from "sveltekit-superforms/adapters";
 	import { kegCreditsFormSchema } from "$lib/keg-credits-form-schema.js";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
+	import { ArrowLeft } from "@lucide/svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import {
 		Card,
 		CardContent,
 		CardDescription,
-		CardHeader,
-		CardTitle
+		CardHeader
 	} from "$lib/components/ui/card/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
 	import { Checkbox } from "$lib/components/ui/checkbox/index.js";
-	import { ArrowLeft } from "@lucide/svelte";
 	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
@@ -29,14 +29,16 @@
 	<title>Add keg credit row | IBC Admin</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-lg py-8">
-	<Button href="/admin/stats/keg-credits" variant="ghost" class="mb-4 gap-2">
-		<ArrowLeft class="h-4 w-4" />
-		Keg credits
-	</Button>
+<div class="mx-auto w-full min-w-0 max-w-lg">
+	<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+		<h1 class="min-w-0 text-2xl font-bold tracking-tight sm:text-3xl">Add credit row</h1>
+		<HubBackLink href="/admin/stats/keg-credits" size="sm" class="shrink-0 gap-2">
+			<ArrowLeft class="h-4 w-4" />
+			Keg credits
+		</HubBackLink>
+	</div>
 	<Card>
 		<CardHeader>
-			<CardTitle>Add credit row</CardTitle>
 			<CardDescription>Rank = display order (who buys next).</CardDescription>
 		</CardHeader>
 		<CardContent>

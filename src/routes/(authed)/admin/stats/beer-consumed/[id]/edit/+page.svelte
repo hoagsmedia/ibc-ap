@@ -2,13 +2,13 @@
 	import { superForm } from "sveltekit-superforms";
 	import { zodClient } from "sveltekit-superforms/adapters";
 	import { z } from "zod";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import {
 		Card,
 		CardContent,
 		CardDescription,
-		CardHeader,
-		CardTitle
+		CardHeader
 	} from "$lib/components/ui/card/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Label } from "$lib/components/ui/label/index.js";
@@ -35,14 +35,16 @@
 	<title>Edit keg consumption | IBC Admin</title>
 </svelte:head>
 
-<div class="container mx-auto max-w-lg py-8">
-	<Button href="/admin/stats/beer-consumed" variant="ghost" class="mb-4 gap-2">
-		<ArrowLeft class="h-4 w-4" />
-		Beer consumed
-	</Button>
+<div class="mx-auto w-full min-w-0 max-w-lg">
+	<div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+		<h1 class="min-w-0 text-2xl font-bold tracking-tight sm:text-3xl">Edit keg row</h1>
+		<HubBackLink href="/admin/stats/beer-consumed" size="sm" class="shrink-0 gap-2">
+			<ArrowLeft class="h-4 w-4" />
+			Beer consumed
+		</HubBackLink>
+	</div>
 	<Card>
 		<CardHeader>
-			<CardTitle>Edit keg row</CardTitle>
 			<CardDescription>Update keg #, dates, gallons, or beer name.</CardDescription>
 		</CardHeader>
 		<CardContent>

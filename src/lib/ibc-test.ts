@@ -7,3 +7,15 @@ export function requiresIbcTest(user: { role: string; test_passed: Date | null }
 	if (user.role === "member") return false;
 	return true;
 }
+
+/**
+ * Members-only published events and member-scoped event metrics (e.g. dashboard “events this year”).
+ * Admins and anyone with a member number always qualify; other roles qualify once they pass the IBC test.
+ */
+export function canViewMembersOnlyClubEvents(user: {
+	role: string;
+	test_passed: Date | null;
+}): boolean {
+	if (user.role === "admin" || user.role === "member") return true;
+	return user.test_passed != null;
+}

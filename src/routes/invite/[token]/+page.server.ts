@@ -8,7 +8,11 @@ import { db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
 import { eq } from "drizzle-orm";
 
-export const load: PageServerLoad = async ({ params }) => {
+export const load: PageServerLoad = async ({ params, locals }) => {
+	if (locals.user) {
+		throw redirect(302, "/dashboard");
+	}
+
 	const { token } = params;
 
 	if (!token) {
@@ -21,21 +25,19 @@ export const load: PageServerLoad = async ({ params }) => {
 		error(404, "Invalid or expired invitation link");
 	}
 
-	// Fetch the sponsor's name (user who created the invitation)
-	const [sponsor] = await db
-		.select({ name: table.users.name })
-		.from(table.users)
-		.where(eq(table.users.id, invitation.created_by_id));
-
 	return {
 		token,
 		invitation,
-		sponsorName: sponsor?.name || "Unknown"
+		sponsorName: invitation.inviter_name?.trim() || "Unknown"
 	};
 };
 
 export const actions: Actions = {
 	register: async (event) => {
+		if (event.locals.user) {
+			throw redirect(302, "/dashboard");
+		}
+
 		const { params, request } = event;
 		const { token } = params;
 

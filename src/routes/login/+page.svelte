@@ -19,8 +19,7 @@
 		<div class="bg-accent mt-4 rounded-md p-4">
 			<div class="text-center">
 				<p class="text-accent-foreground text-sm">
-					<strong>Members:</strong> Use your email or username and the password:
-					<code class="bg-secondary rounded px-1">CHANGE_ME_DEV_ONLY</code>
+					<strong>Members:</strong> Sign in with your email or username and password.
 				</p>
 				<p class="text-muted-foreground mt-1 text-xs">
 					You can change your password after logging in via Settings.

@@ -26,6 +26,12 @@ class SidebarState {
 	openMobile = $state(false);
 	setOpen: SidebarStateProps["setOpen"];
 	#isMobile: IsMobile;
+	/**
+	 * Defer mobile sheet mount across two animation frames so the browser can paint after the
+	 * pointer event before dialog/portal work runs (improves INP processing + presentation delay).
+	 */
+	#mobileOpenRaf1: number | null = null;
+	#mobileOpenRaf2: number | null = null;
 	state = $derived.by(() => (this.open ? "expanded" : "collapsed"));
 
 	constructor(props: SidebarStateProps) {
@@ -49,13 +55,36 @@ class SidebarState {
 	};
 
 	setOpenMobile = (value: boolean) => {
+		if (this.#mobileOpenRaf1 !== null) {
+			cancelAnimationFrame(this.#mobileOpenRaf1);
+			this.#mobileOpenRaf1 = null;
+		}
+		if (this.#mobileOpenRaf2 !== null) {
+			cancelAnimationFrame(this.#mobileOpenRaf2);
+			this.#mobileOpenRaf2 = null;
+		}
+
+		if (value && this.#isMobile.current) {
+			if (this.openMobile) return;
+			this.#mobileOpenRaf1 = requestAnimationFrame(() => {
+				this.#mobileOpenRaf1 = null;
+				this.#mobileOpenRaf2 = requestAnimationFrame(() => {
+					this.#mobileOpenRaf2 = null;
+					this.openMobile = true;
+				});
+			});
+			return;
+		}
+
 		this.openMobile = value;
 	};
 
 	toggle = () => {
-		return this.#isMobile.current
-			? (this.openMobile = !this.openMobile)
-			: this.setOpen(!this.open);
+		if (this.#isMobile.current) {
+			this.setOpenMobile(!this.openMobile);
+			return;
+		}
+		this.setOpen(!this.open);
 	};
 }
 

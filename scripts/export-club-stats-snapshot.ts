@@ -8,7 +8,7 @@ import { writeFileSync } from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
-import { asc } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "../src/lib/server/db/schema.js";
@@ -48,6 +48,15 @@ async function main() {
 	const client = postgres(url, { max: 2 });
 	const db = drizzle(client, { schema });
 
+	const deceasedRows = await db
+		.select({ mbr: schema.users.mbr })
+		.from(schema.users)
+		.where(eq(schema.users.dops, true));
+
+	const deceasedMbr = new Set(
+		deceasedRows.map((r) => r.mbr).filter((m): m is number => m != null && Number.isFinite(m))
+	);
+
 	const kegRows = await db
 		.select()
 		.from(schema.statsKegCredits)
@@ -60,11 +69,22 @@ async function main() {
 
 	const out: ClubStatsSnapshotFile = {
 		exportedAt: new Date().toISOString(),
-		kegCredits: kegRows.map((r) => ({
-			...r,
-			created_at: iso(r.created_at),
-			updated_at: iso(r.updated_at)
-		})),
+		kegCredits: kegRows.map((r) => {
+			const base = {
+				id: r.id,
+				sort_order: r.sort_order,
+				member_label: r.member_label,
+				member_number: r.member_number,
+				credits: r.credits,
+				is_cik: r.is_cik,
+				created_at: iso(r.created_at),
+				updated_at: iso(r.updated_at)
+			};
+			if (r.member_number != null && deceasedMbr.has(r.member_number)) {
+				return { ...base, dops: true as const };
+			}
+			return base;
+		}),
 		beerConsumed: beerRows.map((r) => ({
 			...r,
 			purchased_on: dateOnly(r.purchased_on),
