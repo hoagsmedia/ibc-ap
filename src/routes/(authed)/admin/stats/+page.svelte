@@ -2,8 +2,8 @@
 	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { ArrowLeft, ArrowRight } from "@lucide/svelte";
+	import Barrel from "@lucide/svelte/icons/barrel";
 	import Beer from "@lucide/svelte/icons/beer";
-	import Table2 from "@lucide/svelte/icons/table-2";
 	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
@@ -55,7 +55,7 @@
 					<div
 						class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-500/15 text-amber-900 dark:bg-amber-400/20 dark:text-amber-100"
 					>
-						<Table2 class="h-6 w-6" aria-hidden="true" />
+						<Barrel class="h-6 w-6" aria-hidden="true" />
 					</div>
 					<div class="min-w-0 flex-1 space-y-1">
 						<h2 class="text-foreground text-lg font-semibold tracking-tight">Keg credits</h2>
