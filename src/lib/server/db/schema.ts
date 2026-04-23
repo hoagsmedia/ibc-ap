@@ -28,7 +28,8 @@ export const users = pgTable("users", {
 		.notNull()
 		.default("guest"),
 	mbr: integer("mbr"),
-	msd: date("msd"), // member since date
+	/** Member since — stored as `timestamptz` (calendar day = UTC midnight). */
+	msd: timestamp("msd", { withTimezone: true, mode: "date" }),
 	sponsor: text("sponsor"),
 	/** When true, member is deceased (memorial) — excluded from keg buying duty on /stats. */
 	dops: boolean("dops").notNull().default(false),

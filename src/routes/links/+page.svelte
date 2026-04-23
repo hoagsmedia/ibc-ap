@@ -74,7 +74,7 @@
 </svelte:head>
 
 <div class="from-muted/40 bg-gradient-to-b via-background to-background">
-	<div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16 lg:py-20">
+	<div class="mx-auto max-w-3xl px-4 py-12 sm:px-6 sm:py-16 md:max-w-5xl lg:max-w-6xl lg:py-20">
 		<header class="mb-12 text-center sm:mb-14">
 			<p
 				class="text-primary mb-3 text-xs font-semibold tracking-[0.2em] uppercase"
@@ -90,10 +90,16 @@
 			</p>
 		</header>
 
-		<div class="flex flex-col gap-8">
-			{#each sections as section (section.category)}
+		<div
+			class="flex flex-col gap-8 md:grid md:grid-cols-2 md:gap-6 lg:grid-cols-3 lg:gap-8"
+		>
+			{#each sections as section, index (section.category)}
 				{@const Icon = section.icon}
-				<Card.Root class="border-border/60 shadow-sm transition-shadow hover:shadow-md">
+				<Card.Root
+					class="border-border/60 shadow-sm transition-shadow hover:shadow-md {index === sections.length - 1
+						? 'md:col-span-2 lg:col-span-1'
+						: ''}"
+				>
 					<Card.Header class="pb-4">
 						<div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-5">
 							<div

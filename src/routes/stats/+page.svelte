@@ -14,7 +14,7 @@
 
 	const { data }: { data: PageData } = $props();
 
-	const viewer = $derived(page.data.user);
+	const user = $derived(page.data.user);
 
 	function fmtNum(n: number, digits = 1) {
 		if (!Number.isFinite(n)) return "—";
@@ -51,15 +51,8 @@
 	/>
 </svelte:head>
 
-<section
-	class={cn(
-		"w-full space-y-10",
-		viewer
-			? "max-w-6xl py-4 md:py-6 xl:max-w-none"
-			: "max-w-4xl py-10 md:py-14"
-	)}
->
-	<header class="space-y-3">
+<section class={cn("w-full space-y-10 py-10 md:py-14")}>
+	<header class="space-y-4">
 		<h1 class="text-foreground text-3xl font-bold tracking-tight md:text-4xl">IBC Keg Credits &amp; Consumption</h1>
 		<p class="text-muted-foreground max-w-3xl text-pretty text-sm leading-relaxed md:text-base">
 			Legacy data from the original club stats page: keg credits and every keg consumed since 22 March
@@ -71,6 +64,13 @@
 			<span class="text-foreground font-medium">CIK</span>
 			= credits in kind. Member names omit surnames.
 		</p>
+		{#if !user}
+			<p class="text-muted-foreground text-sm leading-relaxed">
+				Already a member?
+				<a href="/login" class="text-primary font-medium underline-offset-4 hover:underline">Sign in</a>
+				for the member hub, directory, and account tools.
+			</p>
+		{/if}
 	</header>
 
 	<Card.Root>
@@ -92,7 +92,9 @@
 						</time>
 					</p>
 				{/if}
-				{#if !viewer}
+				{#if user}
+					<Button href="/dashboard" size="sm" variant="outline">Member hub</Button>
+				{:else}
 					<Button href="/login" size="sm" variant="secondary">Sign in</Button>
 				{/if}
 			</div>

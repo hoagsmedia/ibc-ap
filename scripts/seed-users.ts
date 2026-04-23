@@ -8,6 +8,13 @@ import readline from 'readline';
 
 const maxUsers = 30;
 
+function msdUtcDate(msd: string | null | undefined): Date | null {
+	if (!msd) return null;
+	const d = new Date(msd);
+	if (!Number.isFinite(d.getTime())) return null;
+	return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0));
+}
+
 function confirmPrompt(prompt: string): Promise<boolean> {
 	const rl = readline.createInterface({
 		input: process.stdin,
@@ -44,8 +51,7 @@ async function seedUsers() {
 				img: profile.img || null,
 				likes: profile.likes || null,
 				mbr: profile.mbr || null,
-				// msd: profile.msd ?? null,
-				msd: profile.msd ? new Date(profile.msd).toISOString().split('T')[0] : null,
+				msd: msdUtcDate(profile.msd),
 				sponsor: profile.sponsor || null,
 				test_passed: profile.msd ? new Date(profile.msd) : null
 			})
@@ -61,7 +67,7 @@ async function seedUsers() {
 					img: profile.img || null,
 					likes: profile.likes || null,
 					mbr: profile.mbr || null,
-					msd: profile.msd ? new Date(profile.msd).toISOString().split('T')[0] : null,
+					msd: msdUtcDate(profile.msd),
 					sponsor: profile.sponsor || null,
 					test_passed: profile.msd ? new Date(profile.msd) : null,
 					updated_at: new Date()

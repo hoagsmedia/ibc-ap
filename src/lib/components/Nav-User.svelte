@@ -107,7 +107,7 @@
 				</DropdownMenu.Item>
 				<DropdownMenu.Item>
 					<a
-						href="/members"
+						href="/dashboard/members"
 						class="flex w-full items-center gap-2"
 						onclick={() => (isOpen = false)}
 					>

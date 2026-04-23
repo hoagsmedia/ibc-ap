@@ -16,7 +16,7 @@ export const navLinks: NavLink[] = [
 ];
 
 export const dropdownLinks: NavLink[] = [
-	{ href: "founders-day", label: "Founders Day", description: "Celebrating our founders." },
+	{ href: "/founders-day", label: "Founders Day", description: "Celebrating our founders." },
 	{ href: "/links", label: "Links", description: "Beer resources and friends." },
 	{ href: "/movie", label: "IBC Movie", description: "Watch the IBC movie." },
 	{ href: "/foodog", label: "Foo Dogs", description: "Learn about Foo Dogs." },

@@ -20,8 +20,8 @@
 	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
-<section class="mx-auto max-w-4xl px-4 py-12">
-	<div class="mb-12 text-center">
+<section class="mx-auto max-w-4xl px-4 py-6 md:py-12">
+	<div class="mb-6 text-center md:mb-12">
 		<h1 class="text-foreground mb-4 text-4xl font-bold">Island Beer Club History</h1>
 		<p class="text-muted-foreground text-lg">
 			From humble beginnings to a thriving community of beer enthusiasts
@@ -31,43 +31,51 @@
 	<!-- Hero Image -->
 
 	<!-- The Founding Story -->
-	<div class="space-y-8">
-		<figure class="flex justify-center border">
+	<div class="space-y-4 md:space-y-8">
+		<figure class="flex justify-center">
 			<img
 				src="/history-header.webp"
 				alt="Island Beer Club history header"
-				class="max-w-full rounded-lg shadow-lg"
+				class="max-w-full rounded-md shadow-lg sm:rounded-lg"
 			/>
 		</figure>
 		<div class="bg-card rounded-lg p-6 shadow-sm">
 			<h2 class="text-foreground mb-4 text-2xl font-semibold">The Beginning - March 2004</h2>
 			<div class="text-muted-foreground space-y-4">
 				<p class="text-base leading-relaxed">
-					On a magnificent afternoon, mid-March in 2004, the Island Beer Club (IBC) was founded.
-					Jeff "Bones" Wilkens (Mbr#1), John "Old Doc" Morton (Mbr#2), John "Cruncher" Muncy
-					(Mbr#3), and Wayne "Big Oly" Oldendorph (Mbr#4) decided to sample hand-crafted,
-					full-bodied beers from local microbreweries in the San Diego, California, area. After
-					multiple thirst-quenching stops, our four boys ended up at the Ballast Point Brewing
-					Company near the University of San Diego campus. It was there that a kegerator, on display
-					for sale, caught the guys' interest. The thought emerged: "Wouldn't it be cool if we could
-					enjoy a cold, hand-crafted, micro-brewed beer without the hassle of traveling off of the
-					'Rock?'"
+					On a magnificent afternoon, <strong class="text-foreground">mid-March in 2004</strong>, the
+					<strong class="text-foreground">Island Beer Club (IBC)</strong> was founded.
+					<strong class="text-foreground">Jeff "Bones" Wilkens</strong> (Mbr#1),
+					<strong class="text-foreground">John "Old Doc" Morton</strong> (Mbr#2),
+					<strong class="text-foreground">John "Cruncher" Muncy</strong> (Mbr#3), and
+					<strong class="text-foreground">Wayne "Big Oly" Oldendorph</strong> (Mbr#4) decided to sample
+					hand-crafted, full-bodied beers from local microbreweries in the San Diego, California, area.
+					After multiple thirst-quenching stops, our four boys ended up at the
+					<strong class="text-foreground">Ballast Point Brewing Company</strong> near the
+					<strong class="text-foreground">University of San Diego</strong> campus. It was there that a
+					kegerator, on display for sale, caught the guys' interest. The thought emerged: "Wouldn't it be
+					cool if we could enjoy a cold, hand-crafted, micro-brewed beer without the hassle of traveling
+					off of the <strong class="text-foreground">'Rock'</strong>?"
 				</p>
 				<p class="text-base leading-relaxed">
-					Since great ideas require intense thought and discussion, our four-man brew crew adjourned
-					to the VFW bar in Coronado, CA for further liquid refreshment. At the "V" the team agreed
-					to form a beer club. Bones would be the "capital" man--he would purchase a kegerator and
-					allow his garage to be used for micro brew-beer-sampling sessions. Other Club members
-					would purchase kegs of beer, as required. Having established the basic charter for the
-					club, the guys then adjourned to the Little Club bar, in Coronado, to celebrate their
+					Since great ideas require intense thought and discussion, our four-man brew crew adjourned to the
+					<strong class="text-foreground">VFW</strong> bar in Coronado, CA for further liquid refreshment.
+					At the "V" the team agreed to form a beer club. Bones would be the "capital" man—he would
+					purchase a kegerator and allow his garage to be used for micro brew-beer-sampling sessions.
+					Other Club members would purchase kegs of beer, as required. Having established the basic
+					charter for the club, the guys then adjourned to the
+					<strong class="text-foreground">Little Club</strong> bar, in Coronado, to celebrate their
 					brilliant thoughts and begin the membership campaign.
 				</p>
 				<p class="text-base leading-relaxed">
-					Our man of action, Bones, purchased the kegerator just a few days later. And, on Monday,
-					March 22, 2004, Old Doc delivered the first keg, Ballast Point Yellowtail Pale Ale.
-					Shortly thereafter, our Original Four designated Rob "Crenny" Crenshaw Fifth Founder, who
-					joined in on the afternoon beer sampling sessions for Coronado's new beer aficionados. He
-					became Member #5 after he purchased his first keg.
+					Our man of action, Bones, purchased the kegerator just a few days later. And, on
+					<strong class="text-foreground">Monday, March 22, 2004</strong>, Old Doc delivered the first
+					keg, <strong class="text-foreground">Ballast Point Yellowtail Pale Ale</strong>. (The official
+					test uses <strong class="text-foreground">March 22, 2004</strong> as the founding milestone.)
+					Shortly thereafter, our Original Four designated
+					<strong class="text-foreground">Rob "Crenny" Crenshaw</strong> Fifth Founder, who joined in on
+					the afternoon beer sampling sessions for Coronado's new beer aficionados. He became
+					<strong class="text-foreground">Member #5</strong> after he purchased his first keg.
 				</p>
 			</div>
 		</div>
@@ -100,11 +108,14 @@
 			<h2 class="text-foreground mb-4 text-2xl font-semibold">Early Years & Traditions</h2>
 			<div class="text-muted-foreground space-y-4">
 				<p class="text-base leading-relaxed">
-					Meeting at 4 PM, the five grew fond of watching Jerry Springer (not much else on the tube
-					at that time) and discussing the happenings in the universe. It was here that the boys
-					developed the IBC motto--<strong>"More Time than Money"</strong>--to reflect the retired
-					status of most of the Beer Club's stately members. The Founders also developed the club's
-					membership obligation: Buy a keg of hand-crafted beer and you are a member.
+					Meeting at 4 PM, the five grew fond of watching
+					<strong class="text-foreground">Jerry Springer</strong> (not much else on the tube at that time)
+					and discussing the happenings in the universe. It was here that the boys developed the IBC
+					motto—<strong class="text-foreground">"More Time than Money"</strong>—to reflect the retired
+					status of most of the Beer Club's stately members. (The test phrases this as
+					<strong class="text-foreground">"We have more time than money."</strong>) The Founders also
+					developed the club's membership obligation:
+					<strong class="text-foreground">Buy a keg of hand-crafted beer and you are a member.</strong>
 				</p>
 				<p class="text-base leading-relaxed">
 					About ten months into our new Club activities, we needed to solve a problem for Jeff's
@@ -126,19 +137,20 @@
 			<h2 class="text-foreground mb-4 text-2xl font-semibold">Website & Branding</h2>
 			<div class="text-muted-foreground space-y-4">
 				<p class="text-base leading-relaxed">
-					Always alert and "forward observant" (looking to the future), Bones purchased the domain
-					name, www.islandbeerclub.com. He knew that it might be worthwhile, but he had no idea what
-					to do with it or how it would be helpful... so we sat on it until July of 2006. At this
-					point, Crenny had gained some experience in website development and was hosting the
-					website for the Sea 'N Air Men's Golf Club. That was all we needed. A few pages were
-					developed, and the IBC website was officially published in July 2006. This award-winning
+					Always alert and "forward observant" (looking to the future), Bones purchased the domain name,
+					<strong class="text-foreground">www.islandbeerclub.com</strong>. He knew that it might be
+					worthwhile, but he had no idea what to do with it or how it would be helpful... so we sat on it
+					until July of 2006. At this point, Crenny had gained some experience in website development and
+					was hosting the website for the Sea 'N Air Men's Golf Club. That was all we needed. A few pages
+					were developed, and the IBC website was officially published in July 2006. This award-winning
 					website is the envy of beer clubs everywhere.
 				</p>
 				<p class="text-base leading-relaxed">
-					Signage plays a big part at the Island Beer Club. In August 2006, our alley became "Beer
-					Belly Blvd." A year later a permanent brass marker was installed commemorating the site of
-					the IBC Headquarters. October 2007 had John Clampitt (Mbr#18) deliver and install a
-					hand-crafted, kiln-fired tile plaque to identify the clubhouse of the IBC.
+					Signage plays a big part at the Island Beer Club. In August 2006, our alley became
+					<strong class="text-foreground">"Beer Belly Blvd."</strong> A year later a permanent brass
+					marker was installed commemorating the site of the IBC Headquarters. October 2007 had John
+					Clampitt (Mbr#18) deliver and install a hand-crafted, kiln-fired tile plaque to identify the
+					clubhouse of the IBC.
 				</p>
 				<p class="text-base leading-relaxed">
 					John Weiman (Mbr#151), Weiman Design, designed our logo in late October 2007; allowing us
@@ -153,17 +165,20 @@
 			<div class="text-muted-foreground space-y-4">
 				<p class="text-base leading-relaxed">
 					In our first fourteen years of existence, we have continually improved and upgraded the
-					facility to include a commercial popcorn maker (compliments of Mike Herlihy Mbr#57), two
-					additional beer kegerators (thanks Bones Mbr#1), a granite wash sink (thanks to IBC
-					plumber Bob Ryan Mbr#120 and granite donator Ed Carney Mbr#58), two flame-thrower outdoor
-					heaters and numerous beer-oriented signs.
+					facility to include a commercial popcorn maker (compliments of Mike Herlihy Mbr#57),
+					<strong class="text-foreground">two additional beer kegerators</strong> (thanks Bones Mbr#1)—so
+					<strong class="text-foreground">three kegerators in all</strong> at headquarters, counting Bones's
+					original—a granite wash sink (thanks to IBC plumber Bob Ryan Mbr#120 and granite donator Ed
+					Carney Mbr#58), two flame-thrower outdoor heaters and numerous beer-oriented signs.
 				</p>
 				<p class="text-base leading-relaxed">
 					Also, the Island Beer Club banner has been on many photo ops including the top of
-					Kilimanjaro, 2012 Super Bowl and, a $16 million cocaine bust off Costa Rica. Between 2011
-					and 2018, we more than tripled our membership as we focused on recruiting beer aficionados
-					with enough disposable income to provide a keg of hand-crafted beer. As of June 2020, we
-					have 407 members.
+					<strong class="text-foreground">Kilimanjaro</strong>, 2012 Super Bowl and, a $16 million cocaine
+					bust off Costa Rica. Between 2011 and 2018, we more than tripled our membership as we focused on
+					recruiting beer aficionados with enough disposable income to provide a keg of hand-crafted
+					beer. As of June 2020, we have <strong class="text-foreground">407 members</strong>. Since 2004,
+					the club has purchased <strong class="text-foreground">more than 700</strong> kegs of
+					hand-crafted beer.
 				</p>
 			</div>
 		</div>
@@ -201,7 +216,8 @@
 					<div>
 						<h3 class="text-foreground font-semibold">March 2004</h3>
 						<p class="text-muted-foreground text-sm">
-							Island Beer Club founded by four beer enthusiasts
+							<strong class="text-foreground font-medium">Island Beer Club</strong> founded; founding
+							members and nicknames (for the test) are in the story above.
 						</p>
 					</div>
 				</div>
@@ -215,7 +231,8 @@
 					<div>
 						<h3 class="text-foreground font-semibold">March 22, 2004</h3>
 						<p class="text-muted-foreground text-sm">
-							First keg delivered: Ballast Point Yellowtail Pale Ale
+							First keg: <strong class="text-foreground font-medium">Ballast Point Yellowtail Pale Ale</strong>
+							—date used on the member test as the founding milestone.
 						</p>
 					</div>
 				</div>
@@ -355,10 +372,13 @@
 					Feast and Fareway restaurant at the Coronado Golf Course.
 				</p>
 				<p class="text-base leading-relaxed">
-					The IBC meets every Wednesday from 4 PM to 6 PM (Standard Time); 4:30 PM to 6:30 PM
-					(Daylight Savings Time) in the alley (Beer Belly Blvd) on J Avenue in Coronado as well as
-					our "satellite" locations. Guests, especially ladies, are always welcome when accompanied
-					by a Beer Club member. Please join us.
+					The IBC meets every <strong class="text-foreground">Wednesday</strong> from
+					<strong class="text-foreground">4 PM to 6 PM (Standard Time)</strong>;
+					<strong class="text-foreground">4:30 PM to 6:30 PM (Daylight Savings Time)</strong> in the alley
+					(<strong class="text-foreground">Beer Belly Blvd</strong>) on
+					<strong class="text-foreground">J Avenue</strong> in Coronado as well as our "satellite"
+					locations. Guests, especially ladies, are always welcome when accompanied by a Beer Club
+					member. Please join us.
 				</p>
 			</div>
 		</div>

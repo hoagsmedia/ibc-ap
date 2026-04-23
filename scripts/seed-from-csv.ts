@@ -61,11 +61,12 @@ function ensureUniqueUsernameSync(
 	return candidate;
 }
 
-function parseMsd(msd: string): string | null {
+function parseMsd(msd: string): Date | null {
 	if (!trim(msd)) return null;
 	try {
 		const d = new Date(msd);
-		return isNaN(d.getTime()) ? null : d.toISOString().split('T')[0];
+		if (isNaN(d.getTime())) return null;
+		return new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate(), 0, 0, 0, 0));
 	} catch {
 		return null;
 	}

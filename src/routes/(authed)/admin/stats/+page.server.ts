@@ -2,11 +2,14 @@ import { kegCreditBuyingResponsibility } from "$lib/keg-credits-responsibility.j
 import { db } from "$lib/server/db/index.js";
 import { statsBeerConsumed, statsKegCredits, users } from "$lib/server/db/schema.js";
 import { beerTotalsFromGallonSum } from "$lib/stats-snapshot.js";
-import { count, desc, eq, sum } from "drizzle-orm";
+import { and, count, desc, eq, inArray, isNotNull, sql, sum } from "drizzle-orm";
 import type { PageServerLoad } from "./$types.js";
 
 export const load: PageServerLoad = async () => {
-	const [kegRows, beerCountRes, beerGallonsRes, deceasedRes, latestKegRes] = await Promise.all([
+	const yearFromMsd = sql<number>`extract(year from ${users.msd})::int`.mapWith(Number);
+
+	const [kegRows, beerCountRes, beerGallonsRes, deceasedRes, latestKegRes, membersByYearRows] =
+		await Promise.all([
 		db
 			.select({
 				id: statsKegCredits.id,
@@ -20,8 +23,17 @@ export const load: PageServerLoad = async () => {
 		db.select({ n: count() }).from(statsBeerConsumed),
 		db.select({ s: sum(statsBeerConsumed.gallons) }).from(statsBeerConsumed),
 		db.select({ mbr: users.mbr }).from(users).where(eq(users.dops, true)),
-		db.select().from(statsBeerConsumed).orderBy(desc(statsBeerConsumed.keg_number)).limit(1)
-	]);
+		db.select().from(statsBeerConsumed).orderBy(desc(statsBeerConsumed.keg_number)).limit(1),
+			db
+				.select({
+					year: yearFromMsd,
+					n: count()
+				})
+				.from(users)
+				.where(and(inArray(users.role, ["member", "admin"]), isNotNull(users.msd)))
+				.groupBy(yearFromMsd)
+				.orderBy(yearFromMsd)
+		]);
 
 	const kegTotal = kegRows.length;
 	const beerTotal = Number(beerCountRes[0]?.n ?? 0);
@@ -41,6 +53,11 @@ export const load: PageServerLoad = async () => {
 		}))
 	);
 
+	const membersJoinedByYear = membersByYearRows.map((r) => ({
+		year: Number(r.year),
+		count: Number(r.n)
+	}));
+
 	return {
 		kegWidget: {
 			totalMembers: kegTotal,
@@ -51,6 +68,7 @@ export const load: PageServerLoad = async () => {
 			totalKegs: beerTotal,
 			totals: beerTotalsFromGallonSum(beerGallonsRes[0]?.s),
 			latestKeg
-		}
+		},
+		membersJoinedByYear
 	};
 };

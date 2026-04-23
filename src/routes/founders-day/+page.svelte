@@ -1,49 +1,111 @@
 <script lang="ts">
 	import * as Card from "$lib/components/ui/card";
 	import { Button } from "$lib/components/ui/button";
+	import { Separator } from "$lib/components/ui/separator";
+	import { ExternalLink, FileText, ScrollText, Video } from "@lucide/svelte/icons";
 
 	const meta = {
 		title: "Founders Day | Island Beer Club",
 		description:
-			"Celebrating the founding of Island Beer Club on March 22, 2004. Learn about our history and annual Founders Day traditions.",
+			"IBC Founders Day — honoring our March 22, 2004 founding, the 2013 and 2014 celebrations, videos, poems, and traditions.",
 		image: "/the-founders.png",
 		url: "https://islandbeerclub.com/founders-day"
 	};
 
-	// Founders Day events data
-	const foundersData = {
-		foundingDate: "March 22, 2004",
+	const linkBtn =
+		"inline-flex h-10 items-center justify-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground";
+
+	const founding = {
+		date: "March 22, 2004",
 		firstBeer: "Ballast Point Pale Ale",
-		foundersEvents: [
-			{
-				year: 2013,
-				date: "March 20, 2013",
-				title: "Founders Day I",
-				description:
-					"The first Founders Day celebration where the IBC Lutetium and Ytterbium Clans banded together to host a solemnization and tribute in honor of the five Founders.",
-				organizers: [
-					"Tony Russell (Mbr 165)",
-					"Rod Neilson (Mbr 169)",
-					"John Parma (Mbr 176, not in attendance)",
-					"Jon Sanchioli (Mbr 177)",
-					"Tim Sexton (Mbr 174)",
-					"John Sexton (Mbr 172)",
-					"Jason Anderson (Mbr 166)"
-				],
-				poeticSupport: 'Jim "Poem Stranger" Knox (Mbr 141)',
-				image: "/founders-day/founders-day-20MAR13.jpg"
-			},
-			{
-				year: 2014,
-				date: "March 19, 2014",
-				title: "Founders Day II",
-				description:
-					"Organized by the Ytterbium, Zirconium and other clans to continue the tradition.",
-				organizers: ["The Ytterbium Clan", "The Zirconium Clan", "Other participating clans"],
-				image: "/founders-day/founders-day-12MAR14.jpg"
-			}
+	};
+
+	const traditionDecree = {
+		title: "How Founders Day is observed",
+		body: [
+			"By decree, as witnessed by all in attendance at the first celebration, Founder's Day is to be celebrated on the Wednesday closest to the date of our founding — 22 March.",
+			"Since St. Patrick's Day is nearby, the club celebrates that as well."
 		]
 	};
+
+	const foundersDay2013 = {
+		title: "Founders Day I",
+		subtitle: "First ever — Wednesday, 20 March 2013",
+		intro:
+			"On Wednesday, 20 March 2013, the first Founders Day was cleverly contrived, precisely planned, and exceptionally executed by our most junior members.",
+		organizingClans:
+			"The IBC Lutetium and Ytterbium Clans banded together to host a solemnization and tribute in honor of the five Founders — thus starting the tradition of Founders Day.",
+		organizers: [
+			"Tony Russell — Mbr 165",
+			"Rod Neilson — Mbr 169",
+			"John Parma — Mbr 176 (not in attendance)",
+			"Jon Sanchioli — Mbr 177",
+			"Tim Sexton — Mbr 174",
+			"John Sexton — Mbr 172",
+			"Jason Anderson — Mbr 166"
+		],
+		poeticSupport: 'Poetically supported by Jim “Poem Stranger” Knox — Mbr 141 (IBC Poet Laureate).',
+		image: "/founders-day/founders-day-20MAR13.jpg",
+		videos: [
+			{ label: "Filmed by Ed Weisbrod", href: "https://youtu.be/e3RnAUvCS2Q" },
+			{ label: "Filmed by Scott Kaye", href: "https://www.youtube.com/watch?v=LJyrCm8Vq2w" },
+			{ label: "Filmed by Wayne Strickland", href: "https://www.youtube.com/watch?v=4VGagVrj3nc" }
+		],
+		chimeNote:
+			"20 March 2013 — first ever Beer Fairy Chime (see ceremony script and poems below)."
+	};
+
+	const foundersDay2014 = {
+		title: "Founders Day II",
+		subtitle: "Tenth anniversary — Wednesday, 19 March 2014",
+		intro:
+			"Organized by the Ytterbium, Zirconium, and Double Centurion Clans (ceremony described as Zirconium Exquisite and Double Centurion).",
+		emcee: "Alisa Kerr — Mbr 193 (emcee).",
+		participants: [
+			"Kippy — #12 (food and band)",
+			"Fargy — #47 (absolution keg)",
+			"Noah — #195",
+			"Lordy — #190",
+			"Sandke — #182",
+			"JJ — #205 (beer runs for founders)",
+			"Lorentzen — #199",
+			"Rod — #169 (video)",
+			"Roger — #171 (tiles)",
+			"Bear — #179",
+			"Canty — #186",
+			"Plunkett — #184",
+			"Delo — #202",
+			'Jim — #141 (IBC poet laureate)'
+		],
+		notPresent: [
+			"Doc Seibert — #196",
+			"Josh Flage — #198",
+			"Jason Anderson — #166",
+			"Paul Bandini — #204"
+		],
+		notPresentNote: "Helped with planning but were not able to attend the event.",
+		image: "/founders-day/founders-day-12MAR14.jpg",
+		video: {
+			label: "Founders Day II video (Rod Neilson — Mbr 169)",
+			href: "https://www.youtube.com/watch?v=nPCawAq0P6M"
+		},
+		pdfPoem: {
+			label: "Founders Tribute Poem (2014) — PDF",
+			href: "https://islandbeerclub.com/PDFs/FoundersTributePoem2014.pdf"
+		},
+		quote: "With Mariachis, tacos, beer, ladies and cake; life doesn't get much better."
+	};
+
+	const triviaQuestions = [
+		"What gift did Loie get?",
+		"Which Founder was missing?",
+		"Why was Jon Sanchioli chosen as emcee?",
+		"Who is the official IBC Poet Laureate?",
+		"What's the purpose of the Beer Fairy Chimes?",
+		"Why were the Founders wearing green hats?",
+		"How many official IBC members were there on Founders Day?",
+		"Where does IBC keep a tally of beer consumed?"
+	];
 </script>
 
 <svelte:head>
@@ -56,203 +118,281 @@
 	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
-<div class="from-background via-background to-muted/20 min-h-screen bg-gradient-to-br">
-	<div class="mx-auto max-w-4xl px-4 py-12">
-		<!-- Hero Section -->
-		<div class="mb-12 text-center">
-			<h1 class="text-foreground mb-4 text-4xl font-bold md:text-5xl">IBC Founders Day</h1>
-			<p class="text-muted-foreground mx-auto max-w-2xl text-xl">
-				Celebrating the founding of Island Beer Club and honoring our heritage since 2004
-			</p>
-		</div>
+<div class="border-border/40 from-muted/20 to-background border-b bg-gradient-to-b">
+	<div class="mx-auto max-w-3xl px-4 py-10 md:py-14">
+		<p class="text-muted-foreground mb-2 text-center text-xs font-medium tracking-wide uppercase">
+			Tradition since 2013
+		</p>
+		<h1 class="text-foreground text-center text-3xl font-semibold tracking-tight md:text-4xl">
+			IBC Founders Day
+		</h1>
+		<p class="text-muted-foreground mx-auto mt-3 max-w-xl text-center text-pretty md:text-lg">
+			Honoring the five founders and the annual celebration on the Wednesday nearest 22 March — preserved
+			from the original club site and member archives.
+		</p>
+	</div>
+</div>
 
-		<!-- Founding Information Card -->
-		<div class="mb-8">
-			<Card.Root>
-				<Card.Content class="p-8">
-					<div class="mb-8 text-center">
-						<img
-							src="/the-founders.png"
-							alt="The Founders"
-							class="mx-auto mb-6 w-full max-w-md rounded-lg shadow-sm"
-						/>
+<div class="mx-auto max-w-3xl px-4 py-10 md:py-12">
+	<!-- Founding -->
+	<section class="mb-12">
+		<Card.Root class="overflow-hidden border-border/70 p-0 shadow-sm gap-0">
+			<img
+				src="/the-founders.png"
+				alt="The five founders of Island Beer Club"
+				class="aspect-[21/9] w-full rounded-t-xl object-cover object-top md:aspect-[2.4/1]"
+			/>
+			<Card.Content class="space-y-0 p-0 px-0">
+				<div class="grid gap-4 border-b border-border/50 p-6 sm:grid-cols-2 sm:p-8">
+					<div class="rounded-xl border border-border/60 bg-card/80 p-5 text-center">
+						<p class="text-muted-foreground text-xs font-semibold uppercase tracking-wide">Founded</p>
+						<p class="text-foreground mt-1 text-xl font-semibold tabular-nums">{founding.date}</p>
 					</div>
-
-					<div class="grid gap-8 md:grid-cols-2">
-						<div class="bg-primary/5 border-primary/20 rounded-lg border p-6 text-center">
-							<h3 class="text-primary mb-2 text-2xl font-semibold">Founded</h3>
-							<p class="text-card-foreground text-xl font-medium">{foundersData.foundingDate}</p>
-						</div>
-						<div class="bg-primary/5 border-primary/20 rounded-lg border p-6 text-center">
-							<h3 class="text-primary mb-2 text-2xl font-semibold">First Beer</h3>
-							<p class="text-card-foreground text-xl font-medium">{foundersData.firstBeer}</p>
-						</div>
-					</div>
-				</Card.Content>
-			</Card.Root>
-		</div>
-
-		<!-- Founders Day History -->
-		<div class="mb-8">
-			<Card.Root>
-				<Card.Content class="p-8">
-					<Card.Header class="px-0 pt-0">
-						<Card.Title class="text-3xl font-bold">Founders Day History</Card.Title>
-					</Card.Header>
-					<div class="prose prose-lg dark:prose-invert max-w-none">
-						<p class="text-card-foreground mb-6 leading-relaxed">
-							IBC was founded on <strong class="text-primary">March 22, 2004</strong>. The first
-							beer purchased was
-							<strong class="text-primary">Ballast Point Pale Ale</strong>, marking the beginning of
-							our journey into craft beer appreciation.
+					<div class="rounded-xl border border-border/60 bg-card/80 p-5 text-center">
+						<p class="text-muted-foreground text-xs font-semibold uppercase tracking-wide">
+							First keg
 						</p>
-
-						<h3 class="text-foreground mb-4 text-xl font-semibold">Founders Day Beginnings</h3>
-						<p class="text-card-foreground leading-relaxed">
-							On March 20, 2013, the IBC Lutetium and Ytterbium Clans banded together to host a
-							solemnization and tribute in honor of the five Founders of our august creation. Thus
-							started the tradition of Founders Day.
-						</p>
+						<p class="text-foreground mt-1 text-lg font-semibold leading-snug">{founding.firstBeer}</p>
 					</div>
-				</Card.Content>
-			</Card.Root>
+				</div>
+			</Card.Content>
+		</Card.Root>
+	</section>
+
+	<!-- Decree -->
+	<section class="mb-12">
+		<h2 class="text-foreground mb-4 text-xl font-semibold">{traditionDecree.title}</h2>
+		<Card.Root class="border-border/70">
+			<Card.Content class="space-y-4 p-6 text-muted-foreground leading-relaxed">
+				{#each traditionDecree.body as para (para)}
+					<p>{para}</p>
+				{/each}
+			</Card.Content>
+		</Card.Root>
+	</section>
+
+	<!-- 2013 -->
+	<section class="mb-12">
+		<div class="mb-6 flex flex-col gap-1">
+			<h2 class="text-foreground text-xl font-semibold">{foundersDay2013.title}</h2>
+			<p class="text-primary text-sm font-medium">{foundersDay2013.subtitle}</p>
 		</div>
 
-		<!-- Events Timeline -->
-		<div class="space-y-6">
-			<h2 class="text-foreground mb-6 text-3xl font-bold">Founders Day Celebrations</h2>
+		<Card.Root class="overflow-hidden border-border/70 p-0 shadow-sm gap-0">
+			<img
+				src={foundersDay2013.image}
+				alt="Founders Day I gathering"
+				class="aspect-[21/9] w-full rounded-t-xl object-cover object-top md:aspect-[2.4/1]"
+			/>
+			<Card.Content class="space-y-6 p-6 md:p-8">
+				<p class="text-muted-foreground leading-relaxed">{foundersDay2013.intro}</p>
+				<p class="text-muted-foreground leading-relaxed">{foundersDay2013.organizingClans}</p>
 
-			{#each foundersData.foundersEvents as event, index (event.title + event.date)}
-				<Card.Root>
-					<!-- Event Header -->
-					{#if event.image}
-						<Card.Header class="relative -mt-6 p-0">
-							<img
-								src={event.image}
-								alt="{event.title} celebration photo"
-								class="h-64 w-full rounded-t-lg object-cover object-top md:h-80"
-							/>
-							<div class="absolute top-4 left-4">
-								<div
-									class="bg-primary/90 flex h-12 w-12 items-center justify-center rounded-full shadow-lg backdrop-blur-sm"
+				<div class="grid gap-8 md:grid-cols-2">
+					<div>
+						<h3 class="text-foreground mb-3 text-sm font-semibold">Organizers &amp; crew</h3>
+						<ul class="text-muted-foreground space-y-2 text-sm">
+							{#each foundersDay2013.organizers as line (line)}
+								<li class="flex gap-2">
+									<span class="bg-primary/70 mt-2 h-1 w-1 shrink-0 rounded-full"></span>
+									{line}
+								</li>
+							{/each}
+						</ul>
+					</div>
+					<div>
+						<h3 class="text-foreground mb-3 text-sm font-semibold">Poetry</h3>
+						<p class="text-muted-foreground text-sm leading-relaxed">
+							{foundersDay2013.poeticSupport}
+						</p>
+						<p class="text-muted-foreground mt-4 text-sm italic">{foundersDay2013.chimeNote}</p>
+					</div>
+				</div>
+
+				<Separator />
+
+				<div>
+					<h3 class="text-foreground mb-3 flex items-center gap-2 text-sm font-semibold">
+						<Video class="size-4 opacity-80" aria-hidden="true" />
+						Videos — Founders Day I
+					</h3>
+					<ul class="flex flex-col gap-2">
+						{#each foundersDay2013.videos as v (v.href)}
+							<li>
+								<a
+									href={v.href}
+									target="_blank"
+									rel="noopener noreferrer"
+									class="text-primary inline-flex items-center gap-2 text-sm font-medium underline decoration-primary/35 underline-offset-4 hover:decoration-primary"
 								>
-									<span class="text-primary-foreground text-lg font-bold">{index + 1}</span>
-								</div>
-							</div>
-						</Card.Header>
-					{:else}
-						<div class="p-8 pb-0">
-							<div class="bg-primary mb-4 flex h-12 w-12 items-center justify-center rounded-full">
-								<span class="text-primary-foreground text-lg font-bold">{index + 1}</span>
-							</div>
-						</div>
-					{/if}
-					<Card.Content class="p-0">
-						<!-- Content Section -->
-						<div class="p-8">
-							<div class="mb-6">
-								<div class="mb-4 flex flex-col md:flex-row md:items-center md:justify-between">
-									<Card.Title class="text-2xl font-bold">{event.title}</Card.Title>
-									<span class="text-primary text-lg font-semibold">{event.date}</span>
-								</div>
+									{v.label}
+									<ExternalLink class="size-3.5 shrink-0 opacity-70" aria-hidden="true" />
+								</a>
+							</li>
+						{/each}
+					</ul>
+				</div>
+			</Card.Content>
+		</Card.Root>
+	</section>
 
-								<Card.Description class="text-base leading-relaxed">
-									{event.description}
-								</Card.Description>
-							</div>
+	<!-- 2014 -->
+	<section class="mb-12">
+		<div class="mb-6 flex flex-col gap-1">
+			<h2 class="text-foreground text-xl font-semibold">{foundersDay2014.title}</h2>
+			<p class="text-primary text-sm font-medium">{foundersDay2014.subtitle}</p>
+		</div>
 
-							<div class="grid gap-6 md:grid-cols-2">
-								<div>
-									<h4 class="text-foreground mb-3 font-semibold">Organizers:</h4>
-									<ul class="space-y-2">
-										{#each event.organizers as organizer (organizer)}
-											<li class="text-muted-foreground flex items-center gap-2 text-sm">
-												<div class="bg-primary h-1.5 w-1.5 flex-shrink-0 rounded-full"></div>
-												{organizer}
-											</li>
-										{/each}
-									</ul>
-								</div>
+		<Card.Root class="overflow-hidden border-border/70 p-0 shadow-sm gap-0">
+			<img
+				src={foundersDay2014.image}
+				alt="Founders Day II gathering"
+				class="aspect-[21/9] w-full rounded-t-xl object-cover object-top md:aspect-[2.4/1]"
+			/>
+			<Card.Content class="space-y-6 p-6 md:p-8">
+				<p class="text-muted-foreground leading-relaxed">{foundersDay2014.intro}</p>
+				<p class="text-foreground text-sm font-medium">{foundersDay2014.emcee}</p>
 
-								{#if event.poeticSupport}
-									<div>
-										<h4 class="text-foreground mb-3 font-semibold">Poetic Support:</h4>
-										<p class="text-muted-foreground text-sm leading-relaxed">
-											{event.poeticSupport}
-										</p>
-									</div>
-								{/if}
-							</div>
-						</div>
-					</Card.Content>
-				</Card.Root>
-			{/each}
+				<blockquote
+					class="border-primary/30 text-foreground/90 border-l-4 py-1 pl-4 text-lg font-medium italic md:text-xl"
+				>
+					{foundersDay2014.quote}
+				</blockquote>
 
-			<!-- Historical Documents -->
-			<Card.Root>
-				<Card.Header>
-					<Card.Title class="text-3xl font-bold">Historical Documents</Card.Title>
+				<div>
+					<h3 class="text-foreground mb-3 text-sm font-semibold">Participants</h3>
+					<ul class="text-muted-foreground grid gap-2 text-sm sm:grid-cols-2">
+						{#each foundersDay2014.participants as line (line)}
+							<li class="flex gap-2">
+								<span class="bg-primary/70 mt-2 h-1 w-1 shrink-0 rounded-full"></span>
+								{line}
+							</li>
+						{/each}
+					</ul>
+				</div>
+
+				<div class="bg-muted/40 rounded-lg border border-border/50 p-4">
+					<h3 class="text-foreground mb-2 text-sm font-semibold">Planning, not present</h3>
+					<p class="text-muted-foreground mb-3 text-xs">{foundersDay2014.notPresentNote}</p>
+					<ul class="text-muted-foreground space-y-1 text-sm">
+						{#each foundersDay2014.notPresent as line (line)}
+							<li class="flex gap-2">
+								<span class="bg-muted-foreground/50 mt-2 h-1 w-1 shrink-0 rounded-full"></span>
+								{line}
+							</li>
+						{/each}
+					</ul>
+				</div>
+
+				<div class="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+					<Button
+						variant="default"
+						class="gap-2"
+						href={foundersDay2014.video.href}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<Video class="size-4" aria-hidden="true" />
+						{foundersDay2014.video.label}
+					</Button>
+					<Button
+						variant="outline"
+						class="gap-2"
+						href={foundersDay2014.pdfPoem.href}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						<FileText class="size-4" aria-hidden="true" />
+						{foundersDay2014.pdfPoem.label}
+					</Button>
+				</div>
+			</Card.Content>
+		</Card.Root>
+	</section>
+
+	<!-- Trivia -->
+	<section class="mb-12">
+		<h2 class="text-foreground mb-4 text-xl font-semibold">From the first celebration</h2>
+		<p class="text-muted-foreground mb-4 text-sm leading-relaxed">
+			The original site invited guests to puzzle over these moments from Founders Day I — answers live in
+			the stories, script, and club lore.
+		</p>
+		<Card.Root class="border-dashed border-border/80 bg-muted/20">
+			<Card.Content class="p-6">
+				<ol class="text-muted-foreground list-decimal space-y-3 pl-5 text-sm leading-relaxed">
+					{#each triviaQuestions as q, i (i)}
+						<li>{q}</li>
+					{/each}
+				</ol>
+				<p class="text-muted-foreground mt-6 text-sm">
+					<strong class="text-foreground font-medium">Beer tally:</strong>
+					Today we publish club stats on
+					<a
+						href="/stats"
+						class="text-primary font-medium underline decoration-primary/40 underline-offset-2 hover:decoration-primary"
+						>/stats</a
+					>
+					(legacy link pointed to stats.htm).
+				</p>
+			</Card.Content>
+		</Card.Root>
+	</section>
+
+	<!-- Documents -->
+	<section class="mb-12">
+		<h2 class="text-foreground mb-4 text-xl font-semibold">Ceremony &amp; poems</h2>
+		<p class="text-muted-foreground mb-6 text-sm leading-relaxed">
+			Original script (operations-order style, timing, limericks, Beer Fairy Chime) and Knox’s
+			<em>Ode to Our Founders</em> — hosted on this site.
+		</p>
+		<div class="grid gap-4 md:grid-cols-2">
+			<Card.Root class="border-border/70">
+				<Card.Header class="pb-2">
+					<Card.Title class="flex items-center gap-2 text-lg">
+						<ScrollText class="text-primary size-5" aria-hidden="true" />
+						Original ceremony script
+					</Card.Title>
 					<Card.Description>
-						Explore the original ceremony script and poetic tribute from the first Founders Day
-						celebration in 2013.
+						OPORD-style run of show: timing, readings, founder limericks, traditions.
 					</Card.Description>
 				</Card.Header>
 				<Card.Content>
-					<div class="grid gap-6 md:grid-cols-2">
-						<!-- Original Ceremony Script -->
-						<Card.Root>
-							<Card.Header>📜 Original Ceremony Script</Card.Header>
-							<Card.Content class="space-y-4">
-								<p>
-									The complete ceremony script featuring setup instructions, historical readings,
-									founder limericks, and the introduction of the Founder's Bell tradition.
-								</p>
-								<Button class="w-full">
-									<a href="/founders-day/original-script"> Read Complete Script </a>
-								</Button>
-							</Card.Content>
-						</Card.Root>
-
-						<!-- Poetic Tribute -->
-						<Card.Root>
-							<Card.Header class="text-primary text-xl font-semibold"
-								>🎭 "Ode to Our Founders"</Card.Header
-							>
-							<Card.Content class="space-y-4">
-								<p>
-									Jim Knox's poetic retelling of the IBC founding story, complete with humor,
-									history, and the legendary journey from Coronado to Ballast Point.
-								</p>
-								<Button variant="outline" class="w-full">
-									<a href="/founders-day/knox-poem"> Read the Poem </a>
-								</Button>
-							</Card.Content>
-						</Card.Root>
-					</div>
+					<a href="/founders-day/original-script" class={linkBtn}> Read full script </a>
 				</Card.Content>
 			</Card.Root>
-
-			<!-- Call to Action -->
-			<Card.Root>
-				<Card.Content class="p-8">
-					<Card.Header class="px-0 pt-0 pb-6">
-						<Card.Title class="text-2xl font-bold">Join the Tradition</Card.Title>
-						<Card.Description class="mx-auto max-w-2xl">
-							Founders Day continues to be celebrated annually, bringing together members from all
-							clans to honor our heritage and celebrate the spirit of craft beer appreciation that
-							defines the Island Beer Club.
-						</Card.Description>
-					</Card.Header>
-					<div class="flex flex-col justify-center gap-4 sm:flex-row">
-						<Button>
-							<a href="/events">View Upcoming Events</a>
-						</Button>
-						<Button variant="outline">
-							<a href="/history">Learn More About Our History</a>
-						</Button>
-					</div>
+			<Card.Root class="border-border/70">
+				<Card.Header class="pb-2">
+					<Card.Title class="flex items-center gap-2 text-lg">
+						<ScrollText class="text-primary size-5" aria-hidden="true" />
+						<em>Ode to Our Founders</em>
+					</Card.Title>
+					<Card.Description> Jim Knox — IBC Poet Laureate, Mbr 141. </Card.Description>
+				</Card.Header>
+				<Card.Content>
+					<Button variant="outline" class="w-full" href="/founders-day/knox-poem">Read the poem</Button>
 				</Card.Content>
 			</Card.Root>
 		</div>
-	</div>
+	</section>
+
+	<!-- CTA -->
+	<section>
+		<Card.Root class="border-primary/25 bg-primary/5">
+			<Card.Content class="p-6 md:p-8">
+				<h2 class="text-foreground text-lg font-semibold">Carry on the tradition</h2>
+				<p class="text-muted-foreground mt-2 max-w-prose text-sm leading-relaxed">
+					Founders Day continues each March around the founding anniversary. Check club events and
+					history for the latest gatherings.
+				</p>
+				<div class="mt-6 flex flex-wrap gap-3">
+					<Button href="/events">Upcoming events</Button>
+					<Button variant="outline" href="/history">Club history</Button>
+				</div>
+			</Card.Content>
+		</Card.Root>
+	</section>
+
+	<p class="text-muted-foreground mt-10 text-center text-xs">
+		Content consolidated from the legacy IBC Founders Day page (last archived update August 2014).
+	</p>
 </div>

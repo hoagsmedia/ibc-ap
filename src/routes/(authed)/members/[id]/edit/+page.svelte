@@ -71,7 +71,7 @@
 					position: "bottom-right"
 				});
 				// Redirect to members list after successful deletion
-				window.location.href = "/members";
+				window.location.href = "/dashboard/members";
 			} else if (result.type === "failure") {
 				toastAdminActionFailure(result.data, "Could not delete this member.");
 			} else if (result.type === "error") {

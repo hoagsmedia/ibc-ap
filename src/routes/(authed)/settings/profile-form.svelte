@@ -7,12 +7,25 @@
 	import { superForm, type Infer, type SuperValidated } from 'sveltekit-superforms';
 	import { zodClient } from 'sveltekit-superforms/adapters';
 	import { toast } from 'svelte-sonner';
+	import { formatMsdDate, formatMembershipTenureHuman } from '$lib/membership-tenure';
 
 	let {
 		data
 	}: {
-		data: { form: SuperValidated<Infer<ProfileSchema>>; user: { email?: string | null; username?: string | null; role: string } };
+		data: {
+			form: SuperValidated<Infer<ProfileSchema>>;
+			user: {
+				email?: string | null;
+				username?: string | null;
+				role: string;
+				msd?: Date | string | null;
+				sponsor?: string | null;
+			};
+		};
 	} = $props();
+
+	const msdDisplay = $derived(formatMsdDate(data.user.msd));
+	const tenureLine = $derived(formatMembershipTenureHuman(data.user.msd));
 
 	const form = superForm(data.form, {
 		validators: zodClient(profileSchema),
@@ -155,6 +168,28 @@
 					disabled
 					class="bg-muted text-muted-foreground capitalize"
 				/>
+			</div>
+
+			{#if msdDisplay}
+				<div>
+					<label for="msd" class="text-card-foreground block text-sm font-medium">Member since</label>
+					<Input id="msd" value={msdDisplay} disabled class="bg-muted text-muted-foreground" />
+					{#if tenureLine}
+						<p class="text-muted-foreground mt-1 text-xs leading-relaxed">{tenureLine}</p>
+					{/if}
+					<p class="text-muted-foreground mt-1 text-xs">Member since date (MSD) is set by the club.</p>
+				</div>
+			{/if}
+
+			<div>
+				<label for="sponsor" class="text-card-foreground block text-sm font-medium">Sponsor</label>
+				<Input
+					id="sponsor"
+					value={data.user.sponsor?.trim() ? data.user.sponsor : '—'}
+					disabled
+					class="bg-muted text-muted-foreground"
+				/>
+				<p class="text-muted-foreground mt-1 text-xs">Who sponsored your membership. Contact an admin to update.</p>
 			</div>
 
 			<div>

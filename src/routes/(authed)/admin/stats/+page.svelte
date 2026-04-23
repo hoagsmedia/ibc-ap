@@ -1,12 +1,59 @@
 <script lang="ts">
 	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
+	import * as Chart from "$lib/components/ui/chart/index.js";
 	import { ArrowLeft, ArrowRight } from "@lucide/svelte";
 	import Barrel from "@lucide/svelte/icons/barrel";
 	import Beer from "@lucide/svelte/icons/beer";
+	import { BarChart, LineChart, Text } from "layerchart";
+	import type { ComponentProps } from "svelte";
+	import { cubicOut } from "svelte/easing";
+	import { scaleBand, scaleLinear } from "d3-scale";
+	import { curveStepAfter } from "d3-shape";
 	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
+
+	const membersChartsConfig = {
+		members: { label: "Members (cumulative)", color: "var(--chart-1)" },
+		newMembers: { label: "New members (that MSD year)", color: "var(--chart-2)" }
+	} satisfies Chart.ChartConfig;
+
+	/**
+	 * Running total: for each calendar year Y (from first MSD year through current UTC year),
+	 * count member+admin accounts whose MSD falls in Y or earlier. Fills missing years so the
+	 * line stays flat (no spline dip across gaps).
+	 */
+	function msdCumulativeSeries(rows: { year: number; count: number }[]): { year: number; members: number }[] {
+		if (rows.length === 0) return [];
+		const byYear = new Map(rows.map((r) => [r.year, r.count]));
+		const minY = Math.min(...rows.map((r) => r.year));
+		const maxDataY = Math.max(...rows.map((r) => r.year));
+		const maxY = Math.max(maxDataY, new Date().getUTCFullYear());
+		let cum = 0;
+		const out: { year: number; members: number }[] = [];
+		for (let y = minY; y <= maxY; y++) {
+			cum += byYear.get(y) ?? 0;
+			out.push({ year: y, members: cum });
+		}
+		return out;
+	}
+
+	const membersChartData = $derived(msdCumulativeSeries(data.membersJoinedByYear));
+
+	const memberYearTicks = $derived(membersChartData.map((d) => d.year));
+
+	/** One bar per calendar year that has at least one new MSD (same buckets as the server query). */
+	const newMembersBarData = $derived(
+		[...data.membersJoinedByYear]
+			.sort((a, b) => a.year - b.year)
+			.map((r) => ({ yearLabel: String(r.year), count: r.count }))
+	);
+
+	type LcTextProps = ComponentProps<typeof Text>;
+
+	/** LayerChart grows vertical bars from the baseline on first paint (see `Bar` + `Rect` motion). */
+	const newMembersBarMotion = { type: "tween" as const, duration: 700, easing: cubicOut };
 
 	function fmtNum(n: number, digits = 1) {
 		if (!Number.isFinite(n)) return "—";
@@ -41,6 +88,140 @@
 		<a class="text-primary font-medium underline underline-offset-2" href="/stats">/stats</a> page (static
 		export). Open a dataset to view and edit every row.
 	</p>
+
+	<section
+		class="border-border/80 bg-card/80 mb-10 rounded-2xl border p-6 shadow-sm dark:bg-card/40 sm:p-7"
+		aria-labelledby="members-joined-heading members-new-bars-heading"
+	>
+		<div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+			<div>
+				<h2 id="members-joined-heading" class="text-foreground text-lg font-semibold tracking-tight">
+					Members by MSD year (cumulative)
+				</h2>
+				<p class="text-muted-foreground mt-1 max-w-2xl text-sm leading-snug">
+					Running total of <span class="text-foreground font-medium">member</span> and
+					<span class="text-foreground font-medium">admin</span> accounts that have MSD set: for each
+					UTC year, everyone whose member-since date falls in that year or earlier is included. Years
+					with no new MSDs stay flat until the next increase.
+				</p>
+			</div>
+		</div>
+
+		{#if data.membersJoinedByYear.length === 0}
+			<p class="text-muted-foreground text-sm">
+				No member or admin rows with a member-since date (MSD) to chart yet.
+			</p>
+		{:else}
+			{#snippet xYearAxisTick({ props, index }: { props: LcTextProps; index: number })}
+				<Text {...props} value={String(memberYearTicks[index] ?? "")} />
+			{/snippet}
+			{#snippet yMembersAxisTick({ props }: { props: LcTextProps })}
+				<Text
+					{...props}
+					value={String(props.value ?? "")
+						.split(",")
+						.join("")}
+				/>
+			{/snippet}
+			<Chart.Container
+				config={membersChartsConfig}
+				role="img"
+				aria-label="Cumulative member and admin count by UTC MSD year"
+				class="text-foreground aspect-auto h-[min(20rem,70vw)] w-full min-w-0 max-w-full px-0 pt-2 pb-6 sm:h-[24rem]"
+			>
+				<LineChart
+					data={membersChartData}
+					x="year"
+					xScale={scaleLinear()}
+					y="members"
+					yNice={6}
+					series={[
+						{
+							key: "members",
+							label: membersChartsConfig.members.label,
+							value: "members",
+							color: "var(--color-members)"
+						}
+					]}
+					props={{
+						spline: { curve: curveStepAfter },
+						xAxis: {
+							ticks: memberYearTicks,
+							tickLabel: xYearAxisTick
+						},
+						yAxis: { tickLabel: yMembersAxisTick }
+					}}
+				>
+					{#snippet tooltip()}
+						<Chart.Tooltip
+							labelFormatter={(v) =>
+								typeof v === "number"
+									? String(Math.round(v))
+									: v instanceof Date
+										? String(v.getUTCFullYear())
+										: String(v)}
+						/>
+					{/snippet}
+				</LineChart>
+			</Chart.Container>
+
+			<div class="mt-10 space-y-3 border-border/50 border-t pt-8">
+				<div>
+					<h3
+						id="members-new-bars-heading"
+						class="text-foreground text-base font-semibold tracking-tight"
+					>
+						New members by MSD year
+					</h3>
+					<p class="text-muted-foreground mt-1 max-w-2xl text-sm leading-snug">
+						How many <span class="text-foreground font-medium">member</span> or
+						<span class="text-foreground font-medium">admin</span> accounts have an MSD in that UTC
+						calendar year (not cumulative).
+					</p>
+				</div>
+				<Chart.Container
+					config={membersChartsConfig}
+					role="img"
+					aria-label="Bar chart of new member and admin accounts per MSD calendar year"
+					class="text-foreground min-h-[220px] w-full min-w-0 max-w-full px-0 pt-2 pb-6 sm:min-h-[260px]"
+				>
+					<BarChart
+						data={newMembersBarData}
+						xScale={scaleBand().padding(0.28)}
+						x="yearLabel"
+						y="count"
+						yNice={4}
+						series={[
+							{
+								key: "newMembers",
+								label: membersChartsConfig.newMembers.label,
+								value: "count",
+								color: "var(--color-newMembers)"
+							}
+						]}
+						props={{
+							bars: { motion: newMembersBarMotion },
+							yAxis: { tickLabel: yMembersAxisTick },
+							xAxis: {
+								tickLabelProps: { class: "tabular-nums" }
+							}
+						}}
+					>
+						{#snippet tooltip()}
+							<Chart.Tooltip
+								labelFormatter={(v) =>
+									typeof v === "number"
+										? String(Math.round(v))
+										: v instanceof Date
+											? String(v.getUTCFullYear())
+											: String(v)}
+							/>
+						{/snippet}
+					</BarChart>
+				</Chart.Container>
+			</div>
+		{/if}
+	</section>
 
 	<div class="grid gap-6 lg:grid-cols-2 lg:items-stretch">
 		<article

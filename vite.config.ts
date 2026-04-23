@@ -5,6 +5,10 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
+	// LayerChart ships `.svelte` in `node_modules`; let Vite transform it during SSR (not raw Node ESM).
+	ssr: {
+		noExternal: ['layerchart']
+	},
 	test: {
 		workspace: [
 			{

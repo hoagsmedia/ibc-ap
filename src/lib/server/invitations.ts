@@ -1,13 +1,37 @@
-import { db } from '$lib/server/db';
-import * as table from '$lib/server/db/schema';
-import { and, desc, eq, gte, lt } from 'drizzle-orm';
-import { encodeBase64url } from '@oslojs/encoding';
+import { client, db } from "$lib/server/db";
+import * as table from "$lib/server/db/schema";
+import { and, desc, eq, gte, lt } from "drizzle-orm";
+import { encodeBase64url } from "@oslojs/encoding";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
 export const INVITATION_COOLDOWN_DAYS = 7;
 
+/** Matches `scripts/ensure-invitation-tokens-schema.ts` — local DBs often lag Vercel build ensures. */
+let invitationTokenColumnsEnsured = false;
+
+async function ensureInvitationTokenColumns(): Promise<void> {
+	if (invitationTokenColumnsEnsured) return;
+	try {
+		await client.unsafe(
+			`ALTER TABLE public.invitation_tokens ADD COLUMN IF NOT EXISTS invite_name text`
+		);
+		await client.unsafe(
+			`ALTER TABLE public.invitation_tokens ADD COLUMN IF NOT EXISTS inviter_name text`
+		);
+		invitationTokenColumnsEnsured = true;
+	} catch (err) {
+		const msg = err instanceof Error ? err.message : String(err);
+		if (msg.includes("does not exist") && msg.includes("invitation_tokens")) {
+			invitationTokenColumnsEnsured = true;
+			return;
+		}
+		throw err;
+	}
+}
+
 /** Returns the created_at of the most recent invitation by this user, or null if none. */
 export async function getLastInvitationCreatedAt(createdById: string): Promise<Date | null> {
+	await ensureInvitationTokenColumns();
 	const [row] = await db
 		.select({ created_at: table.invitationTokens.created_at })
 		.from(table.invitationTokens)
@@ -28,6 +52,7 @@ export async function createInvitationToken(
 	inviterName: string,
 	expirationDays = 7
 ): Promise<table.InvitationToken> {
+	await ensureInvitationTokenColumns();
 	const token = generateInvitationToken();
 	const id = crypto.randomUUID();
 
@@ -50,6 +75,7 @@ export async function createInvitationToken(
 export async function validateInvitationToken(
 	token: string
 ): Promise<{ valid: boolean; invitation?: table.InvitationToken }> {
+	await ensureInvitationTokenColumns();
 	const [invitation] = await db
 		.select()
 		.from(table.invitationTokens)
@@ -73,6 +99,7 @@ export async function validateInvitationToken(
 }
 
 export async function markInvitationTokenAsUsed(token: string, usedById: string): Promise<void> {
+	await ensureInvitationTokenColumns();
 	await db
 		.update(table.invitationTokens)
 		.set({
@@ -86,6 +113,7 @@ export async function getInvitationsByUser(
 	userId: string,
 	options?: { limit?: number; year?: number }
 ): Promise<table.InvitationToken[]> {
+	await ensureInvitationTokenColumns();
 	const conditions = [eq(table.invitationTokens.created_by_id, userId)];
 	if (options?.year != null) {
 		const y = options.year;
