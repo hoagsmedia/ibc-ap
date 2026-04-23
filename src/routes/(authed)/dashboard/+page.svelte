@@ -13,6 +13,7 @@
 	import { Skeleton } from "$lib/components/ui/skeleton/index.js";
 	import * as Tooltip from "$lib/components/ui/tooltip/index.js";
 	import { Separator } from "$lib/components/ui/separator";
+	import QuickActionLink from "$lib/components/dashboard/QuickActionLink.svelte";
 	import {
 		Beer,
 		BookUser,
@@ -917,67 +918,39 @@
 						</div>
 					</Card.Header>
 					<Card.Content class="flex flex-1 flex-col gap-2">
-						<Button
-							href="/dashboard/members"
-							variant="outline"
-							class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
-						>
+						<QuickActionLink href="/dashboard/members">
 							<BookUser class="text-primary size-[1.15rem] shrink-0" />
 							{data.user.role === "admin" ? "Manage members" : "Member directory"}
-						</Button>
+						</QuickActionLink>
 						{#if data.user.role === "admin"}
-							<Button
-								href="/admin/events"
-								variant="outline"
-								class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
-							>
+							<QuickActionLink href="/admin/events">
 								<CalendarDays class="text-primary size-[1.15rem] shrink-0" />
 								Manage events
-							</Button>
-							<Button
-								href="/admin/stats/beer-consumed"
-								variant="outline"
-								class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium whitespace-normal shadow-sm"
-							>
+							</QuickActionLink>
+							<QuickActionLink href="/admin/stats/beer-consumed" class="whitespace-normal">
 								<Beer class="text-primary size-[1.15rem] shrink-0" />
 								<span class="min-w-0 text-left leading-snug">
 									<span class="sm:hidden">Beer consumed</span>
 									<span class="hidden sm:inline">Manage Beer Consumed</span>
 								</span>
-							</Button>
-							<Button
-								href="/admin/stats/keg-credits"
-								variant="outline"
-								class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
-							>
+							</QuickActionLink>
+							<QuickActionLink href="/admin/stats/keg-credits">
 								<Package class="text-primary size-[1.15rem] shrink-0" />
 								Manage Keg Credits
-							</Button>
+							</QuickActionLink>
 						{:else}
-							<Button
-								href="/stats#beer-consumed-section"
-								variant="outline"
-								class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium whitespace-normal shadow-sm"
-							>
+							<QuickActionLink href="/stats#beer-consumed-section" class="whitespace-normal">
 								<Beer class="text-primary size-[1.15rem] shrink-0" />
 								<span class="min-w-0 text-left leading-snug">Beer consumed</span>
-							</Button>
-							<Button
-								href="/stats#keg-credits-section"
-								variant="outline"
-								class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
-							>
+							</QuickActionLink>
+							<QuickActionLink href="/stats#keg-credits-section">
 								<Package class="text-primary size-[1.15rem] shrink-0" />
 								Keg credits
-							</Button>
-							<Button
-								href="/events"
-								variant="outline"
-								class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
-							>
+							</QuickActionLink>
+							<QuickActionLink href="/events">
 								<CalendarRange class="text-primary size-[1.15rem] shrink-0" />
 								View events
-							</Button>
+							</QuickActionLink>
 						{/if}
 					</Card.Content>
 				</Card.Root>

@@ -23,11 +23,23 @@
 			.sort((a, b) => a.year - b.year)
 			.map((r) => ({ yearLabel: String(r.year), count: r.count }))
 	);
+	const totalChartMembers = $derived(newMembersBarData.reduce((sum, row) => sum + row.count, 0));
 
 	type LcTextProps = ComponentProps<typeof Text>;
 
 	/** LayerChart grows vertical bars from the baseline on first paint (see `Bar` + `Rect` motion). */
 	const newMembersBarMotion = { type: "tween" as const, duration: 700, easing: cubicOut };
+
+	function shouldShowYearTick(yearLabel: string): boolean {
+		const years = newMembersBarData.map((d) => d.yearLabel);
+		const idx = years.indexOf(yearLabel);
+		if (idx === -1) return false;
+		if (idx === 0 || idx === years.length - 1) return true;
+
+		const total = years.length;
+		const step = total > 16 ? 3 : total > 10 ? 2 : 1;
+		return idx % step === 0;
+	}
 
 	function fmtNum(n: number, digits = 1) {
 		if (!Number.isFinite(n)) return "—";
@@ -70,12 +82,11 @@
 		<div class="mb-5 flex flex-wrap items-end justify-between gap-3">
 			<div>
 				<h2 id="members-msd-bars-heading" class="text-foreground text-lg font-semibold tracking-tight">
-					New members by MSD year
+					Member growth by year
 				</h2>
 				<p class="text-muted-foreground mt-1 max-w-2xl text-sm leading-snug">
-					How many <span class="text-foreground font-medium">member</span> or
-					<span class="text-foreground font-medium">admin</span> accounts have an MSD in that UTC
-					calendar year (one bar per year returned from the admin query).
+					<span class="text-foreground font-medium">{totalChartMembers.toLocaleString("en-US")}</span>
+					members shown • each bar is the number of members who joined in that year.
 				</p>
 			</div>
 		</div>
@@ -91,6 +102,12 @@
 					value={String(props.value ?? "")
 						.split(",")
 						.join("")}
+				/>
+			{/snippet}
+			{#snippet xMembersAxisTick({ props }: { props: LcTextProps })}
+				<Text
+					{...props}
+					value={shouldShowYearTick(String(props.value ?? "")) ? String(props.value ?? "") : ""}
 				/>
 			{/snippet}
 			<Chart.Container
@@ -117,6 +134,7 @@
 						bars: { motion: newMembersBarMotion },
 						yAxis: { tickLabel: yMembersAxisTick },
 						xAxis: {
+							tickLabel: xMembersAxisTick,
 							tickLabelProps: { class: "tabular-nums" }
 						}
 					}}

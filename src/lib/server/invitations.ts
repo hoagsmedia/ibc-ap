@@ -1,10 +1,11 @@
 import { client, db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
-import { and, desc, eq, gte, lt } from "drizzle-orm";
+import { and, count, desc, eq, gte, lt } from "drizzle-orm";
 import { encodeBase64url } from "@oslojs/encoding";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
-export const INVITATION_COOLDOWN_DAYS = 7;
+export const INVITATION_LIMIT_WINDOW_DAYS = 7;
+export const INVITATION_MEMBER_WEEKLY_LIMIT = 3;
 
 /** Matches `scripts/ensure-invitation-tokens-schema.ts` — local DBs often lag Vercel build ensures. */
 let invitationTokenColumnsEnsured = false;
@@ -29,16 +30,23 @@ async function ensureInvitationTokenColumns(): Promise<void> {
 	}
 }
 
-/** Returns the created_at of the most recent invitation by this user, or null if none. */
-export async function getLastInvitationCreatedAt(createdById: string): Promise<Date | null> {
+/** Returns how many invitations this user created in the rolling lookback window. */
+export async function getInvitationCountInWindow(
+	createdById: string,
+	windowDays = INVITATION_LIMIT_WINDOW_DAYS
+): Promise<number> {
 	await ensureInvitationTokenColumns();
+	const windowStart = new Date(Date.now() - windowDays * DAY_IN_MS);
 	const [row] = await db
-		.select({ created_at: table.invitationTokens.created_at })
+		.select({ n: count() })
 		.from(table.invitationTokens)
-		.where(eq(table.invitationTokens.created_by_id, createdById))
-		.orderBy(desc(table.invitationTokens.created_at))
-		.limit(1);
-	return row?.created_at ?? null;
+		.where(
+			and(
+				eq(table.invitationTokens.created_by_id, createdById),
+				gte(table.invitationTokens.created_at, windowStart)
+			)
+		);
+	return Number(row?.n ?? 0);
 }
 
 export function generateInvitationToken(): string {
