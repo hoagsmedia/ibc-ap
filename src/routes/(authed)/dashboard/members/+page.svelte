@@ -160,7 +160,15 @@
 				params.set("useCache", "true");
 			}
 		}
-		goto(`/dashboard/members?${params.toString()}`);
+		const nextQuery = params.toString();
+		const currentQuery = page.url.searchParams.toString();
+		if (nextQuery === currentQuery) return;
+
+		void goto(`/dashboard/members?${nextQuery}`, {
+			keepFocus: true,
+			noScroll: true,
+			replaceState: true
+		});
 	}
 
 	function handlePageChange(newPage: number): void {
@@ -174,6 +182,12 @@
 			performSearch(searchTerm, 1);
 		}, 300);
 	}
+
+	$effect(() => {
+		return () => {
+			if (searchTimeout) clearTimeout(searchTimeout);
+		};
+	});
 
 	$effect(() => {
 		if (isStubLoad) return;

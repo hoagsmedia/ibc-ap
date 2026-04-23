@@ -17,6 +17,7 @@
 	import { memberSchema } from "./edit-member-schema";
 	import { superForm } from "sveltekit-superforms";
 	import { createUploadThing } from "$lib/utils";
+	import { beforeNavigate, goto } from "$app/navigation";
 	import { zodClient } from "sveltekit-superforms/adapters";
 	import type { PageData } from "./$types";
 
@@ -27,6 +28,49 @@
 	let deleteConfirmText = $state("");
 	let resetPasswordDialogOpen = $state(false);
 	let tempPassword = $state("");
+	let unsavedDialogOpen = $state(false);
+	let pendingNavigationHref = $state<string | null>(null);
+	let memberEditFormEl = $state<HTMLFormElement | null>(null);
+
+	type EditableMemberFields = {
+		name: string;
+		email: string;
+		phone: string;
+		address: string;
+		bio: string;
+		hobbies: string;
+		img: string;
+		role: string;
+		likes: string;
+		mbr: number;
+		msd: string;
+		dops: boolean;
+		dops_date: string;
+		sponsor: string;
+	};
+
+	function getEditableSnapshot(member: Partial<EditableMemberFields>): EditableMemberFields {
+		return {
+			name: member.name ?? "",
+			email: member.email ?? "",
+			phone: member.phone ?? "",
+			address: member.address ?? "",
+			bio: member.bio ?? "",
+			hobbies: member.hobbies ?? "",
+			img: member.img ?? "",
+			role: member.role ?? "",
+			likes: member.likes ?? "",
+			mbr: member.mbr ?? 0,
+			msd: member.msd ?? "",
+			dops: Boolean(member.dops),
+			dops_date: member.dops_date ?? "",
+			sponsor: member.sponsor ?? ""
+		};
+	}
+
+	function isEqualSnapshot(a: EditableMemberFields, b: EditableMemberFields): boolean {
+		return JSON.stringify(a) === JSON.stringify(b);
+	}
 
 	// Check if current user is admin (for delete access)
 	const isAdmin = $derived.by(() => data.user?.role === "admin");
@@ -38,6 +82,8 @@
 		resetForm: false,
 		onResult: ({ result }) => {
 			if (result.type === "redirect" || result.type === "success") {
+				suppressUnsavedPrompt = true;
+				baselineSnapshot = getEditableSnapshot($formData);
 				toast.success("Member updated successfully!", {
 					icon: Check,
 					duration: 3000,
@@ -48,6 +94,12 @@
 						onClick: () => toast.dismiss()
 					}
 				});
+
+				if (pendingNavigationHref) {
+					const targetHref = pendingNavigationHref;
+					pendingNavigationHref = null;
+					void goto(targetHref, { noScroll: true });
+				}
 			} else if (result.type === "failure") {
 				toastAdminActionFailure(
 					result.data,
@@ -59,6 +111,9 @@
 	});
 
 	const { form: formData, enhance, submitting, message } = form;
+	let baselineSnapshot = $state(getEditableSnapshot(data.form.data));
+	const hasUnsavedChanges = $derived(!isEqualSnapshot(getEditableSnapshot($formData), baselineSnapshot));
+	let suppressUnsavedPrompt = $state(false);
 
 	// Delete form
 	const deleteForm = superForm(data.form, {
@@ -188,6 +243,48 @@
 			});
 		}
 	}
+
+	beforeNavigate((nav) => {
+		if (!hasUnsavedChanges || suppressUnsavedPrompt) return;
+		if (nav.willUnload) return;
+		nav.cancel();
+		pendingNavigationHref = nav.to?.url ? `${nav.to.url.pathname}${nav.to.url.search}${nav.to.url.hash}` : null;
+		unsavedDialogOpen = true;
+	});
+
+	$effect(() => {
+		const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+			if (!hasUnsavedChanges || suppressUnsavedPrompt) return;
+			event.preventDefault();
+			event.returnValue = "";
+		};
+
+		window.addEventListener("beforeunload", handleBeforeUnload);
+		return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+	});
+
+	function stayOnPage(): void {
+		unsavedDialogOpen = false;
+		pendingNavigationHref = null;
+	}
+
+	function discardAndLeave(): void {
+		if (!pendingNavigationHref) {
+			unsavedDialogOpen = false;
+			return;
+		}
+		suppressUnsavedPrompt = true;
+		const targetHref = pendingNavigationHref;
+		pendingNavigationHref = null;
+		unsavedDialogOpen = false;
+		void goto(targetHref, { noScroll: true });
+	}
+
+	function saveAndLeave(): void {
+		if (!memberEditFormEl) return;
+		unsavedDialogOpen = false;
+		memberEditFormEl.requestSubmit();
+	}
 </script>
 
 <div class="flex w-full min-w-0 flex-col gap-6">
@@ -212,7 +309,7 @@
 		<Card.Description>Update the member's profile picture</Card.Description>
 	</Card.Header>
 	<Card.Content>
-		<div class="flex items-center space-x-6">
+		<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
 			<!-- Current member image -->
 			<Avatar
 				class="size-24"
@@ -256,7 +353,7 @@
 </Card.Root>
 
 <!-- Member Details Form -->
-<form method="POST" action="?/update" use:enhance class="space-y-6">
+<form bind:this={memberEditFormEl} method="POST" action="?/update" use:enhance class="space-y-6">
 	<input type="hidden" name="id" value={$formData.id} />
 
 	<div class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
@@ -302,11 +399,21 @@
 						<Form.FieldErrors />
 					</Form.Field>
 
-					<Form.Field {form} name="msd">
+					<Form.Field {form} name="msd" class="min-w-0">
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label>Member Since *</Form.Label>
-								<Input type="date" {...props} bind:value={$formData.msd} />
+								<Input
+									type="text"
+									{...props}
+									bind:value={$formData.msd}
+									placeholder="YYYY-MM-DD"
+									inputmode="numeric"
+									pattern="\\d{4}-\\d{2}-\\d{2}"
+									autocomplete="off"
+									spellcheck={false}
+									class="h-8 w-full min-w-0 max-w-full text-sm"
+								/>
 							{/snippet}
 						</Form.Control>
 						<Form.Description>Date when membership started.</Form.Description>
@@ -350,11 +457,21 @@
 						<Form.FieldErrors />
 					</Form.Field>
 
-					<Form.Field {form} name="dops_date">
+					<Form.Field {form} name="dops_date" class="min-w-0">
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label>DOPS</Form.Label>
-								<Input type="date" {...props} bind:value={$formData.dops_date} />
+								<Input
+									type="text"
+									{...props}
+									bind:value={$formData.dops_date}
+									placeholder="YYYY-MM-DD"
+									inputmode="numeric"
+									pattern="\\d{4}-\\d{2}-\\d{2}"
+									autocomplete="off"
+									spellcheck={false}
+									class="h-8 w-full min-w-0 max-w-full text-sm"
+								/>
 							{/snippet}
 						</Form.Control>
 						<Form.Description>Date of Permanent Sobriety.</Form.Description>
@@ -595,6 +712,26 @@
 				</Button>
 			</Dialog.Footer>
 		</form>
+	</Dialog.Content>
+</Dialog.Root>
+
+<!-- Unsaved Changes Navigation Guard -->
+<Dialog.Root bind:open={unsavedDialogOpen}>
+	<Dialog.Content class="sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title>Unsaved changes</Dialog.Title>
+			<Dialog.Description>
+				You have unsaved changes on this member profile. Save before leaving, or discard your edits.
+			</Dialog.Description>
+		</Dialog.Header>
+
+		<Dialog.Footer class="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
+			<Button type="button" variant="outline" onclick={stayOnPage}>Stay on page</Button>
+			<Button type="button" variant="destructive" onclick={discardAndLeave}>Discard and leave</Button>
+			<Button type="button" onclick={saveAndLeave} disabled={$submitting}>
+				{$submitting ? "Saving..." : "Save and leave"}
+			</Button>
+		</Dialog.Footer>
 	</Dialog.Content>
 </Dialog.Root>
 
