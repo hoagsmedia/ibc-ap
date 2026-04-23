@@ -5,7 +5,6 @@
 	import Avatar from "$lib/components/Avatar.svelte";
 	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon, Eye, Pencil } from "@lucide/svelte";
 	import HubBackLink from "$lib/components/HubBackLink.svelte";
-	import { Button } from "$lib/components/ui/button/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Search } from "@lucide/svelte";
 	import { goto } from "$app/navigation";
@@ -67,6 +66,21 @@
 
 	const isAdmin = $derived(page.data.user?.role === "admin");
 	let searchTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	function memberRowHref(memberId: string): string {
+		return isAdmin ? `/members/${memberId}/edit` : `/members/${memberId}`;
+	}
+
+	function goToMemberRow(memberId: string): void {
+		void goto(memberRowHref(memberId));
+	}
+
+	function memberRowKeydown(e: KeyboardEvent, memberId: string): void {
+		if (e.key === "Enter" || e.key === " ") {
+			e.preventDefault();
+			goToMemberRow(memberId);
+		}
+	}
 
 	let lastServerFingerprint = "";
 
@@ -195,7 +209,7 @@
 	/>
 </svelte:head>
 
-<div class="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-6 md:w-full">
+<div class="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-6 max-md:overflow-x-clip md:w-full">
 	<div class="flex flex-wrap items-center justify-between gap-4">
 		<div class="min-w-0">
 			<h1 class="text-3xl font-bold">Member directory</h1>
@@ -210,8 +224,8 @@
 		</HubBackLink>
 	</div>
 
-	<div class="flex items-center gap-2">
-		<div class="relative flex-1">
+	<div class="flex min-w-0 items-center gap-2">
+		<div class="relative min-w-0 flex-1">
 			<Search class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
 			<Input
 				bind:value={searchTerm}
@@ -224,32 +238,52 @@
 		</div>
 	</div>
 
-	<div class="ibc-hub-surface overflow-hidden">
-		<Table.Root class="border-separate border-spacing-0">
+	<div class="hub-members-table-host ibc-hub-surface max-md:px-3 overflow-hidden md:px-0">
+		<Table.Root
+			class="hub-member-sep-table border-separate border-spacing-0 [&_tbody>tr]:border-b-0 [&_thead>tr]:border-b-0"
+		>
 			<Table.Header>
 				<Table.Row>
-					<Table.Head class="w-14">Profile</Table.Head>
-					<Table.Head class="min-w-[10rem]">Name</Table.Head>
-					<Table.Head class="w-24 text-center md:text-left">Member #</Table.Head>
+					<Table.Head
+						class="w-14 max-md:min-w-[4.75rem] max-md:w-[4.75rem] max-md:max-w-[4.75rem] max-md:px-2 max-md:text-center md:text-left"
+						>Profile</Table.Head
+					>
+					<Table.Head class="min-w-0 max-md:w-auto md:min-w-[10rem]">Name</Table.Head>
+					<Table.Head
+						class="w-24 max-md:min-w-[7.25rem] max-md:w-[7.25rem] max-md:max-w-[7.25rem] max-md:px-1.5 text-center md:w-24 md:max-w-none md:px-2 md:text-left"
+						>Member #</Table.Head
+					>
 					<Table.Head class="hidden min-w-[12rem] md:table-cell">Email</Table.Head>
 					<Table.Head
-						class="sticky right-0 z-30 w-28 border-l border-border/60 bg-card/90 text-center shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.12)] backdrop-blur-sm dark:bg-card/80 dark:shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.35)]"
+						class="w-10 shrink-0 px-1 text-center max-md:min-w-[3rem] max-md:w-[3rem] max-md:max-w-[3.25rem] max-md:px-2 lg:w-12"
+						scope="col"
 					>
-						Actions
+						<span class="sr-only">{isAdmin ? "Edit member" : "View member"}</span>
 					</Table.Head>
 				</Table.Row>
 			</Table.Header>
 			<Table.Body>
 				{#if members.length === 0}
-					<Table.Row>
+					<Table.Row class="border-b-0">
 						<Table.Cell class="py-6 text-center text-sm" colspan={5}>
 							{searchTerm ? "No members found for your search" : "No members found"}
 						</Table.Cell>
 					</Table.Row>
 				{:else}
 					{#each members as member (member.id)}
-						<Table.Row class="group">
-							<Table.Cell>
+						<Table.Row
+							class="group focus-visible:ring-ring cursor-pointer focus-visible:z-10 focus-visible:ring-2 focus-visible:outline-none"
+							role="link"
+							tabindex={0}
+							aria-label={isAdmin
+								? `Edit member ${member.name || "member"}`
+								: `View member ${member.name || "member"}`}
+							onclick={() => goToMemberRow(member.id)}
+							onkeydown={(e) => memberRowKeydown(e, member.id)}
+						>
+							<Table.Cell
+								class="relative z-0 max-md:flex max-md:min-w-[4.75rem] max-md:w-[4.75rem] max-md:max-w-[4.75rem] max-md:justify-center max-md:px-2"
+							>
 								<Avatar
 									class="size-8"
 									name={member.name}
@@ -257,44 +291,34 @@
 									dops={member.dops ?? undefined}
 								/>
 							</Table.Cell>
-							<Table.Cell class="text-sm">
-								<a
-									href={`/members/${member.id}`}
-									class="text-foreground font-medium underline-offset-4 hover:text-primary hover:underline"
-								>
-									{member.name || "N/A"}
-								</a>
+							<Table.Cell class="relative z-0 min-w-0 max-md:pr-1 text-sm">
+								<span class="text-foreground font-medium break-words">{member.name || "N/A"}</span>
 							</Table.Cell>
-							<Table.Cell class="text-center text-sm tabular-nums md:text-left">{member.mbr || "N/A"}</Table.Cell>
-							<Table.Cell class="hidden text-sm md:table-cell"
+							<Table.Cell
+								class="relative z-0 max-md:min-w-[7.25rem] max-md:w-[7.25rem] max-md:max-w-[7.25rem] max-md:px-1.5 text-center text-sm tabular-nums md:w-auto md:max-w-none md:px-2 md:text-left"
+								>{member.mbr || "N/A"}</Table.Cell
+							>
+							<Table.Cell class="relative z-0 hidden text-sm md:table-cell"
 								>{member.email ?? member.username ?? "N/A"}</Table.Cell
 							>
 							<Table.Cell
-								class="group-hover:bg-muted/50 sticky right-0 z-20 w-28 border-l border-border/60 bg-card/90 text-center shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.12)] backdrop-blur-sm transition-colors dark:bg-card/80 dark:shadow-[-6px_0_10px_-6px_rgba(0,0,0,0.35)]"
+								class="relative z-0 shrink-0 px-1 text-center align-middle max-md:min-w-[3rem] max-md:w-[3rem] max-md:max-w-[3.25rem] max-md:px-0.5"
 							>
-								<div class="flex justify-center gap-1">
+								<span
+									class="text-muted-foreground pointer-events-none mx-auto inline-flex items-center justify-center transition-opacity
+										max-lg:h-10 max-lg:w-10 max-lg:rounded-lg max-lg:border max-lg:border-border/80 max-lg:bg-background max-lg:text-foreground max-lg:shadow-sm
+										lg:h-auto lg:w-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none
+										opacity-100
+										lg:[@media(hover:hover)_and_(pointer:fine)]:opacity-0
+										lg:[@media(hover:hover)_and_(pointer:fine)]:group-hover:opacity-100"
+									aria-hidden="true"
+								>
 									{#if isAdmin}
-										<Button
-											variant="outline"
-											size="icon"
-											href={`/members/${member.id}/edit`}
-											title="Edit"
-											aria-label="Edit member"
-										>
-											<Pencil class="h-4 w-4" />
-										</Button>
+										<Pencil class="size-4 shrink-0" />
 									{:else}
-										<Button
-											variant="outline"
-											size="icon"
-											href={`/members/${member.id}`}
-											title="View"
-											aria-label="View member"
-										>
-											<Eye class="h-4 w-4" />
-										</Button>
+										<Eye class="size-4 shrink-0" />
 									{/if}
-								</div>
+								</span>
 							</Table.Cell>
 						</Table.Row>
 					{/each}
@@ -303,10 +327,15 @@
 		</Table.Root>
 	</div>
 
-	<div class="mt-6 flex items-center justify-center">
-		<Pagination.Root count={pagination.totalCount} perPage={pagination.perPage} page={pagination.page}>
+	<div class="mt-6 flex min-w-0 items-center justify-center">
+		<Pagination.Root
+			class="min-w-0 max-w-full justify-center"
+			count={pagination.totalCount}
+			perPage={pagination.perPage}
+			page={pagination.page}
+		>
 			{#snippet children({ pages, currentPage })}
-				<Pagination.Content>
+				<Pagination.Content class="max-w-full flex-wrap justify-center gap-y-2">
 					<Pagination.Item>
 						<Pagination.PrevButton
 							onclick={() => handlePageChange(currentPage - 1)}
@@ -347,3 +376,101 @@
 		</Pagination.Root>
 	</div>
 </div>
+
+<style>
+	/*
+		Inset horizontal row dividers on cells (not on <tr>).
+		`position: relative` + ::before on table rows breaks column alignment in Chromium/WebKit.
+	*/
+	:global(.hub-member-sep-table thead th),
+	:global(.hub-member-sep-table tbody td) {
+		position: relative;
+		border-bottom-width: 0;
+	}
+
+	:global(.hub-member-sep-table thead > tr > th:nth-child(1)::after),
+	:global(.hub-member-sep-table tbody > tr > td:nth-child(1)::after) {
+		content: "";
+		position: absolute;
+		pointer-events: none;
+		bottom: 0;
+		left: 2.5rem;
+		right: 0;
+		height: 1px;
+		background: color-mix(in oklch, var(--border) 55%, transparent);
+	}
+
+	:global(.hub-member-sep-table thead > tr > th:nth-child(2)::after),
+	:global(.hub-member-sep-table thead > tr > th:nth-child(3)::after),
+	:global(.hub-member-sep-table thead > tr > th:nth-child(4)::after),
+	:global(.hub-member-sep-table tbody > tr > td:nth-child(2)::after),
+	:global(.hub-member-sep-table tbody > tr > td:nth-child(3)::after),
+	:global(.hub-member-sep-table tbody > tr > td:nth-child(4)::after) {
+		content: "";
+		position: absolute;
+		pointer-events: none;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background: color-mix(in oklch, var(--border) 55%, transparent);
+	}
+
+	:global(.hub-member-sep-table thead > tr > th:nth-child(5)::after),
+	:global(.hub-member-sep-table tbody > tr > td:nth-child(5)::after) {
+		content: "";
+		position: absolute;
+		pointer-events: none;
+		bottom: 0;
+		left: 0;
+		right: 2.5rem;
+		height: 1px;
+		background: color-mix(in oklch, var(--border) 55%, transparent);
+	}
+
+	:global(.hub-member-sep-table tbody > tr:last-child > td::after) {
+		display: none;
+	}
+
+	:global(.hub-member-sep-table tbody > tr:only-child > td:only-child::after) {
+		display: none;
+	}
+
+	@media (max-width: 767px) {
+		:global(.hub-members-table-host [data-slot="table-container"]) {
+			overflow-x: clip;
+		}
+
+		:global(.hub-member-sep-table) {
+			table-layout: fixed;
+			width: 100%;
+		}
+
+		:global(.hub-member-sep-table th),
+		:global(.hub-member-sep-table td) {
+			white-space: normal;
+			word-break: break-word;
+		}
+
+		:global(.hub-member-sep-table thead > tr > th:nth-child(3)) {
+			white-space: nowrap;
+		}
+
+		/* Let the name column take all space not used by fixed-width profile / # / action. */
+		:global(.hub-member-sep-table thead > tr > th:nth-child(2)),
+		:global(.hub-member-sep-table tbody > tr > td:nth-child(2)) {
+			width: auto;
+			min-width: 0;
+		}
+
+		:global(.hub-member-sep-table thead > tr > th:nth-child(1)::after),
+		:global(.hub-member-sep-table tbody > tr > td:nth-child(1)::after) {
+			left: 0.5rem;
+		}
+
+		:global(.hub-member-sep-table thead > tr > th:nth-child(5)::after),
+		:global(.hub-member-sep-table tbody > tr > td:nth-child(5)::after) {
+			right: 0.5rem;
+		}
+	}
+</style>

@@ -5,6 +5,7 @@
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
+		"dev:host": "vite dev --host",
 		"build": "vite build",
 		"build:vercel": "tsx scripts/ensure-users-schema.ts && tsx scripts/ensure-events-schema.ts && tsx scripts/ensure-stats-schema.ts && tsx scripts/ensure-invitation-tokens-schema.ts && vite build",
 		"preview": "vite preview",

@@ -4,13 +4,14 @@
 	import * as Card from "$lib/components/ui/card/index.js";
 	import * as Select from "$lib/components/ui/select/index.js";
 	import * as Dialog from "$lib/components/ui/dialog/index.js";
+	import * as Field from "$lib/components/ui/field/index.js";
 	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import { Checkbox } from "$lib/components/ui/checkbox/index.js";
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
-	import { ArrowLeft, Check, Trash2, KeyRound, Copy } from "@lucide/svelte";
+	import { ArrowLeft, Check, Trash2, KeyRound, Copy, ShieldCheck, UserRound, NotebookPen } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 	import { toastAdminActionFailure } from "$lib/admin-action-toast";
 	import { memberSchema } from "./edit-member-schema";
@@ -28,7 +29,7 @@
 	let tempPassword = $state("");
 
 	// Check if current user is admin (for delete access)
-	const isAdmin = $derived(data.user?.role === "admin");
+	const isAdmin = $derived.by(() => data.user?.role === "admin");
 
 	// Update form (explicit id: same page uses multiple superForms with the same `data.form`)
 	const form = superForm(data.form, {
@@ -190,12 +191,18 @@
 </script>
 
 <div class="flex w-full min-w-0 flex-col gap-6">
-	<div class="flex flex-wrap items-center justify-between gap-4">
-		<h1 class="min-w-0 text-3xl font-bold">Edit Member</h1>
-		<HubBackLink size="sm" onclick={() => history.back()} class="shrink-0 gap-2">
-			<ArrowLeft class="size-4" />
-			Back to Members
-		</HubBackLink>
+	<div class="flex flex-wrap items-start justify-between gap-4">
+		<div class="min-w-0">
+			<h1 class="min-w-0 text-3xl font-bold">Edit Member Profile</h1>
+			<p class="text-muted-foreground text-sm">Update member information and account details.</p>
+		</div>
+		<div class="flex items-center gap-2">
+			<Button href={`/members/${data.member.id}`} variant="outline" size="sm">View Member Profile</Button>
+			<HubBackLink size="sm" onclick={() => history.back()} class="shrink-0 gap-2">
+				<ArrowLeft class="size-4" />
+				Back to Members
+			</HubBackLink>
+		</div>
 	</div>
 
 <!-- Profile Image Section -->
@@ -214,12 +221,10 @@
 				dops={$formData.dops}
 			/>
 
-			<div class="flex-1">
-				<div class="space-y-4">
-					<div>
-						<label for="profile-image-upload" class="mb-2 block text-sm font-medium">
-							Upload new profile image
-						</label>
+			<Field.Set class="flex-1">
+				<Field.Group>
+					<Field.Field>
+						<Field.Label for="profile-image-upload">Upload new profile image</Field.Label>
 						<div
 							class="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-gray-400"
 						>
@@ -242,161 +247,241 @@
 								</Button>
 							{/if}
 						</div>
-						<p class="text-muted-foreground mt-1 text-xs">PNG, JPG, GIF up to 4MB</p>
-					</div>
-				</div>
-			</div>
+						<Field.Description>PNG, JPG, GIF up to 4MB</Field.Description>
+					</Field.Field>
+				</Field.Group>
+			</Field.Set>
 		</div>
 	</Card.Content>
 </Card.Root>
 
 <!-- Member Details Form -->
-<Card.Root>
-	<Card.Header>
-		<Card.Title>Member Details</Card.Title>
-		<Card.Description>Update the member's information below.</Card.Description>
-	</Card.Header>
-	<Card.Content>
-		<form method="POST" action="?/update" use:enhance class="space-y-6">
-			<!-- Use the member ID from form data -->
-			<input type="hidden" name="id" value={$formData.id} />
+<form method="POST" action="?/update" use:enhance class="space-y-6">
+	<input type="hidden" name="id" value={$formData.id} />
 
-			<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-				<Form.Field {form} name="name">
-					<Form.Control>
-						{#snippet children({ props })}
-							<Form.Label>Name *</Form.Label>
-							<Input {...props} bind:value={$formData.name} />
-						{/snippet}
-					</Form.Control>
-					<Form.Description>The member's full name.</Form.Description>
-					<Form.FieldErrors />
-				</Form.Field>
+	<div class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
+		<Card.Root>
+			<Card.Header>
+				<Card.Title class="flex items-center gap-2">
+					<UserRound class="text-muted-foreground size-4" />
+					Member Information
+				</Card.Title>
+			</Card.Header>
+			<Card.Content class="space-y-6">
+				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+					<Form.Field {form} name="name">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Name *</Form.Label>
+								<Input {...props} bind:value={$formData.name} />
+							{/snippet}
+						</Form.Control>
+						<Form.Description>The member's full name.</Form.Description>
+						<Form.FieldErrors />
+					</Form.Field>
 
-				<Form.Field {form} name="email">
-					<Form.Control>
-						{#snippet children({ props })}
-							<Form.Label>Email *</Form.Label>
-							<Input type="email" {...props} bind:value={$formData.email} />
-						{/snippet}
-					</Form.Control>
-					<Form.Description>Primary email address.</Form.Description>
-					<Form.FieldErrors />
-				</Form.Field>
+					<Form.Field {form} name="email">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Email *</Form.Label>
+								<Input type="email" {...props} bind:value={$formData.email} />
+							{/snippet}
+						</Form.Control>
+						<Form.Description>Primary email address.</Form.Description>
+						<Form.FieldErrors />
+					</Form.Field>
 
-				<Form.Field {form} name="mbr">
-					<Form.Control>
-						{#snippet children({ props })}
-							<Form.Label>Member Number *</Form.Label>
-							<Input type="number" {...props} bind:value={$formData.mbr} />
-						{/snippet}
-					</Form.Control>
-					<Form.Description>Unique member identifier.</Form.Description>
-					<Form.FieldErrors />
-				</Form.Field>
+					<Form.Field {form} name="mbr">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Member Number *</Form.Label>
+								<Input type="number" {...props} bind:value={$formData.mbr} />
+							{/snippet}
+						</Form.Control>
+						<Form.Description>Unique member identifier.</Form.Description>
+						<Form.FieldErrors />
+					</Form.Field>
 
-				<Form.Field {form} name="msd">
-					<Form.Control>
-						{#snippet children({ props })}
-							<Form.Label>Member Since *</Form.Label>
-							<Input type="date" {...props} bind:value={$formData.msd} />
-						{/snippet}
-					</Form.Control>
-					<Form.Description>Date when membership started.</Form.Description>
-					<Form.FieldErrors />
-				</Form.Field>
+					<Form.Field {form} name="msd">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Member Since *</Form.Label>
+								<Input type="date" {...props} bind:value={$formData.msd} />
+							{/snippet}
+						</Form.Control>
+						<Form.Description>Date when membership started.</Form.Description>
+						<Form.FieldErrors />
+					</Form.Field>
 
-				<Form.Field {form} name="phone">
-					<Form.Control>
-						{#snippet children({ props })}
-							<Form.Label>Phone</Form.Label>
-							<Input type="tel" {...props} bind:value={$formData.phone} />
-						{/snippet}
-					</Form.Control>
-					<Form.Description>Contact phone number.</Form.Description>
-					<Form.FieldErrors />
-				</Form.Field>
+					<Form.Field {form} name="phone">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Phone</Form.Label>
+								<Input type="tel" {...props} bind:value={$formData.phone} />
+							{/snippet}
+						</Form.Control>
+						<Form.Description>Contact phone number.</Form.Description>
+						<Form.FieldErrors />
+					</Form.Field>
 
-				<Form.Field {form} name="role">
-					<Form.Control>
-						{#snippet children({ props })}
-							<Form.Label>Role *</Form.Label>
-							<Select.Root type="single" bind:value={$formData.role} name={props.name}>
-								<Select.Trigger class="w-36" {...props}>
-									{$formData.role
-										? $formData.role.charAt(0).toUpperCase() + $formData.role.slice(1)
-										: "Select Role"}
-								</Select.Trigger>
-								<Select.Content>
-									<Select.Group>
-										<Select.Item value="guest" label="Guest">Guest</Select.Item>
-										<Select.Item value="member" label="Member">Member</Select.Item>
-										<Select.Item value="admin" label="Admin">Admin</Select.Item>
-									</Select.Group>
-								</Select.Content>
-							</Select.Root>
-						{/snippet}
-					</Form.Control>
-					<Form.Description
-						>Changing this status will update member site privileges.</Form.Description
-					>
-					<Form.FieldErrors />
-				</Form.Field>
-				<Form.Field {form} name="dops_date">
-					<Form.Control>
-						{#snippet children({ props })}
-							<Form.Label>DOPS</Form.Label>
-							<Input type="date" {...props} bind:value={$formData.dops_date} />
-						{/snippet}
-					</Form.Control>
-					<Form.Description>Date of Permanent Sobriety.</Form.Description>
-					<Form.FieldErrors />
-				</Form.Field>
-				<Form.Field {form} name="dops">
-					<Form.Control>
-						{#snippet children({ props })}
-							<Form.Label>Passed away (DOPS)</Form.Label>
-							<Checkbox {...props} bind:checked={$formData.dops} />
-						{/snippet}
-					</Form.Control>
-					<Form.Description>
-						Deceased members are excluded from keg purchasing duty on the public stats page (matched by
-						MBR).
-					</Form.Description>
-					<Form.FieldErrors />
-				</Form.Field>
-			</div>
+					<Form.Field {form} name="role">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Role *</Form.Label>
+								<Select.Root type="single" bind:value={$formData.role} name={props.name}>
+									<Select.Trigger class="w-40" {...props}>
+										{$formData.role
+											? $formData.role.charAt(0).toUpperCase() + $formData.role.slice(1)
+											: "Select Role"}
+									</Select.Trigger>
+									<Select.Content>
+										<Select.Group>
+											<Select.Item value="guest" label="Guest">Guest</Select.Item>
+											<Select.Item value="member" label="Member">Member</Select.Item>
+											<Select.Item value="admin" label="Admin">Admin</Select.Item>
+										</Select.Group>
+									</Select.Content>
+								</Select.Root>
+							{/snippet}
+						</Form.Control>
+						<Form.Description
+							>Changing this status updates member site privileges.</Form.Description
+						>
+						<Form.FieldErrors />
+					</Form.Field>
 
-			<Form.Field {form} name="address">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>Address</Form.Label>
-						<Input {...props} bind:value={$formData.address} />
-					{/snippet}
-				</Form.Control>
-				<Form.Description>Mailing address.</Form.Description>
-				<Form.FieldErrors />
-			</Form.Field>
+					<Form.Field {form} name="dops_date">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>DOPS</Form.Label>
+								<Input type="date" {...props} bind:value={$formData.dops_date} />
+							{/snippet}
+						</Form.Control>
+						<Form.Description>Date of Permanent Sobriety.</Form.Description>
+						<Form.FieldErrors />
+					</Form.Field>
 
-			<Form.Field {form} name="sponsor">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>Sponsor</Form.Label>
-						<Input {...props} bind:value={$formData.sponsor} />
-					{/snippet}
-				</Form.Control>
-				<Form.Description>Member's sponsor (if applicable).</Form.Description>
-				<Form.FieldErrors />
-			</Form.Field>
+					<Form.Field {form} name="dops">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Passed away (DOPS)</Form.Label>
+								<Checkbox {...props} bind:checked={$formData.dops} />
+							{/snippet}
+						</Form.Control>
+						<Form.Description>
+							Deceased members are excluded from keg duty on public stats.
+						</Form.Description>
+						<Form.FieldErrors />
+					</Form.Field>
+				</div>
 
+				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+					<Form.Field {form} name="address">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Address</Form.Label>
+								<Input {...props} bind:value={$formData.address} />
+							{/snippet}
+						</Form.Control>
+						<Form.Description>Mailing address.</Form.Description>
+						<Form.FieldErrors />
+					</Form.Field>
+
+					<Form.Field {form} name="sponsor">
+						<Form.Control>
+							{#snippet children({ props })}
+								<Form.Label>Sponsor</Form.Label>
+								<Input {...props} bind:value={$formData.sponsor} />
+							{/snippet}
+						</Form.Control>
+						<Form.Description>Member's sponsor (if applicable).</Form.Description>
+						<Form.FieldErrors />
+					</Form.Field>
+				</div>
+			</Card.Content>
+		</Card.Root>
+
+		<Card.Root>
+			<Card.Header>
+				<Card.Title class="flex items-center gap-2">
+					<ShieldCheck class="text-muted-foreground size-4" />
+					Account &amp; Status
+				</Card.Title>
+			</Card.Header>
+			<Card.Content>
+				<Field.Set>
+					<Field.Group>
+						<Field.Field class="bg-muted/40 rounded-lg border p-3">
+							<Field.Label class="text-xs">Account status</Field.Label>
+							<Field.Description class="mt-1 text-sm font-semibold capitalize text-foreground">
+								{$formData.role}
+							</Field.Description>
+						</Field.Field>
+
+						<Field.Field>
+							<Field.Label class="text-xs">Username</Field.Label>
+							<Field.Description class="text-sm text-foreground">
+								{data.member.username || "Not set"}
+							</Field.Description>
+						</Field.Field>
+
+						<Field.Field>
+							<Field.Label class="text-xs">Password</Field.Label>
+							<Button
+								type="button"
+								variant="outline"
+								onclick={openResetPasswordDialog}
+								class="mt-1 flex w-full items-center justify-center gap-2"
+							>
+								<KeyRound class="size-4" />
+								Reset Password
+							</Button>
+						</Field.Field>
+					</Field.Group>
+
+					<Field.Separator />
+
+					<Field.Group>
+						<Field.Field>
+							<Field.Label class="text-xs">Last login</Field.Label>
+							<Field.Description class="text-sm text-foreground">
+								{data.member.updated_at?.toLocaleString?.() ?? "Unknown"}
+							</Field.Description>
+						</Field.Field>
+						<Field.Field>
+							<Field.Label class="text-xs">Created</Field.Label>
+							<Field.Description class="text-sm text-foreground">
+								{data.member.created_at?.toLocaleString?.() ?? "Unknown"}
+							</Field.Description>
+						</Field.Field>
+						<Field.Field>
+							<Field.Label class="text-xs">Updated</Field.Label>
+							<Field.Description class="text-sm text-foreground">
+								{data.member.updated_at?.toLocaleString?.() ?? "Unknown"}
+							</Field.Description>
+						</Field.Field>
+					</Field.Group>
+				</Field.Set>
+			</Card.Content>
+		</Card.Root>
+	</div>
+
+	<Card.Root>
+		<Card.Header>
+			<Card.Title class="flex items-center gap-2">
+				<NotebookPen class="text-muted-foreground size-4" />
+				About the Member
+			</Card.Title>
+		</Card.Header>
+		<Card.Content class="grid grid-cols-1 gap-6 lg:grid-cols-3">
 			<Form.Field {form} name="bio">
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Bio</Form.Label>
-						<Textarea {...props} bind:value={$formData.bio} rows={4} />
+						<Textarea {...props} bind:value={$formData.bio} rows={6} maxlength={300} class="min-h-36" />
 					{/snippet}
 				</Form.Control>
-				<Form.Description>Member's biography or description.</Form.Description>
+				<Form.Description>Member biography — up to 300 characters.</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
 
@@ -404,10 +489,10 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Hobbies</Form.Label>
-						<Input {...props} bind:value={$formData.hobbies} />
+						<Textarea {...props} bind:value={$formData.hobbies} rows={6} maxlength={300} class="min-h-36" />
 					{/snippet}
 				</Form.Control>
-				<Form.Description>Member's hobbies and interests.</Form.Description>
+				<Form.Description>Hobbies and interests — up to 300 characters.</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
 
@@ -415,49 +500,33 @@
 				<Form.Control>
 					{#snippet children({ props })}
 						<Form.Label>Likes</Form.Label>
-						<Input {...props} bind:value={$formData.likes} />
+						<Textarea {...props} bind:value={$formData.likes} rows={6} maxlength={300} class="min-h-36" />
 					{/snippet}
 				</Form.Control>
-				<Form.Description>Things the member likes.</Form.Description>
+				<Form.Description>Things the member likes — up to 300 characters.</Form.Description>
 				<Form.FieldErrors />
 			</Form.Field>
-			<!-- Admin Actions -->
-			{#if isAdmin}
-				<div class="flex flex-col gap-4 md:flex-row md:justify-between">
-					<div class="flex flex-col gap-4 md:flex-row">
-						<Button type="submit" disabled={$submitting}>
-							{$submitting ? "Updating..." : "Update Member"}
-						</Button>
-						<Button type="button" variant="outline" onclick={() => history.back()}
-							>{$message ? "Close" : "Cancel"}</Button
-						>
-					</div>
+		</Card.Content>
+	</Card.Root>
 
-					<div class="flex gap-2">
-						<Button
-							type="button"
-							variant="outline"
-							onclick={openResetPasswordDialog}
-							class="flex items-center gap-2"
-						>
-							<KeyRound class="size-4" />
-							Reset Password
-						</Button>
-						<Button
-							type="button"
-							variant="destructive"
-							onclick={openDeleteDialog}
-							class="flex items-center gap-2"
-						>
-							<Trash2 class="size-4" />
-							Delete Member
-						</Button>
-					</div>
-				</div>
-			{/if}
-		</form>
-	</Card.Content>
-</Card.Root>
+	{#if isAdmin}
+		<div class="flex flex-col gap-4 md:flex-row md:justify-between">
+			<div class="flex flex-col gap-3 sm:flex-row">
+				<Button type="submit" disabled={$submitting}>{$submitting ? "Updating..." : "Update Member"}</Button>
+				<Button type="button" variant="outline" onclick={() => history.back()}
+					>{$message ? "Close" : "Cancel"}</Button
+				>
+			</div>
+
+			<div class="flex gap-2">
+				<Button type="button" variant="destructive" onclick={openDeleteDialog} class="flex items-center gap-2">
+					<Trash2 class="size-4" />
+					Delete Member
+				</Button>
+			</div>
+		</div>
+	{/if}
+</form>
 </div>
 
 <!-- Delete Confirmation Dialog -->
