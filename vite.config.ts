@@ -2,9 +2,10 @@ import tailwindcss from '@tailwindcss/vite';
 import { svelteTesting } from '@testing-library/svelte/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
+import { galleryBannerTravelManifest } from './vite-plugins/gallery-banner-travel-manifest';
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()],
+	plugins: [tailwindcss(), galleryBannerTravelManifest(), sveltekit()],
 	server: {
 		// Allow opening the dev server by LAN IP / hostname (e.g. iPhone on same Wi‑Fi).
 		// Use `pnpm dev:host` so Vite binds to all interfaces (`--host`).

@@ -1,6 +1,5 @@
 import type { PageServerLoad } from './$types';
-import fs from 'fs/promises';
-import path from 'path';
+import galleryFilenames from 'virtual:gallery-banner-travel-files';
 
 type GalleryItem = {
 	src: string;
@@ -52,16 +51,7 @@ function buildGalleryItem(file: string): GalleryItem {
 }
 
 export const load: PageServerLoad = async () => {
-	const dir = path.resolve('static/banner-travel');
-	let files: string[] = [];
-
-	try {
-		files = (await fs.readdir(dir)).filter((f) => /\.(jpe?g)$/i.test(f));
-	} catch {
-		return { items: [], images: [] };
-	}
-
-	const items = files.map(buildGalleryItem);
+	const items = [...galleryFilenames].map(buildGalleryItem);
 
 	return {
 		items,
