@@ -17,11 +17,11 @@
 	import { toastAdminActionFailure } from "$lib/admin-action-toast";
 	import type { PageData } from "./$types";
 
-	let { data }: { data: PageData } = $props();
+	const props: { data: PageData } = $props();
 
 	const schema = createMemberSchema;
 
-	const { form, errors, enhance, submitting } = superForm(data.form, {
+	const { form, errors, enhance, submitting } = superForm(props.data.form, {
 		id: "dashboard-create-member",
 		validators: zodClient(schema),
 		onResult: ({ result }) => {
@@ -51,11 +51,13 @@
 		<CardHeader>
 			<CardTitle class="flex items-center gap-2 text-lg">
 				<UserPlus class="size-5 shrink-0" />
-				New profile
+				Add Current Member
 			</CardTitle>
 			<CardDescription>
-				Creates a guest account (no member # yet). They cannot sign in until you run Reset password on
-				their edit page and share the temporary password with them.
+				Use this only to add current members to the Member Directory. To invite someone new, use
+				the <a href="/dashboard/invitations" class="underline underline-offset-4">Invitations page</a>.
+				After you create this profile, use Reset password on their edit page before they can sign
+				in.
 			</CardDescription>
 		</CardHeader>
 		<CardContent>
@@ -72,6 +74,13 @@
 					<Input id="email" name="email" type="email" autocomplete="email" bind:value={$form.email} />
 					{#if $errors.email}
 						<p class="text-destructive text-sm">{$errors.email}</p>
+					{/if}
+				</div>
+				<div class="space-y-2">
+					<Label for="mbr">Member number</Label>
+					<Input id="mbr" name="mbr" type="number" min="1" bind:value={$form.mbr} />
+					{#if $errors.mbr}
+						<p class="text-destructive text-sm">{$errors.mbr}</p>
 					{/if}
 				</div>
 				<div class="space-y-2">

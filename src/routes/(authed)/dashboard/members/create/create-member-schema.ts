@@ -7,6 +7,10 @@ export const createMemberSchema = z.object({
 		.trim()
 		.min(1, "Email is required")
 		.email("Enter a valid email address"),
+	mbr: z.coerce
+		.number()
+		.int("Member number must be a whole number")
+		.min(1, "Member number is required"),
 	phone: z.string().trim()
 });
 

@@ -6,7 +6,8 @@ import { encodeBase32LowerCase } from "@oslojs/encoding";
 import { sql } from "drizzle-orm";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
-import { getUniqueUsernameForNewUser } from "$lib/server/username";
+import { getMbrConflictMessage } from "$lib/server/mbr-uniqueness";
+import { getUsernameForMemberWithMbr } from "$lib/server/username";
 import type { Actions, PageServerLoad } from "./$types";
 import { createMemberSchema } from "./create-member-schema";
 
@@ -22,7 +23,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 	return {
 		form: await superValidate(
-			{ name: "", email: "", phone: "" },
+			{ name: "", email: "", mbr: undefined, phone: "" },
 			zod(createMemberSchema),
 			{ id: FORM_ID }
 		)
@@ -43,7 +44,9 @@ export const actions: Actions = {
 
 		const name = form.data.name.trim();
 		const email = form.data.email.trim();
+		const mbr = form.data.mbr;
 		const phone = form.data.phone?.trim() || "";
+		const userId = crypto.randomUUID();
 
 		const emailLower = email.toLowerCase();
 		const [existing] = await db
@@ -59,8 +62,12 @@ export const actions: Actions = {
 			});
 		}
 
-		const userId = crypto.randomUUID();
-		const username = await getUniqueUsernameForNewUser(name);
+		const mbrConflict = await getMbrConflictMessage(db, mbr, userId);
+		if (mbrConflict) {
+			return fail(400, { form, message: mbrConflict });
+		}
+
+		const username = await getUsernameForMemberWithMbr(name, mbr, userId);
 		const randomSecret = encodeBase32LowerCase(crypto.getRandomValues(new Uint8Array(32)));
 		const password_hash = await hash(randomSecret);
 
@@ -72,8 +79,8 @@ export const actions: Actions = {
 				email,
 				password_hash,
 				phone: phone || null,
-				role: "guest",
-				mbr: null,
+				role: "member",
+				mbr,
 				msd: null,
 				sponsor: null,
 				address: null,
