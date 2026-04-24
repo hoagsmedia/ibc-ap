@@ -3,7 +3,8 @@
 	import * as Table from "$lib/components/ui/table/index.js";
 	import * as Pagination from "$lib/components/ui/pagination/index.js";
 	import Avatar from "$lib/components/Avatar.svelte";
-	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon, Eye, Pencil } from "@lucide/svelte";
+	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon, Eye, Pencil, UserPlus } from "@lucide/svelte";
+	import { Button } from "$lib/components/ui/button/index.js";
 	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Search } from "@lucide/svelte";
@@ -232,10 +233,18 @@
 					· page {pagination.page} of {pagination.totalPages}{/if}
 			</p>
 		</div>
-		<HubBackLink href="/dashboard" size="sm" class="shrink-0 gap-2 self-start sm:self-center">
-			<ArrowLeft class="size-4" />
-			Back to Dashboard
-		</HubBackLink>
+		<div class="flex shrink-0 flex-wrap items-center gap-2 self-start sm:self-center">
+			{#if isAdmin}
+				<Button href="/dashboard/members/create" size="sm" class="gap-2">
+					<UserPlus class="size-4" />
+					Add member
+				</Button>
+			{/if}
+			<HubBackLink href="/dashboard" size="sm" class="gap-2">
+				<ArrowLeft class="size-4" />
+				Back to Dashboard
+			</HubBackLink>
+		</div>
 	</div>
 
 	<div class="flex min-w-0 items-center gap-2">
