@@ -13,6 +13,7 @@
 	import { Skeleton } from "$lib/components/ui/skeleton/index.js";
 	import * as Tooltip from "$lib/components/ui/tooltip/index.js";
 	import { Separator } from "$lib/components/ui/separator";
+	import QuickActionLink from "$lib/components/dashboard/QuickActionLink.svelte";
 	import {
 		Beer,
 		BookUser,
@@ -99,7 +100,7 @@
 		>
 			<h2 id="club-overview-heading" class="sr-only">Club snapshot</h2>
 			<a
-				href="/members"
+				href="/dashboard/members"
 				class="text-foreground border-border/50 from-sidebar/25 to-card relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] sm:rounded-2xl sm:p-5 hover:border-primary/40 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
 			>
 				<div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 sm:gap-4">
@@ -680,7 +681,7 @@
 										</a>
 									</div>
 									{#if visibleInvitations.length > 0}
-										<ul class="flex flex-col overflow-hidden" role="list">
+										<ul class="flex min-w-0 flex-col" role="list">
 											{#each visibleInvitations as invitation (invitation.token)}
 												{@const inviteUrl = `${data.baseUrl}/invite/${invitation.token}`}
 												{@const canCopyInvite =
@@ -695,15 +696,15 @@
 														class="flex min-h-10 w-full min-w-0 flex-nowrap items-center {rowChrome}"
 													>
 														<div
-															class="text-white/92 dark:text-foreground flex min-w-0 max-w-[9rem] flex-1 items-center px-3 py-2 text-xs font-medium sm:max-w-[11rem] sm:px-4"
+															class="text-white/92 dark:text-foreground flex w-max max-w-[9rem] shrink-0 items-center px-2 py-2 text-xs font-medium sm:max-w-[11rem] sm:px-3"
 														>
 															<span class="truncate"
 																>{invitation.invite_name?.trim() || "—"}</span
 															>
 														</div>
-														<div class="flex min-w-0 items-center">
+														<div class="flex shrink-0 items-center">
 															<Separator orientation="vertical" class={hubTableColSepClass} />
-															<div class="flex min-w-0 items-center px-3 py-2 sm:px-4">
+															<div class="flex items-center px-2 py-2 sm:px-3">
 																<span
 																	class="font-mono text-xs text-white/88 tabular-nums dark:text-muted-foreground"
 																>
@@ -711,43 +712,55 @@
 																</span>
 															</div>
 														</div>
-														<div class="flex min-w-0 items-center">
+														<div class="flex min-w-0 flex-1 items-center">
 															<Separator orientation="vertical" class={hubTableColSepClass} />
 															<div
-																class="text-white/78 dark:text-muted-foreground flex min-w-0 items-center px-3 py-2 text-xs sm:px-4"
+																class="text-white/78 dark:text-muted-foreground flex min-w-0 flex-1 items-center px-2 py-2 text-xs sm:px-3"
 															>
 																<span class="truncate"
 																	>Created {formatDateTime(invitation.created_at)}</span
 																>
 															</div>
 														</div>
-														<div class="flex min-w-0 flex-1 items-center">
+														<div class="flex shrink-0 items-center">
 															<Separator orientation="vertical" class={hubTableColSepClass} />
 															<div
-																class="flex min-h-10 min-w-0 flex-1 items-center justify-between gap-2 px-2 py-2 sm:px-3"
+																class="flex min-h-10 shrink-0 items-center gap-2 px-2 py-2 sm:px-3"
 															>
-																{#if canCopyInvite}
-																	<Badge
-																		class="shrink-0 rounded-sm px-2 py-0.5 text-[10px] whitespace-nowrap"
-																	>
-																		<ClockIcon class="mr-1 size-3" />
-																		Active
-																	</Badge>
-																	<CustomCopy
-																		text={inviteUrl}
-																		ariaLabel="Copy invitation link for {invitation.invite_name?.trim() ||
-																			'this invite'}"
-																		class="{inviteCopyBtnClass} shrink-0"
-																	/>
-																{:else}
-																	<Badge
-																		variant="secondary"
-																		class="shrink-0 rounded-sm px-2 py-0.5 text-[10px] whitespace-nowrap"
-																	>
-																		<CheckIcon class="mr-1 size-3" />
-																		Used
-																	</Badge>
-																{/if}
+																<!-- Fixed badge column + fixed copy slot so Active/Used badges line up across rows -->
+																<div
+																	class="flex w-[6.5rem] shrink-0 items-center justify-start sm:w-[7rem]"
+																>
+																	{#if canCopyInvite}
+																		<Badge
+																			class="shrink-0 rounded-sm px-2 py-0.5 text-[10px] whitespace-nowrap"
+																		>
+																			<ClockIcon class="mr-1 size-3" />
+																			Active
+																		</Badge>
+																	{:else}
+																		<Badge
+																			variant="secondary"
+																			class="shrink-0 rounded-sm px-2 py-0.5 text-[10px] whitespace-nowrap"
+																		>
+																			<CheckIcon class="mr-1 size-3" />
+																			Used
+																		</Badge>
+																	{/if}
+																</div>
+																<div
+																	class="flex size-8 shrink-0 items-center justify-center"
+																	aria-hidden={!canCopyInvite}
+																>
+																	{#if canCopyInvite}
+																		<CustomCopy
+																			text={inviteUrl}
+																			ariaLabel="Copy invitation link for {invitation.invite_name?.trim() ||
+																				'this invite'}"
+																			class={inviteCopyBtnClass}
+																		/>
+																	{/if}
+																</div>
 															</div>
 														</div>
 													</div>
@@ -905,67 +918,39 @@
 						</div>
 					</Card.Header>
 					<Card.Content class="flex flex-1 flex-col gap-2">
-						<Button
-							href="/members"
-							variant="outline"
-							class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
-						>
+						<QuickActionLink href="/dashboard/members">
 							<BookUser class="text-primary size-[1.15rem] shrink-0" />
 							{data.user.role === "admin" ? "Manage members" : "Member directory"}
-						</Button>
+						</QuickActionLink>
 						{#if data.user.role === "admin"}
-							<Button
-								href="/admin/events"
-								variant="outline"
-								class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
-							>
+							<QuickActionLink href="/admin/events">
 								<CalendarDays class="text-primary size-[1.15rem] shrink-0" />
 								Manage events
-							</Button>
-							<Button
-								href="/admin/stats/beer-consumed"
-								variant="outline"
-								class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium whitespace-normal shadow-sm"
-							>
+							</QuickActionLink>
+							<QuickActionLink href="/admin/stats/beer-consumed" class="whitespace-normal">
 								<Beer class="text-primary size-[1.15rem] shrink-0" />
 								<span class="min-w-0 text-left leading-snug">
 									<span class="sm:hidden">Beer consumed</span>
 									<span class="hidden sm:inline">Manage Beer Consumed</span>
 								</span>
-							</Button>
-							<Button
-								href="/admin/stats/keg-credits"
-								variant="outline"
-								class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
-							>
+							</QuickActionLink>
+							<QuickActionLink href="/admin/stats/keg-credits">
 								<Package class="text-primary size-[1.15rem] shrink-0" />
 								Manage Keg Credits
-							</Button>
+							</QuickActionLink>
 						{:else}
-							<Button
-								href="/stats#beer-consumed-section"
-								variant="outline"
-								class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium whitespace-normal shadow-sm"
-							>
+							<QuickActionLink href="/stats#beer-consumed-section" class="whitespace-normal">
 								<Beer class="text-primary size-[1.15rem] shrink-0" />
 								<span class="min-w-0 text-left leading-snug">Beer consumed</span>
-							</Button>
-							<Button
-								href="/stats#keg-credits-section"
-								variant="outline"
-								class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
-							>
+							</QuickActionLink>
+							<QuickActionLink href="/stats#keg-credits-section">
 								<Package class="text-primary size-[1.15rem] shrink-0" />
 								Keg credits
-							</Button>
-							<Button
-								href="/events"
-								variant="outline"
-								class="border-border/55 bg-muted/20 text-foreground hover:bg-muted/35 h-auto min-h-12 justify-start gap-3 px-3 py-2.5 font-medium shadow-sm"
-							>
+							</QuickActionLink>
+							<QuickActionLink href="/events">
 								<CalendarRange class="text-primary size-[1.15rem] shrink-0" />
 								View events
-							</Button>
+							</QuickActionLink>
 						{/if}
 					</Card.Content>
 				</Card.Root>

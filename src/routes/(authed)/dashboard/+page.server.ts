@@ -3,8 +3,9 @@ import type { PageServerLoad, Actions } from "./$types";
 import {
 	createInvitationToken,
 	getInvitationsByUser,
-	getLastInvitationCreatedAt,
-	INVITATION_COOLDOWN_DAYS
+	getInvitationCountInWindow,
+	INVITATION_MEMBER_WEEKLY_LIMIT,
+	INVITATION_LIMIT_WINDOW_DAYS
 } from "$lib/server/invitations";
 import { fail, redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
@@ -164,14 +165,12 @@ export const actions: Actions = {
 			});
 		}
 
-		// One invitation link per week per member (admins are exempt)
+		// Members can create up to 3 invitation links in a rolling 7-day window (admins exempt)
 		if (locals.user.role !== "admin") {
-			const lastCreated = await getLastInvitationCreatedAt(locals.user.id);
-			const cooldownMs = INVITATION_COOLDOWN_DAYS * 24 * 60 * 60 * 1000;
-			if (lastCreated && Date.now() - lastCreated.getTime() < cooldownMs) {
-				const nextAllowed = new Date(lastCreated.getTime() + cooldownMs);
+			const inviteCountInWindow = await getInvitationCountInWindow(locals.user.id);
+			if (inviteCountInWindow >= INVITATION_MEMBER_WEEKLY_LIMIT) {
 				return fail(429, {
-					message: `You can only create one invitation link per week. You can create another on ${nextAllowed.toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric", year: "numeric" })}.`
+					message: `You can create up to ${INVITATION_MEMBER_WEEKLY_LIMIT} invitation links every ${INVITATION_LIMIT_WINDOW_DAYS} days. Please try again later.`
 				});
 			}
 		}

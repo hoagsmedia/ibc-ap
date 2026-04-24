@@ -16,14 +16,12 @@
 		const p = page.url.pathname;
 		return (
 			p.startsWith("/dashboard") ||
-			p.startsWith("/members") ||
+			(p !== "/members" && p.startsWith("/members")) ||
 			p.startsWith("/settings") ||
 			p.startsWith("/admin") ||
 			p.startsWith("/test") ||
 			p === "/events" ||
-			p.startsWith("/events/") ||
-			p === "/stats" ||
-			p.startsWith("/stats/")
+			p.startsWith("/events/")
 		);
 	});
 

@@ -1,5 +1,6 @@
 /**
  * Idempotent schema sync for `users` table: adds username, dops, dops_date,
+ * migrates `msd` from `date` to `timestamptz` (UTC midnight per calendar day),
  * makes email nullable, and adds users_username_unique if missing.
  * Safe to run on every Vercel build (no prompts, no truncation).
  * Run with: tsx scripts/ensure-users-schema.ts
@@ -20,6 +21,19 @@ if (!url) {
 const sql = postgres(url, { max: 1, onnotice: () => {} });
 
 const statements = [
+	// MSD: legacy `date` → `timestamptz` at UTC midnight for that calendar day
+	`DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'msd'
+      AND udt_name = 'date'
+  ) THEN
+    ALTER TABLE public.users
+      ALTER COLUMN msd TYPE timestamptz
+      USING ((msd::text || ' 00:00:00')::timestamp AT TIME ZONE 'UTC');
+  END IF;
+END $$`,
 	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS username text`,
 	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS dops boolean NOT NULL DEFAULT false`,
 	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS dops_date date`,

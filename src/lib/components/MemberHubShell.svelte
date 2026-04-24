@@ -27,6 +27,7 @@
 	import LogOut from "@lucide/svelte/icons/log-out";
 	import Home from "@lucide/svelte/icons/home";
 	import BarChart3 from "@lucide/svelte/icons/bar-chart-3";
+	import ClipboardList from "@lucide/svelte/icons/clipboard-list";
 
 	let { children }: { children: Snippet } = $props();
 
@@ -41,9 +42,11 @@
 	function memberHubTitle(pathname: string): string {
 		if (pathname.startsWith("/dashboard/invitations")) return "Your invitations";
 		if (pathname.startsWith("/dashboard/pending-members")) return "Prospects";
+		if (pathname.startsWith("/dashboard/members")) return "Member directory";
 		if (pathname.startsWith("/dashboard")) return "Dashboard";
 		if (pathname.startsWith("/members")) return "Members";
 		if (pathname.startsWith("/settings")) return "Settings";
+		if (pathname === "/admin/stats") return "Club stats";
 		if (pathname.startsWith("/admin/stats/beer-consumed")) return "Manage Beer Consumed";
 		if (pathname.startsWith("/admin/stats/keg-credits")) return "Manage Keg Credits";
 		if (pathname.startsWith("/admin/events")) return "Events";
@@ -122,9 +125,12 @@
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
 						<Sidebar.MenuItem>
-							<Sidebar.MenuButton isActive={navActive("/members")} tooltipContent="Members">
+							<Sidebar.MenuButton
+								isActive={navActive("/dashboard/members")}
+								tooltipContent="Member directory"
+							>
 								{#snippet child({ props })}
-									<a href="/members" {...props}>
+									<a href="/dashboard/members" {...props}>
 										<Users />
 										<span>Members</span>
 									</a>
@@ -177,6 +183,19 @@
 					<Sidebar.GroupLabel>Admin</Sidebar.GroupLabel>
 					<Sidebar.GroupContent>
 						<Sidebar.Menu>
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton
+									isActive={navActive("/admin/stats", true)}
+									tooltipContent="Club stats and member growth"
+								>
+									{#snippet child({ props })}
+										<a href="/admin/stats" {...props}>
+											<ClipboardList />
+											<span>Club stats</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton
 									isActive={navActive("/dashboard/pending-members")}

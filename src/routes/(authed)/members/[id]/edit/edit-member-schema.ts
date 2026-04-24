@@ -9,10 +9,10 @@ export const memberSchema = z.object({
 	dops: z.boolean(),
 	dops_date: z.string().optional(), // Date of Permanent Sobriety
 	bio: z.string().optional(),
-	hobbies: z.string().optional(),
+	hobbies: z.string().max(300).optional(),
 	img: z.string().optional(),
 	role: z.string(),
-	likes: z.string().optional(),
+	likes: z.string().max(300).optional(),
 	mbr: z.number(),
 	msd: z.string(),
 	sponsor: z.string(),

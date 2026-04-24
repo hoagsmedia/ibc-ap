@@ -9,6 +9,12 @@
 
 	let { data }: { data: PageData } = $props();
 
+const inviteNameCellClass =
+	"text-foreground min-w-0 max-w-[10rem] flex-1 truncate px-3 py-2 text-xs font-medium sm:max-w-[14rem]";
+const inviteMetaCellClass =
+	"text-muted-foreground flex min-w-0 flex-1 items-center gap-x-2 truncate px-2 py-2 text-xs sm:px-3";
+const inviteBadgeClass = "shrink-0 rounded-sm px-2 py-0.5 text-[10px] whitespace-nowrap";
+
 	async function copyInviteLink(url: string) {
 		try {
 			await navigator.clipboard.writeText(url);
@@ -62,14 +68,10 @@
 										'this invite'}"
 									onclick={() => copyInviteLink(inviteUrl)}
 								>
-									<div
-										class="text-foreground min-w-0 max-w-[10rem] flex-1 truncate px-3 py-2 text-xs font-medium sm:max-w-[14rem]"
-									>
+									<div class={inviteNameCellClass}>
 										{invitation.invite_name?.trim() || "—"}
 									</div>
-									<div
-										class="text-muted-foreground flex min-w-0 flex-1 items-center gap-x-2 truncate px-2 py-2 text-xs sm:px-3"
-									>
+									<div class={inviteMetaCellClass}>
 										<span class="font-mono shrink-0 tabular-nums"
 											>{invitation.token.slice(0, 8)}…</span
 										>
@@ -78,7 +80,7 @@
 										>
 									</div>
 									<div class="shrink-0 px-3 py-2">
-										<Badge class="shrink-0 rounded-sm px-2 py-0.5 text-[10px] whitespace-nowrap">
+										<Badge class={inviteBadgeClass}>
 											<ClockIcon class="mr-1 size-3" />
 											Active
 										</Badge>
@@ -88,14 +90,10 @@
 								<div
 									class="flex min-h-11 flex-row flex-nowrap items-center gap-0 opacity-90"
 								>
-									<div
-										class="text-foreground min-w-0 max-w-[10rem] flex-1 truncate px-3 py-2 text-xs font-medium sm:max-w-[14rem]"
-									>
+									<div class={inviteNameCellClass}>
 										{invitation.invite_name?.trim() || "—"}
 									</div>
-									<div
-										class="text-muted-foreground flex min-w-0 flex-1 items-center gap-x-2 truncate px-2 py-2 text-xs sm:px-3"
-									>
+									<div class={inviteMetaCellClass}>
 										<span class="font-mono shrink-0 tabular-nums"
 											>{invitation.token.slice(0, 8)}…</span
 										>
@@ -107,7 +105,7 @@
 										{#if invitation.used_at}
 											<Badge
 												variant="secondary"
-												class="shrink-0 rounded-sm px-2 py-0.5 text-[10px] whitespace-nowrap"
+												class={inviteBadgeClass}
 											>
 												<CheckIcon class="mr-1 size-3" />
 												Used
@@ -115,7 +113,7 @@
 										{:else}
 											<Badge
 												variant="destructive"
-												class="shrink-0 rounded-sm px-2 py-0.5 text-[10px] whitespace-nowrap"
+												class={inviteBadgeClass}
 											>
 												<ClockIcon class="mr-1 size-3" />
 												Expired

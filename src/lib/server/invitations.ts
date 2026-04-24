@@ -1,20 +1,52 @@
-import { db } from '$lib/server/db';
-import * as table from '$lib/server/db/schema';
-import { and, desc, eq, gte, lt } from 'drizzle-orm';
-import { encodeBase64url } from '@oslojs/encoding';
+import { client, db } from "$lib/server/db";
+import * as table from "$lib/server/db/schema";
+import { and, count, desc, eq, gte, lt } from "drizzle-orm";
+import { encodeBase64url } from "@oslojs/encoding";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
-export const INVITATION_COOLDOWN_DAYS = 7;
+export const INVITATION_LIMIT_WINDOW_DAYS = 7;
+export const INVITATION_MEMBER_WEEKLY_LIMIT = 3;
 
-/** Returns the created_at of the most recent invitation by this user, or null if none. */
-export async function getLastInvitationCreatedAt(createdById: string): Promise<Date | null> {
+/** Matches `scripts/ensure-invitation-tokens-schema.ts` — local DBs often lag Vercel build ensures. */
+let invitationTokenColumnsEnsured = false;
+
+async function ensureInvitationTokenColumns(): Promise<void> {
+	if (invitationTokenColumnsEnsured) return;
+	try {
+		await client.unsafe(
+			`ALTER TABLE public.invitation_tokens ADD COLUMN IF NOT EXISTS invite_name text`
+		);
+		await client.unsafe(
+			`ALTER TABLE public.invitation_tokens ADD COLUMN IF NOT EXISTS inviter_name text`
+		);
+		invitationTokenColumnsEnsured = true;
+	} catch (err) {
+		const msg = err instanceof Error ? err.message : String(err);
+		if (msg.includes("does not exist") && msg.includes("invitation_tokens")) {
+			invitationTokenColumnsEnsured = true;
+			return;
+		}
+		throw err;
+	}
+}
+
+/** Returns how many invitations this user created in the rolling lookback window. */
+export async function getInvitationCountInWindow(
+	createdById: string,
+	windowDays = INVITATION_LIMIT_WINDOW_DAYS
+): Promise<number> {
+	await ensureInvitationTokenColumns();
+	const windowStart = new Date(Date.now() - windowDays * DAY_IN_MS);
 	const [row] = await db
-		.select({ created_at: table.invitationTokens.created_at })
+		.select({ n: count() })
 		.from(table.invitationTokens)
-		.where(eq(table.invitationTokens.created_by_id, createdById))
-		.orderBy(desc(table.invitationTokens.created_at))
-		.limit(1);
-	return row?.created_at ?? null;
+		.where(
+			and(
+				eq(table.invitationTokens.created_by_id, createdById),
+				gte(table.invitationTokens.created_at, windowStart)
+			)
+		);
+	return Number(row?.n ?? 0);
 }
 
 export function generateInvitationToken(): string {
@@ -28,6 +60,7 @@ export async function createInvitationToken(
 	inviterName: string,
 	expirationDays = 7
 ): Promise<table.InvitationToken> {
+	await ensureInvitationTokenColumns();
 	const token = generateInvitationToken();
 	const id = crypto.randomUUID();
 
@@ -50,6 +83,7 @@ export async function createInvitationToken(
 export async function validateInvitationToken(
 	token: string
 ): Promise<{ valid: boolean; invitation?: table.InvitationToken }> {
+	await ensureInvitationTokenColumns();
 	const [invitation] = await db
 		.select()
 		.from(table.invitationTokens)
@@ -73,6 +107,7 @@ export async function validateInvitationToken(
 }
 
 export async function markInvitationTokenAsUsed(token: string, usedById: string): Promise<void> {
+	await ensureInvitationTokenColumns();
 	await db
 		.update(table.invitationTokens)
 		.set({
@@ -86,6 +121,7 @@ export async function getInvitationsByUser(
 	userId: string,
 	options?: { limit?: number; year?: number }
 ): Promise<table.InvitationToken[]> {
+	await ensureInvitationTokenColumns();
 	const conditions = [eq(table.invitationTokens.created_by_id, userId)];
 	if (options?.year != null) {
 		const y = options.year;

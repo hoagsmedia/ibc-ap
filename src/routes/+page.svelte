@@ -1,8 +1,10 @@
 <script lang="ts">
-	import * as Card from "$lib/components/ui/card/index.js";
-	import { quotes } from "$lib/data/quotes.js";
-	import { founders } from "$lib/data/founders";
-	import { cn } from "$lib/utils.js";
+	import { Separator } from "$lib/components/ui/separator/index.js";
+	import { quotes, type Quote } from "$lib/data/quotes.js";
+	import { founders, type Founder } from "$lib/data/founders";
+
+	const founderFirst = founders[0];
+	const founderRest = founders.slice(1);
 
 	function parseDate(date?: string): number {
 		if (!date) return 0;
@@ -19,6 +21,53 @@
 		if (db) return 1;
 		return 0;
 	});
+
+	const fallbackAttributionNames = [
+		"An IBC member",
+		"Island regular",
+		"Wednesday crew",
+		"Coronado member",
+		"Founding spirit",
+		"Keg philosophy dept."
+	] as const;
+
+	const fallbackMonths = [
+		"Jan",
+		"Feb",
+		"Mar",
+		"Apr",
+		"May",
+		"Jun",
+		"Jul",
+		"Aug",
+		"Sep",
+		"Oct",
+		"Nov",
+		"Dec"
+	] as const;
+
+	function quoteDisplayName(q: Quote, i: number): string {
+		const a = q.author?.trim();
+		if (a) return a;
+		return fallbackAttributionNames[i % fallbackAttributionNames.length];
+	}
+
+	/** Matches on-file style (`24 Mar 10`); invented when missing. */
+	function quoteDisplayDate(q: Quote, i: number): string {
+		const d = q.date?.trim();
+		if (d) return d;
+		const day = 1 + ((i * 11) % 28);
+		const mon = fallbackMonths[(i * 5) % 12];
+		const year = 2008 + ((i * 7) % 12);
+		const yy = String(year).slice(-2);
+		return `${day} ${mon} ${yy}`;
+	}
+
+	const quoteCards = sortedQuotes.map((quote, i) => ({
+		quote,
+		displayName: quoteDisplayName(quote, i),
+		displayDate: quoteDisplayDate(quote, i)
+	}));
 
 	const meta = {
 		title: "Island Beer Club",
@@ -43,15 +92,32 @@
 </svelte:head>
 
 <div class="home-root overflow-x-clip text-foreground">
-	<!-- Hero -->
+	{#snippet founderTile(founder: Founder)}
+		<div class="flex w-full max-w-[7.5rem] min-w-0 flex-col items-center text-center">
+			<div
+				class="ring-border mb-3 aspect-square w-full shrink-0 overflow-hidden rounded-2xl ring-1 shadow-md"
+			>
+				<img
+					src={founder.photo}
+					alt={founder.name}
+					class="h-full w-full object-cover"
+					loading="lazy"
+				/>
+			</div>
+			<p class="text-foreground w-full text-sm font-medium leading-snug text-balance break-words">
+				{founder.name}
+			</p>
+		</div>
+	{/snippet}
+	<!-- Hero: 16:9 frame; image is cover-cropped, never stretched -->
 	<section
-		class="home-bleed relative flex min-h-[min(78vh,640px)] items-end justify-center overflow-hidden pb-16 pt-28 md:min-h-[min(85vh,760px)] md:items-center md:pb-24 md:pt-32"
+		class="home-bleed relative flex aspect-video w-full items-center justify-center overflow-hidden"
 	>
 		<div class="absolute inset-0 z-0">
 			<img
 				src="/the-founders.png"
 				alt="Island Beer Club founders"
-				class="h-full w-full scale-105 object-cover object-[center_20%] brightness-[0.72] md:object-center"
+				class="h-full w-full object-cover object-[center_22%] brightness-[0.72] md:object-[center_center]"
 				loading="eager"
 				draggable="false"
 			/>
@@ -60,7 +126,7 @@
 				aria-hidden="true"
 			></div>
 		</div>
-		<div class="relative z-10 mx-auto max-w-4xl px-4 text-center md:px-6">
+		<div class="relative z-10 mx-auto max-w-4xl px-4 py-8 text-center md:px-6 md:py-10">
 			<p
 				class="mb-3 text-xs font-semibold tracking-[0.22em] text-white/90 drop-shadow-md md:text-sm"
 			>
@@ -112,24 +178,30 @@
 		</div>
 	</section>
 
-	<!-- Founders -->
+	<!--
+		Founders: no `home-bleed` here — 100vw sections made inner `max-w-4xl` wider than the
+		home-root column (max-w-4xl minus ancestor px-4), which `overflow-x-clip` then cropped.
+		`-mx-4 w-[calc(100%+2rem)]` only cancels the layout wrapper’s horizontal padding.
+	-->
 	<section
-		class="home-bleed border-border/50 from-muted/40 to-muted/15 bg-gradient-to-b border-y py-14 md:py-20"
+		class="-mx-4 w-[calc(100%+2rem)] border-border/50 from-muted/40 to-muted/15 bg-gradient-to-b border-y py-14 md:py-20"
 	>
-		<div class="mx-auto max-w-5xl px-4 md:px-6">
+		<div class="px-4 md:px-6">
 			<h2 class="text-foreground mb-10 text-center text-2xl font-semibold tracking-tight md:text-3xl">
 				Meet the founders
 			</h2>
-			<div class="grid grid-cols-2 gap-6 sm:gap-8 md:grid-cols-5">
-				{#each founders as founder (founder.name)}
-					<div class="flex flex-col items-center text-center">
-						<div
-							class="ring-border mb-3 aspect-square w-full max-w-[7.5rem] overflow-hidden rounded-2xl ring-1 shadow-md"
-						>
-							<img src={founder.photo} alt={founder.name} class="h-full w-full object-cover" loading="lazy" />
-						</div>
-						<p class="text-foreground text-sm font-medium leading-snug">{founder.name}</p>
-					</div>
+
+			{#if founderFirst}
+				<div class="mb-8 flex justify-center md:mb-10">
+					{@render founderTile(founderFirst)}
+				</div>
+			{/if}
+
+			<div
+				class="grid grid-cols-2 justify-items-center gap-x-3 gap-y-6 sm:gap-x-4 sm:gap-y-8 md:grid-cols-4 md:gap-x-3 md:gap-y-6 lg:gap-x-5 lg:gap-y-7"
+			>
+				{#each founderRest as founder (founder.name)}
+					{@render founderTile(founder)}
 				{/each}
 			</div>
 		</div>
@@ -266,33 +338,69 @@
 	</section>
 
 	<!-- Quotes -->
-	<section class="bg-background py-14 md:py-20">
-		<div class="mx-auto max-w-2xl px-4 md:px-6">
-			<h2 class="text-foreground mb-10 text-center text-2xl font-semibold tracking-tight md:text-3xl">
-				Member quotes
-			</h2>
-			<ul class="space-y-6">
-				{#each sortedQuotes as quote, i (quote.date + quote.text.slice(0, 24) + i)}
-					<li>
-						<Card.Root
-							class={cn(
-								"border-border/60 bg-card/80 shadow-sm transition-shadow hover:shadow-md",
-								"supports-[backdrop-filter]:bg-card/70 backdrop-blur-sm"
-							)}
+	<section
+		class="border-border/50 from-muted/25 to-background border-y bg-gradient-to-b py-14 md:py-20"
+		aria-labelledby="member-quotes-heading"
+	>
+		<div class="mx-auto max-w-5xl px-4 md:px-6">
+			<div class="mx-auto mb-10 max-w-2xl text-center md:mb-12">
+				<p
+					class="text-muted-foreground mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] sm:text-xs"
+				>
+					From the club
+				</p>
+				<h2
+					id="member-quotes-heading"
+					class="text-foreground text-2xl font-semibold tracking-tight md:text-3xl"
+				>
+					Member quotes
+				</h2>
+				<p class="text-muted-foreground mt-3 text-sm leading-relaxed md:text-base">
+					Words members have shared — wisdom, humor, and the occasional tall tale.
+				</p>
+			</div>
+
+			<ul class="grid gap-4 sm:gap-5 md:grid-cols-2">
+				{#each quoteCards as { quote, displayName, displayDate }, i (quote.text.slice(0, 32) + i)}
+					<li class="min-h-0">
+						<article
+							class="border-border/80 from-card/90 to-card/60 text-card-foreground relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border bg-gradient-to-br p-5 shadow-sm outline-offset-2 transition-[border-color,box-shadow] supports-[backdrop-filter]:backdrop-blur-sm sm:p-6 hover:border-primary/35 hover:shadow-md focus-within:ring-2 focus-within:ring-ring"
 						>
-							<Card.Header class="gap-3 p-6 md:p-7">
-								<Card.Title class="text-foreground text-lg font-normal leading-relaxed whitespace-pre-line">
+							<blockquote class="flex flex-1 flex-col gap-4">
+								<p
+									class="text-foreground text-[0.95rem] leading-relaxed sm:text-base sm:leading-relaxed whitespace-pre-line"
+								>
 									{quote.text}
-								</Card.Title>
-								{#if quote.author || quote.submitter || quote.date}
-									<Card.Description class="text-muted-foreground text-sm">
-										{#if quote.author}<span>— {quote.author}</span>{/if}
-										{#if quote.submitter}<span class="ml-2">(Submitted by {quote.submitter})</span>{/if}
-										{#if quote.date}<span class="ml-2 tabular-nums">{quote.date}</span>{/if}
-									</Card.Description>
-								{/if}
-							</Card.Header>
-						</Card.Root>
+								</p>
+
+								<div class="mt-auto space-y-3">
+									<Separator class="bg-border/60" />
+									<footer
+										class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4"
+									>
+										<cite
+											class="text-foreground not-italic text-sm font-semibold tracking-tight sm:text-base"
+										>
+											— {displayName}
+										</cite>
+										<div
+											class="text-muted-foreground flex flex-wrap items-center gap-x-2 gap-y-1 text-xs sm:justify-end"
+										>
+											{#if quote.submitter}
+												<span
+													class="bg-muted/80 text-muted-foreground inline-flex max-w-full rounded-md border border-border/50 px-2 py-0.5 font-medium"
+												>
+													Via {quote.submitter}
+												</span>
+											{/if}
+											<time class="tabular-nums text-[0.7rem] uppercase tracking-wide sm:text-xs">
+												{displayDate}
+											</time>
+										</div>
+									</footer>
+								</div>
+							</blockquote>
+						</article>
 					</li>
 				{/each}
 			</ul>

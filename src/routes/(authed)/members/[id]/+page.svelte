@@ -24,7 +24,7 @@
 	function getRoleBadgeVariant(role: string): "default" | "secondary" | "destructive" | "outline" {
 		switch (role) {
 			case "admin":
-				return "destructive";
+				return "outline";
 			case "member":
 				return "default";
 			case "guest":
@@ -32,6 +32,13 @@
 			default:
 				return "outline";
 		}
+	}
+
+	function getRoleBadgeClass(role: string): string {
+		if (role === "admin") {
+			return "border-red-500/35 bg-red-500/12 text-red-800 dark:border-red-400/30 dark:bg-red-500/18 dark:text-red-200";
+		}
+		return "";
 	}
 </script>
 
@@ -63,7 +70,10 @@
 				</div>
 				<Card.Title class="text-2xl">{data.member.name}</Card.Title>
 				<Card.Description>
-					<Badge variant={getRoleBadgeVariant(data.member.role)}>
+					<Badge
+						variant={getRoleBadgeVariant(data.member.role)}
+						class={getRoleBadgeClass(data.member.role)}
+					>
 						{data.member.role?.toUpperCase()}
 					</Badge>
 				</Card.Description>
@@ -147,7 +157,10 @@
 						</div>
 						<div>
 							<h4 class="mb-2 font-medium">Role</h4>
-							<Badge variant={getRoleBadgeVariant(data.member.role)}>
+							<Badge
+								variant={getRoleBadgeVariant(data.member.role)}
+								class={getRoleBadgeClass(data.member.role)}
+							>
 								{data.member.role?.toUpperCase()}
 							</Badge>
 						</div>

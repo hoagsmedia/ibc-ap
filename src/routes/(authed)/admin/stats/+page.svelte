@@ -1,12 +1,45 @@
 <script lang="ts">
 	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
+	import * as Chart from "$lib/components/ui/chart/index.js";
 	import { ArrowLeft, ArrowRight } from "@lucide/svelte";
 	import Barrel from "@lucide/svelte/icons/barrel";
 	import Beer from "@lucide/svelte/icons/beer";
+	import { BarChart, Text } from "layerchart";
+	import type { ComponentProps } from "svelte";
+	import { cubicOut } from "svelte/easing";
+	import { scaleBand } from "d3-scale";
 	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
+
+	const newMembersChartConfig = {
+		newMembers: { label: "New members (that MSD year)", color: "var(--chart-1)" }
+	} satisfies Chart.ChartConfig;
+
+	/** One bar per calendar year that has at least one new MSD (same buckets as the server query). */
+	const newMembersBarData = $derived(
+		[...data.membersJoinedByYear]
+			.sort((a, b) => a.year - b.year)
+			.map((r) => ({ yearLabel: String(r.year), count: r.count }))
+	);
+	const totalChartMembers = $derived(newMembersBarData.reduce((sum, row) => sum + row.count, 0));
+
+	type LcTextProps = ComponentProps<typeof Text>;
+
+	/** LayerChart grows vertical bars from the baseline on first paint (see `Bar` + `Rect` motion). */
+	const newMembersBarMotion = { type: "tween" as const, duration: 700, easing: cubicOut };
+
+	function shouldShowYearTick(yearLabel: string): boolean {
+		const years = newMembersBarData.map((d) => d.yearLabel);
+		const idx = years.indexOf(yearLabel);
+		if (idx === -1) return false;
+		if (idx === 0 || idx === years.length - 1) return true;
+
+		const total = years.length;
+		const step = total > 16 ? 3 : total > 10 ? 2 : 1;
+		return idx % step === 0;
+	}
 
 	function fmtNum(n: number, digits = 1) {
 		if (!Number.isFinite(n)) return "—";
@@ -41,6 +74,85 @@
 		<a class="text-primary font-medium underline underline-offset-2" href="/stats">/stats</a> page (static
 		export). Open a dataset to view and edit every row.
 	</p>
+
+	<section
+		class="border-border/80 bg-card/80 mb-10 rounded-2xl border p-6 shadow-sm dark:bg-card/40 sm:p-7"
+		aria-labelledby="members-msd-bars-heading"
+	>
+		<div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+			<div>
+				<h2 id="members-msd-bars-heading" class="text-foreground text-lg font-semibold tracking-tight">
+					Member growth by year
+				</h2>
+				<p class="text-muted-foreground mt-1 max-w-2xl text-sm leading-snug">
+					<span class="text-foreground font-medium">{totalChartMembers.toLocaleString("en-US")}</span>
+					members shown • each bar is the number of members who joined in that year.
+				</p>
+			</div>
+		</div>
+
+		{#if data.membersJoinedByYear.length === 0}
+			<p class="text-muted-foreground text-sm">
+				No member or admin rows with a member-since date (MSD) to chart yet.
+			</p>
+		{:else}
+			{#snippet yMembersAxisTick({ props }: { props: LcTextProps })}
+				<Text
+					{...props}
+					value={String(props.value ?? "")
+						.split(",")
+						.join("")}
+				/>
+			{/snippet}
+			{#snippet xMembersAxisTick({ props }: { props: LcTextProps })}
+				<Text
+					{...props}
+					value={shouldShowYearTick(String(props.value ?? "")) ? String(props.value ?? "") : ""}
+				/>
+			{/snippet}
+			<Chart.Container
+				config={newMembersChartConfig}
+				role="img"
+				aria-label="Bar chart of new member and admin accounts per MSD calendar year"
+				class="text-foreground min-h-[220px] w-full min-w-0 max-w-full px-0 pt-2 pb-6 sm:min-h-[260px]"
+			>
+				<BarChart
+					data={newMembersBarData}
+					xScale={scaleBand().padding(0.28)}
+					x="yearLabel"
+					y="count"
+					yNice={4}
+					series={[
+						{
+							key: "newMembers",
+							label: newMembersChartConfig.newMembers.label,
+							value: "count",
+							color: "var(--color-newMembers)"
+						}
+					]}
+					props={{
+						bars: { motion: newMembersBarMotion },
+						yAxis: { tickLabel: yMembersAxisTick },
+						xAxis: {
+							tickLabel: xMembersAxisTick,
+							tickLabelProps: { class: "tabular-nums" }
+						}
+					}}
+				>
+					{#snippet tooltip()}
+						<Chart.Tooltip
+							labelFormatter={(v) =>
+								typeof v === "number"
+									? String(Math.round(v))
+									: v instanceof Date
+										? String(v.getUTCFullYear())
+										: String(v)}
+						/>
+					{/snippet}
+				</BarChart>
+			</Chart.Container>
+		{/if}
+	</section>
 
 	<div class="grid gap-6 lg:grid-cols-2 lg:items-stretch">
 		<article

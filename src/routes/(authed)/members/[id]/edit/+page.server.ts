@@ -12,6 +12,7 @@ import { zod } from "sveltekit-superforms/adapters";
 import { hash } from "argon2";
 import { encodeBase32LowerCase } from "@oslojs/encoding";
 import { userWithoutPasswordHash } from "$lib/server/user-client";
+import { msdFromDateInput, msdToDateInputValue } from "$lib/server/msd";
 
 /** Must match the main `superForm` `id` on the edit page (multiple forms share `data.form`). */
 const MEMBER_EDIT_FORM_ID = "member-edit";
@@ -46,7 +47,7 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		role: member.role,
 		likes: member.likes ?? "",
 		mbr: member.mbr ?? 0,
-		msd: member.msd ?? "",
+		msd: msdToDateInputValue(member.msd),
 		dops: member.dops ?? false,
 		dops_date: member.dops_date ?? "",
 		sponsor: member.sponsor ?? "",
@@ -133,7 +134,7 @@ export const actions: Actions = {
 				role: resolvedRole,
 				likes: likes || null,
 				mbr: mbrNum,
-				msd: msd || new Date().toISOString().split("T")[0],
+				msd: msdFromDateInput(msd),
 				dops: dops,
 				dops_date: dops_date ? new Date(dops_date).toISOString().split("T")[0] : null,
 				sponsor: sponsor || null,
@@ -184,7 +185,7 @@ export const actions: Actions = {
 			console.error("Error deleting member:", err);
 			return fail(500, { message: "Failed to delete member" });
 		}
-		throw redirect(302, "/members");
+		throw redirect(302, "/dashboard/members");
 	},
 
 	resetPassword: async ({ request, locals, params }) => {
