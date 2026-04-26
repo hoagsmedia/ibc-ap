@@ -29,7 +29,6 @@
 	import Beer from "@lucide/svelte/icons/beer";
 	import IbcLogo from "$lib/components/IbcLogo.svelte";
 	import { navLinks, dropdownLinks } from "$lib/config/navigation";
-	import { IsMobile } from "$lib/hooks/is-mobile.svelte";
 
 	// --- Reactive State ---
 	const pageData = $state(page);
@@ -37,7 +36,6 @@
 	const user = $derived(pageData.data.user);
 	const isAuthenticated = $derived(!!user);
 	const currentPath = $derived(pageData.url.pathname);
-	const isMobile = new IsMobile();
 
 	/** Public nav only: signed-in members use hub/dashboard for stats, not the marketing nav. */
 	const mainNavLinks = $derived(
@@ -93,15 +91,14 @@
 	<div
 		class="mx-auto flex h-24 w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8"
 	>
-		{#if !isMobile.current}
-			<!--
-				Desktop: three equal columns — nav stays visually centered with even side margins.
-				(Matches main content width; avoids justify-between where a wide user block skews the nav.)
-			-->
-			<!--
-				Center column is `auto` so it keeps the nav's intrinsic width (equal `1fr` columns use minmax(0,1fr) and clip).
-			-->
-			<div class="grid h-full w-full grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4">
+		<!--
+			Desktop: three equal columns — nav stays visually centered with even side margins.
+			(Matches main content width; avoids justify-between where a wide user block skews the nav.)
+		-->
+		<!--
+			Center column is `auto` so it keeps the nav's intrinsic width (equal `1fr` columns use minmax(0,1fr) and clip).
+		-->
+		<div class="hidden h-full w-full grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 md:grid">
 				<div class="flex min-w-0 items-center justify-self-start">
 					<a href="/" class="flex shrink-0 items-center" aria-label="Island Beer Club home">
 						<IbcLogo class="w-[90px] px-2 [&>svg]:h-auto [&>svg]:w-full" decorative />
@@ -203,9 +200,10 @@
 						</Button>
 					{/if}
 				</div>
-			</div>
-		{:else}
-			<!-- Mobile Navigation -->
+		</div>
+
+		<!-- Mobile Navigation -->
+		<div class="flex w-full items-center md:hidden">
 			<a href="/" class="flex items-center" aria-label="Island Beer Club home">
 				<IbcLogo class="w-[90px] px-2 [&>svg]:h-auto [&>svg]:w-full" decorative />
 			</a>
@@ -319,6 +317,6 @@
 					</Sheet.Content>
 				</Sheet.Root>
 			</div>
-		{/if}
+		</div>
 	</div>
 </header>
