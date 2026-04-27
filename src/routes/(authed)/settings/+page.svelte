@@ -3,13 +3,17 @@
 	import type { PageData } from "./$types";
 	import Avatar from "$lib/components/Avatar.svelte";
 	import * as Card from "$lib/components/ui/card";
+	import * as Dialog from "$lib/components/ui/dialog/index.js";
+	import { Button } from "$lib/components/ui/button/index.js";
 	import ProfileForm from "./profile-form.svelte";
 	import UpdatePasswordForm from "./update-password-form.svelte";
-	import { ArrowLeft } from "@lucide/svelte";
+	import { ArrowLeft, Trash2 } from "@lucide/svelte";
 	import HubBackLink from "$lib/components/HubBackLink.svelte";
 
 	let { data }: { data: PageData } = $props();
 	let uploading = $state(false);
+	let deleteImageDialogOpen = $state(false);
+	let deletingImage = $state(false);
 
 	// Create UploadThing helper
 	const { startUpload } = createUploadThing("profileImageUploader", {
@@ -44,6 +48,28 @@
 			} catch {
 				uploading = false;
 			}
+		}
+	}
+
+	async function confirmDeleteProfileImage() {
+		deletingImage = true;
+		try {
+			const response = await fetch("/api/profile-image/delete", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({})
+			});
+
+			if (!response.ok) {
+				const data = (await response.json().catch(() => ({}))) as { message?: string };
+				throw new Error(data.message || "Failed to delete profile image");
+			}
+
+			window.location.reload();
+		} catch (error) {
+			const message = error instanceof Error ? error.message : "Failed to delete profile image";
+			alert(message);
+			deletingImage = false;
 		}
 	}
 </script>
@@ -107,16 +133,20 @@
 										onchange={handleFileChange}
 										class="hidden"
 									/>
-									<button
-										onclick={handleUploadClick}
-										type="button"
-										class="bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-ring inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
-									>
-										Choose Image
-									</button>
+									<div class="flex flex-wrap justify-center gap-2">
+										<Button onclick={handleUploadClick} type="button">
+											Choose Image
+										</Button>
+										{#if data.user.img}
+											<Button variant="destructive" type="button" onclick={() => (deleteImageDialogOpen = true)}>
+												<Trash2 class="size-4" />
+												Delete Image
+											</Button>
+										{/if}
+									</div>
 								{/if}
 							</div>
-							<p class="text-muted-foreground mt-1 text-xs">PNG, JPG, GIF up to 4MB</p>
+							<p class="text-muted-foreground mt-1 text-xs">PNG, JPG, GIF up to 8MB</p>
 						</div>
 					</Card.Content>
 				</Card.Root>
@@ -145,3 +175,26 @@
 			<UpdatePasswordForm {data} />
 		</div>
 	</div>
+
+<Dialog.Root bind:open={deleteImageDialogOpen}>
+	<Dialog.Content class="sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title class="text-destructive flex items-center gap-2">
+				<Trash2 class="size-5" />
+				Delete profile image?
+			</Dialog.Title>
+			<Dialog.Description>
+				This will remove the current profile image. You can upload a new one anytime.
+			</Dialog.Description>
+		</Dialog.Header>
+
+		<Dialog.Footer class="mt-4 flex gap-2">
+			<Button type="button" variant="outline" onclick={() => (deleteImageDialogOpen = false)} disabled={deletingImage}>
+				No
+			</Button>
+			<Button type="button" variant="destructive" onclick={confirmDeleteProfileImage} disabled={deletingImage}>
+				{deletingImage ? "Deleting..." : "Yes, delete it"}
+			</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
