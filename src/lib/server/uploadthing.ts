@@ -61,14 +61,6 @@ function uniqueUploadBaseName(baseName: string): string {
 	return `${baseName}_${uniqueUploadSuffix()}`;
 }
 
-function withUploadThingName<T extends { name?: string }>(file: T, baseName: string): T & { name: string } {
-	const uniqueBaseName = uniqueUploadBaseName(baseName);
-	return {
-		...file,
-		name: `${uniqueBaseName}${fileExtension(file.name)}`
-	};
-}
-
 const f = createUploadthing({
 	errorFormatter: (err) => {
 		console.error("UploadThing error:", err.message, err.cause);
