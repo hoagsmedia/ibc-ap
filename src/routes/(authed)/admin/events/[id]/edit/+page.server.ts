@@ -1,17 +1,21 @@
-import { error, fail, redirect } from '@sveltejs/kit';
-import { superValidate } from 'sveltekit-superforms';
-import { zod } from 'sveltekit-superforms/adapters';
-import { z } from 'zod';
-import { db } from '$lib/server/db/index.js';
-import { events } from '$lib/server/db/schema.js';
-import { eq } from 'drizzle-orm';
-import type { PageServerLoad, Actions } from './$types.js';
+import { error, fail, redirect } from "@sveltejs/kit";
+import { superValidate } from "sveltekit-superforms";
+import { zod } from "sveltekit-superforms/adapters";
+import { z } from "zod";
+import { UTApi } from "uploadthing/server";
+import { db } from "$lib/server/db/index.js";
+import { events } from "$lib/server/db/schema.js";
+import { fileKeyFromUploadThingUrl } from "$lib/server/uploadthing-files";
+import { eq } from "drizzle-orm";
+import type { PageServerLoad, Actions } from "./$types.js";
+
+const utapi = new UTApi();
 
 const editEventSchema = z.object({
-	title: z.string().min(1, 'Title is required').max(255, 'Title is too long'),
+	title: z.string().min(1, "Title is required").max(255, "Title is too long"),
 	description: z.string().optional(),
 	content: z.string().optional(),
-	event_date: z.string().min(1, 'Event date is required'),
+	event_date: z.string().min(1, "Event date is required"),
 	location: z.string().optional(),
 	is_published: z.boolean().default(false),
 	members_only: z.boolean().default(false),
@@ -19,14 +23,14 @@ const editEventSchema = z.object({
 });
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	if (!locals.user || locals.user.role !== 'admin') {
-		throw redirect(302, '/');
+	if (!locals.user || locals.user.role !== "admin") {
+		throw redirect(302, "/");
 	}
 
 	const event = await db.select().from(events).where(eq(events.id, params.id)).limit(1);
 
 	if (!event[0]) {
-		throw error(404, 'Event not found');
+		throw error(404, "Event not found");
 	}
 
 	const eventData = event[0];
@@ -43,13 +47,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		form: await superValidate(
 			{
 				title: eventData.title,
-				description: eventData.description || '',
-				content: eventData.content || '',
+				description: eventData.description || "",
+				content: eventData.content || "",
 				event_date: formattedEventDate,
-				location: eventData.location || '',
+				location: eventData.location || "",
 				is_published: Boolean(eventData.is_published),
 				members_only: Boolean(eventData.members_only),
-				img: eventData.img || ''
+				img: eventData.img || ""
 			},
 			zod(editEventSchema)
 		)
@@ -58,8 +62,8 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 
 export const actions: Actions = {
 	default: async ({ request, locals, params }) => {
-		if (!locals.user || locals.user.role !== 'admin') {
-			return fail(403, { message: 'Forbidden' });
+		if (!locals.user || locals.user.role !== "admin") {
+			return fail(403, { message: "Forbidden" });
 		}
 
 		const form = await superValidate(request, zod(editEventSchema));
@@ -69,6 +73,13 @@ export const actions: Actions = {
 		}
 
 		try {
+			const existing = await db
+				.select({ img: events.img })
+				.from(events)
+				.where(eq(events.id, params.id))
+				.limit(1);
+			const previousImageUrl = existing[0]?.img ?? null;
+			const nextImageUrl = form.data.img || null;
 			const eventDate = form.data.event_date ? new Date(form.data.event_date) : null;
 
 			await db
@@ -81,16 +92,23 @@ export const actions: Actions = {
 					location: form.data.location || null,
 					is_published: form.data.is_published ? 1 : 0,
 					members_only: form.data.members_only,
-					img: form.data.img || null,
+					img: nextImageUrl,
 					updated_at: new Date()
 				})
 				.where(eq(events.id, params.id));
+
+			if (previousImageUrl && previousImageUrl !== nextImageUrl) {
+				const key = fileKeyFromUploadThingUrl(previousImageUrl);
+				if (key) {
+					await utapi.deleteFiles(key);
+				}
+			}
 		} catch (error) {
 			if (error instanceof Response) throw error;
-			console.error('Error updating event:', error);
-			return fail(500, { form, message: 'Failed to update event' });
+			console.error("Error updating event:", error);
+			return fail(500, { form, message: "Failed to update event" });
 		}
 
-		throw redirect(302, '/admin/events');
+		throw redirect(302, "/admin/events");
 	}
 };

@@ -137,8 +137,8 @@
 			</Card.Header>
 			<Card.Content>
 				<div class="space-y-2">
-					<Badge variant="outline">{data.onThisDay.year}</Badge>
-					<p class="text-foreground">{data.onThisDay.text}</p>
+					<Badge variant="outline">{data.onThisDay?.year}</Badge>
+					<p class="text-foreground">{data.onThisDay?.text}</p>
 				</div>
 			</Card.Content>
 		</Card.Root>

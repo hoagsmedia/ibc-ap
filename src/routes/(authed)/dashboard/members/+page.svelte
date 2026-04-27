@@ -3,7 +3,14 @@
 	import * as Table from "$lib/components/ui/table/index.js";
 	import * as Pagination from "$lib/components/ui/pagination/index.js";
 	import Avatar from "$lib/components/Avatar.svelte";
-	import { ArrowLeft, ChevronRightIcon, ChevronLeftIcon, Eye, Pencil, UserPlus } from "@lucide/svelte";
+	import {
+		ArrowLeft,
+		ChevronRightIcon,
+		ChevronLeftIcon,
+		Eye,
+		Pencil,
+		UserPlus
+	} from "@lucide/svelte";
 	import { Button } from "$lib/components/ui/button/index.js";
 	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Input } from "$lib/components/ui/input/index.js";
@@ -35,12 +42,14 @@
 	const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
 	const MAX_CACHE_KEYS = 24;
 
-	let cacheHit = $state<{ members: PageProps["data"]["members"]; pagination: PaginationData } | null>(
-		null
-	);
-	let rosterFallback = $state<{ members: PageProps["data"]["members"]; pagination: PaginationData } | null>(
-		null
-	);
+	let cacheHit = $state<{
+		members: PageProps["data"]["members"];
+		pagination: PaginationData;
+	} | null>(null);
+	let rosterFallback = $state<{
+		members: PageProps["data"]["members"];
+		pagination: PaginationData;
+	} | null>(null);
 
 	const isStubLoad = $derived(Boolean("cached" in data && data.cached === true));
 
@@ -205,12 +214,7 @@
 
 			if (fingerprint !== lastServerFingerprint) {
 				lastServerFingerprint = fingerprint;
-				cacheResults(
-					nextSearchKey,
-					serverMembers,
-					serverSearchTerm,
-					serverPagination.totalCount
-				);
+				cacheResults(nextSearchKey, serverMembers, serverSearchTerm, serverPagination.totalCount);
 			}
 		});
 	});
@@ -224,12 +228,14 @@
 	/>
 </svelte:head>
 
-<div class="mx-auto flex w-full min-w-0 max-w-6xl flex-col gap-6 max-md:overflow-x-clip md:w-full">
+<div class="mx-auto flex w-full max-w-6xl min-w-0 flex-col gap-6 max-md:overflow-x-clip md:w-full">
 	<div class="flex flex-wrap items-center justify-between gap-4">
 		<div class="min-w-0">
 			<h1 class="text-3xl font-bold">Member directory</h1>
 			<p class="text-muted-foreground text-sm">
-				{pagination.totalCount} member{pagination.totalCount === 1 ? "" : "s"}{#if pagination.totalPages > 1}
+				{pagination.totalCount} member{pagination.totalCount === 1
+					? ""
+					: "s"}{#if pagination.totalPages > 1}
 					· page {pagination.page} of {pagination.totalPages}{/if}
 			</p>
 		</div>
@@ -249,7 +255,9 @@
 
 	<div class="flex min-w-0 items-center gap-2">
 		<div class="relative min-w-0 flex-1">
-			<Search class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2" />
+			<Search
+				class="text-muted-foreground pointer-events-none absolute top-1/2 left-2.5 size-4 -translate-y-1/2"
+			/>
 			<Input
 				bind:value={searchTerm}
 				oninput={handleSearch}
@@ -261,24 +269,24 @@
 		</div>
 	</div>
 
-	<div class="hub-members-table-host ibc-hub-surface max-md:px-3 overflow-hidden md:px-0">
+	<div class="hub-members-table-host ibc-hub-surface overflow-hidden max-md:px-3 md:px-0">
 		<Table.Root
 			class="hub-member-sep-table border-separate border-spacing-0 [&_tbody>tr]:border-b-0 [&_thead>tr]:border-b-0"
 		>
 			<Table.Header>
 				<Table.Row>
 					<Table.Head
-						class="w-14 max-md:min-w-[4.75rem] max-md:w-[4.75rem] max-md:max-w-[4.75rem] max-md:px-2 max-md:text-center md:text-left"
+						class="w-14 max-md:w-[4.75rem] max-md:max-w-[4.75rem] max-md:min-w-[4.75rem] max-md:px-2 max-md:text-center md:text-left"
 						>Profile</Table.Head
 					>
 					<Table.Head class="min-w-0 max-md:w-auto md:min-w-[10rem]">Name</Table.Head>
 					<Table.Head
-						class="w-24 max-md:min-w-[7.25rem] max-md:w-[7.25rem] max-md:max-w-[7.25rem] max-md:px-1.5 text-center md:w-24 md:max-w-none md:px-2 md:text-left"
+						class="w-24 text-center max-md:w-[7.25rem] max-md:max-w-[7.25rem] max-md:min-w-[7.25rem] max-md:px-1.5 md:w-24 md:max-w-none md:px-2 md:text-left"
 						>Member #</Table.Head
 					>
 					<Table.Head class="hidden min-w-[12rem] md:table-cell">Email</Table.Head>
 					<Table.Head
-						class="w-10 shrink-0 px-1 text-center max-md:min-w-[3rem] max-md:w-[3rem] max-md:max-w-[3.25rem] max-md:px-2 lg:w-12"
+						class="w-10 shrink-0 px-1 text-center max-md:w-[3rem] max-md:max-w-[3.25rem] max-md:min-w-[3rem] max-md:px-2 lg:w-12"
 						scope="col"
 					>
 						<span class="sr-only">{isAdmin ? "Edit member" : "View member"}</span>
@@ -305,33 +313,35 @@
 							onkeydown={(e) => memberRowKeydown(e, member.id)}
 						>
 							<Table.Cell
-								class="relative z-0 max-md:flex max-md:min-w-[4.75rem] max-md:w-[4.75rem] max-md:max-w-[4.75rem] max-md:justify-center max-md:px-2"
+								class="relative z-0 max-md:w-[4.75rem] max-md:max-w-[4.75rem] max-md:min-w-[4.75rem] max-md:px-2 max-md:text-center"
 							>
-								<Avatar
-									class="size-8"
-									name={member.name}
-									img={member.img ?? undefined}
-									dops={member.dops ?? undefined}
-								/>
+								<div class="flex justify-center">
+									<Avatar
+										class="size-8"
+										name={member.name}
+										img={member.img ?? undefined}
+										dops={member.dops ?? undefined}
+									/>
+								</div>
 							</Table.Cell>
-							<Table.Cell class="relative z-0 min-w-0 max-md:pr-1 text-sm">
+							<Table.Cell class="relative z-0 min-w-0 text-sm max-md:pr-1">
 								<span class="text-foreground font-medium break-words">{member.name || "N/A"}</span>
 							</Table.Cell>
 							<Table.Cell
-								class="relative z-0 max-md:min-w-[7.25rem] max-md:w-[7.25rem] max-md:max-w-[7.25rem] max-md:px-1.5 text-center text-sm tabular-nums md:w-auto md:max-w-none md:px-2 md:text-left"
+								class="relative z-0 text-center text-sm tabular-nums max-md:w-[7.25rem] max-md:max-w-[7.25rem] max-md:min-w-[7.25rem] max-md:px-1.5 md:w-auto md:max-w-none md:px-2 md:text-left"
 								>{member.mbr || "N/A"}</Table.Cell
 							>
 							<Table.Cell class="relative z-0 hidden text-sm md:table-cell"
 								>{member.email ?? member.username ?? "N/A"}</Table.Cell
 							>
 							<Table.Cell
-								class="relative z-0 shrink-0 px-1 text-center align-middle max-md:min-w-[3rem] max-md:w-[3rem] max-md:max-w-[3.25rem] max-md:px-0.5"
+								class="relative z-0 shrink-0 px-1 text-center align-middle max-md:w-[3rem] max-md:max-w-[3.25rem] max-md:min-w-[3rem] max-md:px-0.5"
 							>
 								<span
-									class="text-muted-foreground pointer-events-none mx-auto inline-flex items-center justify-center transition-opacity
-										max-lg:h-10 max-lg:w-10 max-lg:rounded-lg max-lg:border max-lg:border-border/80 max-lg:bg-background max-lg:text-foreground max-lg:shadow-sm
-										lg:h-auto lg:w-auto lg:rounded-none lg:border-0 lg:bg-transparent lg:shadow-none
-										opacity-100
+									class="text-muted-foreground max-lg:border-border/80 max-lg:bg-background max-lg:text-foreground pointer-events-none mx-auto inline-flex
+										items-center justify-center opacity-100 transition-opacity max-lg:h-10 max-lg:w-10 max-lg:rounded-lg max-lg:border
+										max-lg:shadow-sm lg:h-auto lg:w-auto lg:rounded-none lg:border-0 lg:bg-transparent
+										lg:shadow-none
 										lg:[@media(hover:hover)_and_(pointer:fine)]:opacity-0
 										lg:[@media(hover:hover)_and_(pointer:fine)]:group-hover:opacity-100"
 									aria-hidden="true"
@@ -352,7 +362,7 @@
 
 	<div class="mt-6 flex min-w-0 items-center justify-center">
 		<Pagination.Root
-			class="min-w-0 max-w-full justify-center"
+			class="max-w-full min-w-0 justify-center"
 			count={pagination.totalCount}
 			perPage={pagination.perPage}
 			page={pagination.page}

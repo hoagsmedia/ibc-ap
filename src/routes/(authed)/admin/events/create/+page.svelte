@@ -1,32 +1,33 @@
 <script lang="ts">
-	import { superForm } from 'sveltekit-superforms';
-	import { zodClient } from 'sveltekit-superforms/adapters';
-	import { z } from 'zod';
-	import HubBackLink from '$lib/components/HubBackLink.svelte';
-	import { Button } from '$lib/components/ui/button/index.js';
+	import { tick } from "svelte";
+	import { superForm } from "sveltekit-superforms";
+	import { zodClient } from "sveltekit-superforms/adapters";
+	import { z } from "zod";
+	import HubBackLink from "$lib/components/HubBackLink.svelte";
+	import { Button } from "$lib/components/ui/button/index.js";
 	import {
 		Card,
 		CardContent,
 		CardDescription,
 		CardHeader,
 		CardTitle
-	} from '$lib/components/ui/card/index.js';
-	import { Input } from '$lib/components/ui/input/index.js';
-	import { Label } from '$lib/components/ui/label/index.js';
-	import { Textarea } from '$lib/components/ui/textarea/index.js';
-	import { Checkbox } from '$lib/components/ui/checkbox/index.js';
-	import { ArrowLeft, Upload, X } from '@lucide/svelte';
-	import { createUploadThing } from '$lib/utils';
-	import EventDateTimeField from '$lib/components/EventDateTimeField.svelte';
-	import type { PageData } from './$types.js';
+	} from "$lib/components/ui/card/index.js";
+	import { Input } from "$lib/components/ui/input/index.js";
+	import { Label } from "$lib/components/ui/label/index.js";
+	import { Textarea } from "$lib/components/ui/textarea/index.js";
+	import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+	import { ArrowLeft, Upload, X } from "@lucide/svelte";
+	import { createUploadThing } from "$lib/utils";
+	import EventDateTimeField from "$lib/components/EventDateTimeField.svelte";
+	import type { PageData } from "./$types.js";
 
 	const { data }: { data: PageData } = $props();
 
 	const createEventSchema = z.object({
-		title: z.string().min(1, 'Title is required').max(255, 'Title is too long'),
+		title: z.string().min(1, "Title is required").max(255, "Title is too long"),
 		description: z.string().optional(),
 		content: z.string().optional(),
-		event_date: z.string().min(1, 'Event date is required'),
+		event_date: z.string().min(1, "Event date is required"),
 		location: z.string().optional(),
 		is_published: z.boolean().default(false),
 		members_only: z.boolean().default(false),
@@ -41,15 +42,31 @@
 	let selectedImage = $state<File | null>(null);
 	let imagePreview = $state<string | null>(null);
 	let uploadedImageUrl = $state<string | null>(null);
+	let uploadedImageKey = $state<string | null>(null);
+	let hasPendingImageUpload = $state(false);
+	let formEl = $state<HTMLFormElement | null>(null);
+	let hiddenSubmitEl = $state<HTMLButtonElement | null>(null);
 
-	const { startUpload, isUploading } = createUploadThing('eventImageUploader', {
-		onClientUploadComplete: (res) => {
-			if (res?.[0]?.url) {
-				uploadedImageUrl = res[0].url;
-			}
-		},
+	$effect(() => {
+		$form.img = uploadedImageUrl ?? "";
+	});
+
+	async function deleteUploadedImage(fileRef: { url?: string | null; key?: string | null }) {
+		if (!fileRef.url && !fileRef.key) return;
+		try {
+			await fetch("/api/uploadthing/delete", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify(fileRef)
+			});
+		} catch (error) {
+			console.error("Failed to delete replaced image:", error);
+		}
+	}
+
+	const { startUpload, isUploading } = createUploadThing("galleryImageUploader", {
 		onUploadError: (error: Error) => {
-			console.error('Upload failed:', error);
+			console.error("Upload failed:", error);
 			alert(`Upload failed: ${error.message}`);
 		}
 	});
@@ -60,6 +77,7 @@
 
 		if (file) {
 			selectedImage = file;
+			hasPendingImageUpload = true;
 			// Create preview
 			const reader = new FileReader();
 			reader.onload = (e) => {
@@ -69,23 +87,53 @@
 		}
 	}
 
-	function removeImage() {
+	async function removeImage() {
+		await deleteUploadedImage({ key: uploadedImageKey, url: uploadedImageUrl });
 		selectedImage = null;
 		imagePreview = null;
 		uploadedImageUrl = null;
+		uploadedImageKey = null;
+		$form.img = "";
+		hasPendingImageUpload = false;
 		// Reset file input
-		const fileInput = document.getElementById('image-upload') as HTMLInputElement;
-		if (fileInput) fileInput.value = '';
+		const fileInput = document.getElementById("image-upload") as HTMLInputElement;
+		if (fileInput) fileInput.value = "";
 	}
 
 	async function uploadImage() {
-		if (!selectedImage) return;
+		if (!selectedImage) return false;
 
 		try {
-			await startUpload([selectedImage]);
+			const res = await startUpload([selectedImage]);
+			const file = res?.[0];
+			const imageUrl = file?.serverData?.imageUrl ?? file?.ufsUrl ?? file?.url;
+			const imageKey = file?.key;
+			if (!imageUrl) return false;
+
+			if (uploadedImageUrl && uploadedImageUrl !== imageUrl) {
+				await deleteUploadedImage({ key: uploadedImageKey, url: uploadedImageUrl });
+			}
+
+			uploadedImageUrl = imageUrl;
+			uploadedImageKey = imageKey ?? null;
+			$form.img = imageUrl;
+			hasPendingImageUpload = false;
+			return true;
 		} catch (error) {
-			console.error('Upload failed:', error);
+			console.error("Upload failed:", error);
+			return false;
 		}
+	}
+
+	async function handlePrimarySubmit() {
+		if (hasPendingImageUpload) {
+			const ok = await uploadImage();
+			if (!ok || !uploadedImageUrl) return;
+			$form.img = uploadedImageUrl;
+			await tick();
+		}
+
+		formEl?.requestSubmit(hiddenSubmitEl ?? undefined);
 	}
 </script>
 
@@ -105,7 +153,7 @@
 		</HubBackLink>
 	</div>
 
-	<Card class="ibc-hub-surface bg-card/50 mx-auto w-full max-w-2xl dark:bg-card/35">
+	<Card class="ibc-hub-surface bg-card/50 dark:bg-card/35 mx-auto w-full max-w-2xl">
 		<CardHeader>
 			<CardTitle>Event Details</CardTitle>
 			<CardDescription
@@ -113,11 +161,8 @@
 			>
 		</CardHeader>
 		<CardContent>
-			<form method="POST" use:enhance class="space-y-6">
-				<!-- Hidden input for uploaded image URL -->
-				{#if uploadedImageUrl}
-					<input type="hidden" name="img" value={uploadedImageUrl} />
-				{/if}
+			<form bind:this={formEl} method="POST" use:enhance class="space-y-6">
+				<input type="hidden" name="img" bind:value={$form.img} />
 
 				<div class="space-y-2">
 					<Label for="title">Title <span class="text-destructive">*</span></Label>
@@ -125,8 +170,8 @@
 						id="title"
 						name="title"
 						bind:value={$form.title}
-						aria-invalid={$errors.title ? 'true' : undefined}
-						class={$errors.title ? 'border-destructive' : ''}
+						aria-invalid={$errors.title ? "true" : undefined}
+						class={$errors.title ? "border-destructive" : ""}
 					/>
 					{#if $errors.title}
 						<p class="text-destructive text-sm">{$errors.title}</p>
@@ -154,7 +199,7 @@
 						id="event_date"
 						name="event_date"
 						bind:value={$form.event_date}
-						aria-invalid={$errors.event_date ? 'true' : undefined}
+						aria-invalid={$errors.event_date ? "true" : undefined}
 					/>
 					{#if $errors.event_date}
 						<p class="text-destructive text-sm">{$errors.event_date}</p>
@@ -212,7 +257,7 @@
 							</div>
 							{#if !uploadedImageUrl}
 								<Button type="button" onclick={uploadImage} disabled={$isUploading} class="w-full">
-									{$isUploading ? 'Uploading...' : 'Upload Banner Image'}
+									{$isUploading ? "Uploading..." : "Upload Image"}
 								</Button>
 							{:else}
 								<p class="text-sm text-green-600">✓ Image uploaded successfully</p>
@@ -232,7 +277,7 @@
 									<Button
 										type="button"
 										variant="outline"
-										onclick={() => document.getElementById('image-upload')?.click()}
+										onclick={() => document.getElementById("image-upload")?.click()}
 									>
 										Select Image
 									</Button>
@@ -264,9 +309,15 @@
 
 				<div class="flex justify-end gap-4">
 					<Button type="button" variant="outline" href="/admin/events">Cancel</Button>
-					<Button type="submit" disabled={$submitting}>
-						{$submitting ? 'Creating...' : 'Create Event'}
+					<Button
+						type="button"
+						disabled={$submitting || $isUploading}
+						onclick={handlePrimarySubmit}
+					>
+						{$submitting ? "Creating..." : $isUploading ? "Uploading..." : "Create Event"}
 					</Button>
+					<button bind:this={hiddenSubmitEl} type="submit" class="hidden" aria-hidden="true"
+					></button>
 				</div>
 			</form>
 		</CardContent>

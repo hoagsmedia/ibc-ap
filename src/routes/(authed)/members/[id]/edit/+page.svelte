@@ -10,6 +10,7 @@
 	import { Checkbox } from "$lib/components/ui/checkbox/index.js";
 	import { Toaster } from "$lib/components/ui/sonner/index.js";
 	import { Input } from "$lib/components/ui/input/index.js";
+	import DatePickerField from "$lib/components/DatePickerField.svelte";
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
 	import { ArrowLeft, Check, Trash2, KeyRound, Copy, ShieldCheck, UserRound, NotebookPen } from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
@@ -28,6 +29,8 @@
 	let deleteConfirmText = $state("");
 	let resetPasswordDialogOpen = $state(false);
 	let tempPassword = $state("");
+	let deleteProfileImageDialogOpen = $state(false);
+	let deletingProfileImage = $state(false);
 	let unsavedDialogOpen = $state(false);
 	let pendingNavigationHref = $state<string | null>(null);
 	let memberEditFormEl = $state<HTMLFormElement | null>(null);
@@ -209,6 +212,30 @@
 		}
 	}
 
+	async function confirmDeleteProfileImage() {
+		deletingProfileImage = true;
+		try {
+			const response = await fetch("/api/profile-image/delete", {
+				method: "POST",
+				headers: { "Content-Type": "application/json" },
+				body: JSON.stringify({ memberId: data.member.id })
+			});
+
+			if (!response.ok) {
+				const data = (await response.json().catch(() => ({}))) as { message?: string };
+				throw new Error(data.message || "Failed to delete profile image");
+			}
+
+			window.location.reload();
+		} catch (error) {
+			deletingProfileImage = false;
+			toast.error(error instanceof Error ? error.message : "Failed to delete profile image", {
+				duration: 5000,
+				position: "bottom-right"
+			});
+		}
+	}
+
 	function openDeleteDialog() {
 		deleteConfirmText = "";
 		deleteDialogOpen = true;
@@ -339,12 +366,20 @@
 									onchange={handleFileChange}
 									class="hidden"
 								/>
-								<Button variant="outline" onclick={handleUploadClick} type="button">
-									Choose Image
-								</Button>
+								<div class="flex flex-wrap justify-center gap-2">
+									<Button variant="outline" onclick={handleUploadClick} type="button">
+										Choose Image
+									</Button>
+									{#if data.member?.img || $formData.img}
+										<Button variant="destructive" onclick={() => (deleteProfileImageDialogOpen = true)} type="button">
+											<Trash2 class="size-4" />
+											Delete Image
+										</Button>
+									{/if}
+								</div>
 							{/if}
 						</div>
-						<Field.Description>PNG, JPG, GIF up to 4MB</Field.Description>
+						<Field.Description>PNG, JPG, GIF up to 8MB</Field.Description>
 					</Field.Field>
 				</Field.Group>
 			</Field.Set>
@@ -403,16 +438,12 @@
 						<Form.Control>
 							{#snippet children({ props })}
 								<Form.Label>Member Since *</Form.Label>
-								<Input
-									type="text"
-									{...props}
+								<DatePickerField
+									id={props.id}
+									name={props.name}
+									aria-invalid={props["aria-invalid"]}
 									bind:value={$formData.msd}
-									placeholder="YYYY-MM-DD"
-									inputmode="numeric"
-									pattern="\\d{4}-\\d{2}-\\d{2}"
-									autocomplete="off"
-									spellcheck={false}
-									class="h-8 w-full min-w-0 max-w-full text-sm"
+									class="min-w-0 max-w-full"
 								/>
 							{/snippet}
 						</Form.Control>
@@ -645,6 +676,29 @@
 	{/if}
 </form>
 </div>
+
+<Dialog.Root bind:open={deleteProfileImageDialogOpen}>
+	<Dialog.Content class="sm:max-w-md">
+		<Dialog.Header>
+			<Dialog.Title class="text-destructive flex items-center gap-2">
+				<Trash2 class="size-5" />
+				Delete profile image?
+			</Dialog.Title>
+			<Dialog.Description>
+				This will remove {data.member.name}'s current profile image. You can upload a new one anytime.
+			</Dialog.Description>
+		</Dialog.Header>
+
+		<Dialog.Footer class="mt-4 flex gap-2">
+			<Button type="button" variant="outline" onclick={() => (deleteProfileImageDialogOpen = false)} disabled={deletingProfileImage}>
+				No
+			</Button>
+			<Button type="button" variant="destructive" onclick={confirmDeleteProfileImage} disabled={deletingProfileImage}>
+				{deletingProfileImage ? "Deleting..." : "Yes, delete it"}
+			</Button>
+		</Dialog.Footer>
+	</Dialog.Content>
+</Dialog.Root>
 
 <!-- Delete Confirmation Dialog -->
 <Dialog.Root bind:open={deleteDialogOpen}>

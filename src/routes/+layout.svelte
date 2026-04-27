@@ -63,4 +63,4 @@
 </div>
 
 <Toaster />
-<ModeWatcher />
+<ModeWatcher defaultMode="light" />
