@@ -4,6 +4,7 @@ import { db } from "./db";
 import { users, events } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { sessionCookieName, validateSessionToken } from "./auth";
+import { fileKeyFromUploadThingUrl } from "./uploadthing-files";
 import { formatDateTime } from "$lib/utils";
 
 const utapi = new UTApi();
@@ -55,7 +56,7 @@ export const ourFileRouter = {
 			const user = await getUserFromRequest(req);
 			if (!user) throw new Error("Unauthorized");
 
-			const currentImageKey = user.img?.split("/f/")[1] ?? null;
+			const currentImageKey = fileKeyFromUploadThingUrl(user.img);
 
 			// Label files with custom identifier for better organization
 			const filesWithCustomIds = files.map((file) => ({
@@ -150,7 +151,7 @@ export const ourFileRouter = {
 				throw new Error("Member not found");
 			}
 
-			const currentImageKey = memberToUpdate.img?.split("/f/")[1];
+			const currentImageKey = fileKeyFromUploadThingUrl(memberToUpdate.img);
 			const file = files[0];
 
 			// Label file with custom identifier for better organization
@@ -217,7 +218,7 @@ export const ourFileRouter = {
 				columns: { id: true, img: true }
 			});
 
-			const currentImageKey = eventToUpdate?.img?.split("/f/")[1];
+			const currentImageKey = fileKeyFromUploadThingUrl(eventToUpdate?.img);
 
 			// Label file with custom identifier for better organization
 			const customId = `event-${eventId}-${formatDateTime(new Date())}`;
