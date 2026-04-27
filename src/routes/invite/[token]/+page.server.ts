@@ -117,6 +117,9 @@ export const actions: Actions = {
 				sponsor: sponsor || null,
 				dops: false,
 				dops_date: null,
+				meeting_1_date: null,
+				meeting_2_date: null,
+				meeting_3_date: null,
 				test_passed: null,
 				created_at: new Date(),
 				updated_at: new Date()

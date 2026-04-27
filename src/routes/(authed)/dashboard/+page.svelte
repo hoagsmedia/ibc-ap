@@ -13,6 +13,7 @@
 	import { Skeleton } from "$lib/components/ui/skeleton/index.js";
 	import * as Tooltip from "$lib/components/ui/tooltip/index.js";
 	import { Separator } from "$lib/components/ui/separator";
+	import DatePickerField from "$lib/components/DatePickerField.svelte";
 	import QuickActionLink from "$lib/components/dashboard/QuickActionLink.svelte";
 	import {
 		Beer,
@@ -56,6 +57,10 @@
 	let inviteErrorOpen = $state(false);
 	let inviteErrorMessage = $state("");
 	let inviteCreateDialogOpen = $state(false);
+	let prospectProgressDialogOpen = $state(Boolean(data.prospectGate?.active));
+	let meeting1Date = $state(data.prospectGate?.meetingDates?.[0] ?? "");
+	let meeting2Date = $state(data.prospectGate?.meetingDates?.[1] ?? "");
+	let meeting3Date = $state(data.prospectGate?.meetingDates?.[2] ?? "");
 
 	const engagementPct = $derived(
 		data.user && data.clubStats.totalMembers > 0
@@ -84,6 +89,11 @@
 					(data.user.role === "member" && data.user.mbr != null))
 		)
 	);
+	const isProspectOnboarding = $derived(Boolean(data.prospectGate?.active));
+	const canAccessExclusiveFeatures = $derived(Boolean(data.canAccessExclusiveFeatures));
+	const meetingsRemaining = $derived(
+		data.prospectGate ? data.prospectGate.meetingsRequired - data.prospectGate.meetingCount : 0
+	);
 
 </script>
 
@@ -93,7 +103,7 @@
 </svelte:head>
 
 <div class="mx-auto flex max-w-[1600px] flex-col gap-8">
-	{#if data.user}
+	{#if data.user && canAccessExclusiveFeatures}
 		<section
 			class="grid grid-cols-3 gap-2 sm:gap-4 md:gap-5"
 			aria-labelledby="club-overview-heading"
@@ -261,7 +271,7 @@
 									>
 										{#if data.user.mbr != null}
 											{data.user.mbr}
-										{:else if !requiresIbcTest(data.user)}
+										{:else if data.user.role !== "admin" && data.user.role !== "member"}
 											<span class="text-amber-200/95">Prospect</span>
 										{:else}
 											—
@@ -629,7 +639,24 @@
 						</AlertDialog.Root>
 
 						<div class="space-y-4">
-							{#if data.user && requiresIbcTest(data.user)}
+							{#if isProspectOnboarding && data.prospectGate && !data.prospectGate.canTakeTestNow}
+								<Alert.Root class="mb-4" variant="destructive">
+									<ClockIcon class="size-4" />
+									<Alert.Title>Three meeting dates required first</Alert.Title>
+									<Alert.Description>
+										Log all three beer club meetings on your dashboard before the IBC test unlocks.
+									</Alert.Description>
+								</Alert.Root>
+								<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+									<p class="text-sm text-white/88 dark:text-muted-foreground">
+										You have {data.prospectGate.meetingCount} of {data.prospectGate.meetingsRequired} meetings saved.
+										Add the remaining {meetingsRemaining} on this dashboard to continue.
+									</p>
+									<Button class="shrink-0 shadow-md" type="button" onclick={() => (prospectProgressDialogOpen = true)}>
+										View progress
+									</Button>
+								</div>
+							{:else if data.user && requiresIbcTest(data.user)}
 								<Alert.Root class="mb-4" variant="destructive">
 									<ClockIcon class="size-4" />
 									<Alert.Title>Test required</Alert.Title>
@@ -781,7 +808,141 @@
 		</section>
 	{/if}
 
-	{#if data.user}
+	{#if isProspectOnboarding && data.prospectGate}
+		<Dialog.Root bind:open={prospectProgressDialogOpen}>
+			<Dialog.Content class="sm:max-w-xl">
+				<Dialog.Header>
+					<Dialog.Title>Prospect progress</Dialog.Title>
+					<Dialog.Description>
+						Attend and log three beer club meetings to unlock the IBC test and member-only tools.
+					</Dialog.Description>
+				</Dialog.Header>
+				<div class="space-y-4">
+					<div class="grid grid-cols-3 gap-2">
+						{#each [1, 2, 3] as slot}
+							<div class="rounded-xl border p-3 text-center">
+								<div class="mb-2 flex justify-center">
+									{#if slot <= data.prospectGate.meetingCount}
+										<div class="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 flex size-8 items-center justify-center rounded-full">
+											<CheckIcon class="size-4" />
+										</div>
+									{:else}
+										<div class="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-full">
+											<ClockIcon class="size-4" />
+										</div>
+									{/if}
+								</div>
+								<p class="text-sm font-medium">Meeting {slot}</p>
+								<p class="text-muted-foreground mt-1 text-xs">
+									{data.prospectGate.meetingDates[slot - 1] || "Not saved yet"}
+								</p>
+							</div>
+						{/each}
+					</div>
+					<p class="text-sm text-muted-foreground">
+						{#if data.prospectGate.canTakeTestNow}
+							Nice — all three meetings are logged. You can take the IBC test now.
+						{:else}
+							You’re {meetingsRemaining} meeting{meetingsRemaining === 1 ? "" : "s"} away from unlocking the test.
+						{/if}
+					</p>
+				</div>
+				<Dialog.Footer>
+					<Button type="button" variant="outline" onclick={() => (prospectProgressDialogOpen = false)}>Close</Button>
+					{#if data.prospectGate.canTakeTestNow}
+						<Button href="/test">Take test</Button>
+					{/if}
+				</Dialog.Footer>
+			</Dialog.Content>
+		</Dialog.Root>
+
+		<section id="prospect-progress" class="space-y-6">
+			<Card.Root class="border-primary/20 overflow-hidden rounded-2xl border shadow-sm">
+				<Card.Header class="space-y-3">
+					<div class="flex flex-wrap items-start justify-between gap-3">
+						<div class="space-y-1">
+							<Card.Title class="text-xl">Log your first 3 meetings</Card.Title>
+							<Card.Description>
+								Before you can take the IBC test or view exclusive member info, save the dates of the
+								three beer club meetings you attended.
+							</Card.Description>
+						</div>
+						<Badge variant="secondary" class="text-sm">
+							{data.prospectGate.meetingCount}/{data.prospectGate.meetingsRequired} saved
+						</Badge>
+					</div>
+					<Alert.Root variant={data.prospectGate.canTakeTestNow ? "default" : "destructive"}>
+						<ClockIcon class="size-4" />
+						<Alert.Title>
+							{#if data.prospectGate.canTakeTestNow}
+								Meetings complete — test unlocked
+							{:else}
+								Member directory and stats stay locked until all 3 meetings are saved
+							{/if}
+						</Alert.Title>
+						<Alert.Description>
+							{#if data.prospectGate.canTakeTestNow}
+								You can head straight to the IBC test now.
+							{:else}
+								Save each meeting whenever you attend it — you do not need to fill all three at once.
+							{/if}
+						</Alert.Description>
+					</Alert.Root>
+				</Card.Header>
+				<Card.Content class="space-y-6">
+					<div class="grid gap-4 lg:grid-cols-3">
+						{#each [
+							{ slot: 1, label: "Meeting 1", value: meeting1Date },
+							{ slot: 2, label: "Meeting 2", value: meeting2Date },
+							{ slot: 3, label: "Meeting 3", value: meeting3Date }
+						] as meeting}
+							<div class="rounded-xl border p-4">
+								<div class="mb-3 flex items-center justify-between gap-3">
+									<div>
+										<h3 class="font-medium">{meeting.label}</h3>
+										<p class="text-muted-foreground text-xs">
+											{meeting.value ? "Saved and editable anytime." : "Save whenever you attend it."}
+										</p>
+									</div>
+									{#if meeting.value}
+										<Badge variant="secondary">Saved</Badge>
+									{/if}
+								</div>
+								<form method="POST" action="?/saveProspectMeetingDate" class="space-y-3">
+									<input type="hidden" name="slot" value={meeting.slot} />
+									{#if meeting.slot === 1}
+										<DatePickerField id="meeting-1-date" name="meetingDate" bind:value={meeting1Date} />
+									{:else if meeting.slot === 2}
+										<DatePickerField id="meeting-2-date" name="meetingDate" bind:value={meeting2Date} />
+									{:else}
+										<DatePickerField id="meeting-3-date" name="meetingDate" bind:value={meeting3Date} />
+									{/if}
+									<div class="flex flex-wrap gap-2">
+										<Button type="submit" size="sm">Save date</Button>
+										{#if meeting.value}
+											<button class="text-sm text-muted-foreground hover:text-foreground" type="submit" formaction="?/clearProspectMeetingDate" formmethod="POST">
+												Clear
+											</button>
+										{/if}
+									</div>
+								</form>
+							</div>
+						{/each}
+					</div>
+					<div class="flex flex-wrap items-center gap-3">
+						<Button type="button" variant="outline" onclick={() => (prospectProgressDialogOpen = true)}>
+							View progress
+						</Button>
+						{#if data.prospectGate.canTakeTestNow}
+							<Button href="/test">Take the IBC test</Button>
+						{/if}
+					</div>
+				</Card.Content>
+			</Card.Root>
+		</section>
+	{/if}
+
+	{#if data.user && canAccessExclusiveFeatures}
 		<div
 			class="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,1.65fr)_minmax(0,1fr)] lg:items-stretch"
 			aria-label="Upcoming events and quick actions"

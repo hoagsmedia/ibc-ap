@@ -34,6 +34,9 @@ export const users = pgTable("users", {
 	/** When true, member is deceased (memorial) — excluded from keg buying duty on /stats. */
 	dops: boolean("dops").notNull().default(false),
 	dops_date: date("dops_date"),
+	meeting_1_date: date("meeting_1_date", { mode: "date" }),
+	meeting_2_date: date("meeting_2_date", { mode: "date" }),
+	meeting_3_date: date("meeting_3_date", { mode: "date" }),
 	bio: text("bio"),
 	hobbies: text("hobbies"),
 	likes: text("likes"),

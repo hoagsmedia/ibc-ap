@@ -1,6 +1,6 @@
 /**
  * Idempotent schema sync for `users` table: adds username, dops, dops_date,
- * migrates `msd` from `date` to `timestamptz` (UTC midnight per calendar day),
+ * prospect meeting dates, migrates `msd` from `date` to `timestamptz` (UTC midnight per calendar day),
  * makes email nullable, and adds users_username_unique if missing.
  * Safe to run on every Vercel build (no prompts, no truncation).
  * Run with: tsx scripts/ensure-users-schema.ts
@@ -37,6 +37,9 @@ END $$`,
 	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS username text`,
 	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS dops boolean NOT NULL DEFAULT false`,
 	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS dops_date date`,
+	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS meeting_1_date date`,
+	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS meeting_2_date date`,
+	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS meeting_3_date date`,
 	// Add unique constraint on username only if none exists (avoids truncate prompt)
 	`DO $$
 BEGIN

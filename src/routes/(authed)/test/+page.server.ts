@@ -3,7 +3,7 @@ import { fail, redirect } from '@sveltejs/kit';
 import { testQuestions } from '$lib/test-questions';
 import { db } from '$lib/server/db';
 import { users } from '$lib/server/db/schema';
-import { requiresIbcTest } from '$lib/ibc-test';
+import { canTakeIbcTest, requiresIbcTest } from '$lib/ibc-test';
 import { eq } from 'drizzle-orm';
 
 export const load: PageServerLoad = async ({ locals, url }) => {
@@ -15,6 +15,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const justPassed = url.searchParams.get('passed') === 'true';
 	if (!requiresIbcTest(locals.user) && !justPassed) {
 		throw redirect(302, '/dashboard');
+	}
+	if (!canTakeIbcTest(locals.user) && !justPassed) {
+		throw redirect(302, '/dashboard?restricted=test');
 	}
 
 	return {
@@ -35,6 +38,11 @@ export const actions: Actions = {
 					locals.user.role === 'member'
 						? 'Members do not need to take this test'
 						: 'You have already passed the test'
+			});
+		}
+		if (!canTakeIbcTest(locals.user)) {
+			return fail(403, {
+				message: 'You must log three meeting dates on your dashboard before taking the IBC test.'
 			});
 		}
 

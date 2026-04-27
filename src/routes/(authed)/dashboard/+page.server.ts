@@ -12,8 +12,30 @@ import { db } from "$lib/server/db";
 import { getDashboardClubStats } from "$lib/server/dashboard-club-stats-cache";
 import { events, users } from "$lib/server/db/schema";
 import { ibcDebugEnabled } from "$lib/server/ibc-debug";
-import { canViewMembersOnlyClubEvents, requiresIbcTest } from "$lib/ibc-test";
+import {
+	canAccessMemberDirectoryAndStats,
+	canTakeIbcTest,
+	canViewMembersOnlyClubEvents,
+	prospectMeetingCount,
+	requiresIbcTest
+} from "$lib/ibc-test";
 import { and, asc, count, desc, eq, gte, isNotNull, isNull } from "drizzle-orm";
+
+function toDateInputValue(date: Date | null | undefined): string {
+	if (!date) return "";
+	const year = date.getUTCFullYear();
+	const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+	const day = String(date.getUTCDate()).padStart(2, "0");
+	return `${year}-${month}-${day}`;
+}
+
+function parseDateInput(value: FormDataEntryValue | null): Date | null {
+	if (typeof value !== "string") return null;
+	const trimmed = value.trim();
+	if (!trimmed) return null;
+	const parsed = new Date(`${trimmed}T00:00:00.000Z`);
+	return Number.isFinite(parsed.getTime()) ? parsed : null;
+}
 
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
@@ -21,11 +43,32 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	}
 
 	const invitationYear = new Date().getUTCFullYear();
+	const canAccessExclusiveFeatures = canAccessMemberDirectoryAndStats(locals.user);
+	const meetingCount = prospectMeetingCount(locals.user);
+	const canTakeTestNow = canTakeIbcTest(locals.user);
+	const prospectGate = canAccessExclusiveFeatures
+		? null
+		: {
+			active: true,
+			meetingCount,
+			meetingsRequired: 3,
+			canTakeTestNow,
+			requiresTest: requiresIbcTest(locals.user),
+			testPassed: locals.user.test_passed != null,
+			meetingDates: [
+				toDateInputValue(locals.user.meeting_1_date),
+				toDateInputValue(locals.user.meeting_2_date),
+				toDateInputValue(locals.user.meeting_3_date)
+			]
+		};
+
 	// Latest 3 invites created in the current calendar year (UTC), for dashboard card
-	const invitations = await getInvitationsByUser(locals.user.id, {
-		limit: 3,
-		year: invitationYear
-	});
+	const invitations = canAccessExclusiveFeatures
+		? await getInvitationsByUser(locals.user.id, {
+				limit: 3,
+				year: invitationYear
+			})
+		: [];
 
 	// IBC-20: For admins only — up to 3 most recent Prospects (oldest-first) + total count
 	let pendingMembers:
@@ -69,60 +112,118 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	const canViewMemberEvents = canViewMembersOnlyClubEvents(locals.user);
 
-	const cached = await getDashboardClubStats(db);
-	const eventsThisYear = canViewMemberEvents
-		? cached.eventsThisYearMember
-		: cached.eventsThisYearGuest;
-	const eventsThisMonth = canViewMemberEvents
-		? cached.eventsThisMonthMember
-		: cached.eventsThisMonthGuest;
+	const cached = canAccessExclusiveFeatures ? await getDashboardClubStats(db) : null;
+	const eventsThisYear = cached
+		? canViewMemberEvents
+			? cached.eventsThisYearMember
+			: cached.eventsThisYearGuest
+		: 0;
+	const eventsThisMonth = cached
+		? canViewMemberEvents
+			? cached.eventsThisMonthMember
+			: cached.eventsThisMonthGuest
+		: 0;
 
 	const startOfToday = new Date();
 	startOfToday.setUTCHours(0, 0, 0, 0);
 
 	const membersOnlyVisibility = canViewMemberEvents ? undefined : eq(events.members_only, false);
 
-	const upcomingEvents = await db
-		.select({
-			id: events.id,
-			title: events.title,
-			event_date: events.event_date,
-			location: events.location,
-			members_only: events.members_only
-		})
-		.from(events)
-		.where(
-			and(
-				eq(events.is_published, 1),
-				isNotNull(events.event_date),
-				gte(events.event_date, startOfToday),
-				...(membersOnlyVisibility ? [membersOnlyVisibility] : [])
-			)
-		)
-		.orderBy(asc(events.event_date))
-		.limit(8);
+	const upcomingEvents = canAccessExclusiveFeatures
+		? await db
+				.select({
+					id: events.id,
+					title: events.title,
+					event_date: events.event_date,
+					location: events.location,
+					members_only: events.members_only
+				})
+				.from(events)
+				.where(
+					and(
+						eq(events.is_published, 1),
+						isNotNull(events.event_date),
+						gte(events.event_date, startOfToday),
+						...(membersOnlyVisibility ? [membersOnlyVisibility] : [])
+					)
+				)
+				.orderBy(asc(events.event_date))
+				.limit(8)
+		: [];
 
 	return {
 		user: locals.user,
 		invitations,
 		invitationYear,
+		canAccessExclusiveFeatures,
+		prospectGate,
 		...(pendingMembers !== undefined && { pendingMembers }),
 		...(pendingMembersCount !== undefined && { pendingMembersCount }),
 		baseUrl: url.origin,
 		upcomingEvents,
 		clubStats: {
-			totalMembers: cached.totalMembers,
-			activeMembers: cached.activeMembers,
+			totalMembers: cached?.totalMembers ?? 0,
+			activeMembers: cached?.activeMembers ?? 0,
 			eventsThisYear,
 			eventsThisMonth,
-			kegsConsumed: cached.kegsConsumed,
-			membersJoinedThisMonth: cached.membersJoinedThisMonth,
-			kegsAddedThisMonth: cached.kegsAddedThisMonth
+			kegsConsumed: cached?.kegsConsumed ?? 0,
+			membersJoinedThisMonth: cached?.membersJoinedThisMonth ?? 0,
+			kegsAddedThisMonth: cached?.kegsAddedThisMonth ?? 0
 		}
 	};
 };
 
 export const actions: Actions = {
+	saveProspectMeetingDate: async ({ locals, request }) => {
+		if (!locals.user) {
+			return fail(401, { message: "Must be logged in to save prospect meetings" });
+		}
+		if (canAccessMemberDirectoryAndStats(locals.user)) {
+			throw redirect(303, "/dashboard");
+		}
+
+		const formData = await request.formData();
+		const slot = Number(formData.get("slot"));
+		const date = parseDateInput(formData.get("meetingDate"));
+		if (![1, 2, 3].includes(slot)) {
+			return fail(400, { message: "Invalid meeting slot" });
+		}
+		if (!date) {
+			return fail(400, { message: "Pick a valid meeting date before saving." });
+		}
+
+		const column = slot === 1 ? users.meeting_1_date : slot === 2 ? users.meeting_2_date : users.meeting_3_date;
+		await db
+			.update(users)
+			.set({ [column.name]: date, updated_at: new Date() })
+			.where(eq(users.id, locals.user.id));
+
+		throw redirect(303, "/dashboard#prospect-progress");
+	},
+
+	clearProspectMeetingDate: async ({ locals, request }) => {
+		if (!locals.user) {
+			return fail(401, { message: "Must be logged in to update prospect meetings" });
+		}
+		if (canAccessMemberDirectoryAndStats(locals.user)) {
+			throw redirect(303, "/dashboard");
+		}
+
+		const formData = await request.formData();
+		const slot = Number(formData.get("slot"));
+		if (![1, 2, 3].includes(slot)) {
+			return fail(400, { message: "Invalid meeting slot" });
+		}
+
+		const column = slot === 1 ? users.meeting_1_date : slot === 2 ? users.meeting_2_date : users.meeting_3_date;
+		await db
+			.update(users)
+			.set({ [column.name]: null, updated_at: new Date() })
+			.where(eq(users.id, locals.user.id));
+
+		throw redirect(303, "/dashboard#prospect-progress");
+	},
+
 	createInvitation: async ({ locals, request }) => {
 		if (!locals.user) {
 			return fail(401, { message: "Must be logged in to create invitations" });

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
 	import { page } from "$app/state";
+	import { canAccessMemberDirectoryAndStats } from "$lib/ibc-test";
 	import { cn } from "$lib/utils.js";
 	import * as Sidebar from "$lib/components/ui/sidebar";
 	import { Button } from "$lib/components/ui/button";
@@ -62,6 +63,7 @@
 	const eventsNavActive = $derived(
 		user?.role === "admin" ? navActive("/admin/events") : navActive("/events")
 	);
+	const canAccessExclusiveFeatures = $derived(user ? canAccessMemberDirectoryAndStats(user) : false);
 </script>
 
 <Sidebar.Provider>
@@ -124,19 +126,21 @@
 								{/snippet}
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
-						<Sidebar.MenuItem>
-							<Sidebar.MenuButton
-								isActive={navActive("/dashboard/members")}
-								tooltipContent="Member directory"
-							>
-								{#snippet child({ props })}
-									<a href="/dashboard/members" {...props}>
-										<Users />
-										<span>Members</span>
-									</a>
-								{/snippet}
-							</Sidebar.MenuButton>
-						</Sidebar.MenuItem>
+						{#if canAccessExclusiveFeatures}
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton
+									isActive={navActive("/dashboard/members")}
+									tooltipContent="Member directory"
+								>
+									{#snippet child({ props })}
+										<a href="/dashboard/members" {...props}>
+											<Users />
+											<span>Members</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
+						{/if}
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton
 								isActive={eventsNavActive}
@@ -160,7 +164,7 @@
 								{/snippet}
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
-						{#if user?.role !== "admin"}
+						{#if user?.role !== "admin" && canAccessExclusiveFeatures}
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton
 									isActive={navActive("/stats")}
