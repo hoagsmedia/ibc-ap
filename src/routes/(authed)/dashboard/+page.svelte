@@ -49,6 +49,7 @@
 	} from "$lib/dashboard-hub-classes";
 	import { formatDate, formatDateTime } from "$lib/utils";
 	import CustomCopy from "$lib/components/Custom-Copy.svelte";
+	import type { DateValue } from "@internationalized/date";
 
 	let { data }: { data: PageData } = $props();
 
@@ -62,6 +63,41 @@
 	let meeting2Date = $state(data.prospectGate?.meetingDates?.[1] ?? "");
 	let meeting3Date = $state(data.prospectGate?.meetingDates?.[2] ?? "");
 
+	function prospectMeetingBadgeClass(count: number | null) {
+		return count === 3
+			? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+			: "";
+	}
+
+	function jumpToMeetingSlot(slot: number) {
+		prospectProgressDialogOpen = false;
+
+		if (typeof window === "undefined") return;
+
+		const fieldId = `meeting-${slot}-date`;
+		window.location.hash = fieldId;
+		window.requestAnimationFrame(() => {
+			const field = document.getElementById(fieldId);
+			field?.scrollIntoView({ behavior: "smooth", block: "center" });
+			(field as HTMLElement | null)?.focus?.();
+		});
+	}
+
+	function isWednesdayCalendarDate(date: DateValue) {
+		return new Date(Date.UTC(date.year, date.month - 1, date.day)).getUTCDay() !== 3;
+	}
+
+	function offsetDateString(value: string, days: number) {
+		if (!value) return undefined;
+		const date = new Date(`${value}T00:00:00.000Z`);
+		if (Number.isNaN(date.getTime())) return undefined;
+		date.setUTCDate(date.getUTCDate() + days);
+		const year = date.getUTCFullYear();
+		const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+		const day = String(date.getUTCDate()).padStart(2, "0");
+		return `${year}-${month}-${day}`;
+	}
+
 	const engagementPct = $derived(
 		data.user && data.clubStats.totalMembers > 0
 			? Math.round((data.clubStats.activeMembers / data.clubStats.totalMembers) * 100)
@@ -69,15 +105,12 @@
 	);
 
 	/** Shown while client-navigating to this page so the card doesn’t jump empty. */
-	const pendingMembersCardLoading = $derived(
-		navigating?.to?.url.pathname === "/dashboard"
-	);
+	const pendingMembersCardLoading = $derived(navigating?.to?.url.pathname === "/dashboard");
 
 	/** Unused expired links are hidden from the list. */
 	const visibleInvitations = $derived(
 		(data.invitations ?? []).filter(
-			(inv) =>
-				Boolean(inv.used_at) || Date.now() < new Date(inv.expires_at).getTime()
+			(inv) => Boolean(inv.used_at) || Date.now() < new Date(inv.expires_at).getTime()
 		)
 	);
 
@@ -85,8 +118,7 @@
 		Boolean(
 			data.user &&
 				!requiresIbcTest(data.user) &&
-				(data.user.role === "admin" ||
-					(data.user.role === "member" && data.user.mbr != null))
+				(data.user.role === "admin" || (data.user.role === "member" && data.user.mbr != null))
 		)
 	);
 	const isProspectOnboarding = $derived(Boolean(data.prospectGate?.active));
@@ -94,7 +126,6 @@
 	const meetingsRemaining = $derived(
 		data.prospectGate ? data.prospectGate.meetingsRequired - data.prospectGate.meetingCount : 0
 	);
-
 </script>
 
 <svelte:head>
@@ -111,7 +142,7 @@
 			<h2 id="club-overview-heading" class="sr-only">Club snapshot</h2>
 			<a
 				href="/dashboard/members"
-				class="text-foreground border-border/50 from-sidebar/25 to-card relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] sm:rounded-2xl sm:p-5 hover:border-primary/40 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
+				class="text-foreground border-border/50 from-sidebar/25 to-card hover:border-primary/40 focus-visible:ring-ring relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] hover:shadow-md focus-visible:ring-2 sm:rounded-2xl sm:p-5"
 			>
 				<div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 sm:gap-4">
 					<div class="min-w-0">
@@ -149,7 +180,7 @@
 			</a>
 			<a
 				href={data.user.role === "admin" ? "/admin/stats/beer-consumed" : "/stats"}
-				class="text-foreground border-border/50 from-sidebar/25 to-card relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] sm:rounded-2xl sm:p-5 hover:border-primary/40 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
+				class="text-foreground border-border/50 from-sidebar/25 to-card hover:border-primary/40 focus-visible:ring-ring relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] hover:shadow-md focus-visible:ring-2 sm:rounded-2xl sm:p-5"
 			>
 				<div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 sm:gap-4">
 					<div class="min-w-0">
@@ -187,7 +218,7 @@
 			</a>
 			<a
 				href="/events"
-				class="text-foreground border-border/50 from-sidebar/25 to-card relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] sm:rounded-2xl sm:p-5 hover:border-primary/40 hover:shadow-md focus-visible:ring-2 focus-visible:ring-ring"
+				class="text-foreground border-border/50 from-sidebar/25 to-card hover:border-primary/40 focus-visible:ring-ring relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] hover:shadow-md focus-visible:ring-2 sm:rounded-2xl sm:p-5"
 			>
 				<div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 sm:gap-4">
 					<div class="min-w-0">
@@ -234,12 +265,10 @@
 
 	<!-- Hero + insights -->
 	{#if data.user}
-		<section
-			class="grid grid-cols-1 gap-8 lg:grid-cols-3"
-			aria-labelledby="welcome-heading"
-		>
+		<section class="grid grid-cols-1 gap-8 lg:grid-cols-3" aria-labelledby="welcome-heading">
 			<div
-				class="ibc-lounge-hero border-border/50 relative col-span-1 flex min-h-[260px] flex-col overflow-hidden rounded-2xl border shadow-md {data.user.role === 'admin'
+				class="ibc-lounge-hero border-border/50 relative col-span-1 flex min-h-[260px] flex-col overflow-hidden rounded-2xl border shadow-md {data
+					.user.role === 'admin'
 					? 'lg:col-span-2'
 					: 'lg:col-span-3'}"
 			>
@@ -249,7 +278,9 @@
 				></div>
 				<div class={hubHeroScrimLrClass} aria-hidden="true"></div>
 				<div class={hubHeroScrimTbClass} aria-hidden="true"></div>
-				<div class="relative z-10 flex flex-1 flex-col justify-between gap-8 p-6 sm:p-8 lg:min-h-[280px]">
+				<div
+					class="relative z-10 flex flex-1 flex-col justify-between gap-8 p-6 sm:p-8 lg:min-h-[280px]"
+				>
 					<div class="flex w-full flex-col gap-4 sm:gap-5">
 						<div class="flex w-full items-start justify-between gap-3">
 							<p
@@ -309,7 +340,7 @@
 							href="/settings"
 							variant="outline"
 							size="lg"
-							class="border-amber-200/35 bg-black/40 text-amber-100/95 shadow-sm backdrop-blur-[2px] hover:bg-black/55 hover:text-amber-50 rounded-full px-6"
+							class="rounded-full border-amber-200/35 bg-black/40 px-6 text-amber-100/95 shadow-sm backdrop-blur-[2px] hover:bg-black/55 hover:text-amber-50"
 						>
 							<User class="size-4 opacity-90" aria-hidden="true" />
 							View Member Profile
@@ -320,7 +351,7 @@
 			{#if data.user.role === "admin"}
 				<div class="grid min-w-0 grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-1 lg:gap-8">
 					<Card.Root
-						class="border-border/50 min-w-0 gap-3 rounded-xl border py-4 shadow-sm sm:rounded-2xl sm:gap-6 sm:py-6"
+						class="border-border/50 min-w-0 gap-3 rounded-xl border py-4 shadow-sm sm:gap-6 sm:rounded-2xl sm:py-6"
 					>
 						<Card.Header class="px-3 pb-2 sm:px-6">
 							<div class="flex items-center gap-1.5 sm:gap-2">
@@ -331,16 +362,12 @@
 								</span>
 								<Card.Title class="text-sm font-semibold sm:text-base">Engagement</Card.Title>
 							</div>
-							<Card.Description
-								class="text-[0.65rem] leading-snug sm:text-sm sm:leading-normal"
-							>
+							<Card.Description class="text-[0.65rem] leading-snug sm:text-sm sm:leading-normal">
 								Members with numbers vs total roster
 							</Card.Description>
 						</Card.Header>
 						<Card.Content class="px-3 sm:px-6">
-							<p
-								class="text-foreground text-2xl font-bold tabular-nums sm:text-4xl"
-							>
+							<p class="text-foreground text-2xl font-bold tabular-nums sm:text-4xl">
 								{engagementPct}%
 							</p>
 							<p
@@ -351,7 +378,7 @@
 						</Card.Content>
 					</Card.Root>
 					<Card.Root
-						class="border-border/50 min-w-0 gap-3 rounded-xl border py-4 shadow-sm sm:rounded-2xl sm:gap-6 sm:py-6"
+						class="border-border/50 min-w-0 gap-3 rounded-xl border py-4 shadow-sm sm:gap-6 sm:rounded-2xl sm:py-6"
 					>
 						<Card.Header class="px-3 pb-2 sm:px-6">
 							<div class="flex items-center gap-1.5 sm:gap-2">
@@ -362,9 +389,7 @@
 								</span>
 								<Card.Title class="text-sm font-semibold sm:text-base">Season pace</Card.Title>
 							</div>
-							<Card.Description
-								class="text-[0.65rem] leading-snug sm:text-sm sm:leading-normal"
-							>
+							<Card.Description class="text-[0.65rem] leading-snug sm:text-sm sm:leading-normal">
 								Events and kegs in the data snapshot
 							</Card.Description>
 						</Card.Header>
@@ -374,7 +399,9 @@
 							>
 								<span class="text-foreground font-semibold tabular-nums sm:font-bold"
 									>{data.clubStats.eventsThisYear}</span
-								> events this year · <span class="text-foreground font-semibold tabular-nums sm:font-bold"
+								>
+								events this year ·
+								<span class="text-foreground font-semibold tabular-nums sm:font-bold"
 									>{data.clubStats.kegsConsumed}</span
 								> kegs recorded — keep the island pouring.
 							</p>
@@ -383,7 +410,8 @@
 				</div>
 			{/if}
 			<div
-				class="col-span-1 grid grid-cols-1 gap-8 lg:col-span-3 lg:items-stretch {data.user.role === 'admin'
+				class="col-span-1 grid grid-cols-1 gap-8 lg:col-span-3 lg:items-stretch {data.user.role ===
+				'admin'
 					? 'lg:grid-cols-[minmax(0,35fr)_minmax(0,65fr)]'
 					: ''}"
 				aria-label="Prospects and invitation links"
@@ -405,9 +433,9 @@
 							>
 								<Card.Title
 									id="pending-heading"
-									class="flex min-w-0 items-center gap-2 text-lg font-semibold tracking-tight text-white drop-shadow-sm dark:text-foreground"
+									class="dark:text-foreground flex min-w-0 items-center gap-2 text-lg font-semibold tracking-tight text-white drop-shadow-sm"
 								>
-									<UserPlusIcon class="size-5 shrink-0 text-white dark:text-primary" />
+									<UserPlusIcon class="dark:text-primary size-5 shrink-0 text-white" />
 									Prospects
 								</Card.Title>
 								<Tooltip.Root>
@@ -432,28 +460,24 @@
 								</Tooltip.Root>
 							</div>
 							<Card.Description
-								class="max-w-none text-pretty leading-snug text-white/88 dark:text-muted-foreground"
+								class="dark:text-muted-foreground max-w-none leading-snug text-pretty text-white/88"
 							>
-								Prospects who passed the test but don’t have a member number yet. Manage them and assign
-								member numbers.
+								Prospects who passed the test but don’t have a member number yet. Manage them and
+								assign member numbers.
 							</Card.Description>
 						</div>
 						<Card.Content class="relative z-10 flex flex-1 flex-col gap-4 pt-0">
 							<div>
 								{#if pendingMembersCardLoading}
-									<div
-										class="space-y-3"
-										aria-busy="true"
-										aria-label="Loading Prospects"
-									>
+									<div class="space-y-3" aria-busy="true" aria-label="Loading Prospects">
 										<Skeleton class="h-4 w-36" />
 										<Skeleton class="h-4 w-full max-w-md" />
 										<Skeleton class="h-4 w-full max-w-[13rem]" />
 										<Skeleton class="h-3 w-40" />
 									</div>
 								{:else if (data.pendingMembersCount ?? 0) > 0}
-									<p class="text-sm text-white/82 dark:text-muted-foreground">
-										<span class="font-semibold tabular-nums text-white dark:text-foreground"
+									<p class="dark:text-muted-foreground text-sm text-white/82">
+										<span class="dark:text-foreground font-semibold text-white tabular-nums"
 											>{data.pendingMembersCount}</span
 										>
 										waiting for acceptance.
@@ -464,7 +488,7 @@
 												<li class="truncate text-sm">
 													<a
 														href="/dashboard/pending-members#prospect-{pending.id}"
-														class="text-white/88 underline-offset-2 transition-colors hover:text-white hover:underline dark:text-muted-foreground dark:hover:text-foreground"
+														class="dark:text-muted-foreground dark:hover:text-foreground text-white/88 underline-offset-2 transition-colors hover:text-white hover:underline"
 													>
 														{pending.name}
 													</a>
@@ -472,14 +496,14 @@
 											{/each}
 										</ul>
 										{#if (data.pendingMembersCount ?? 0) > data.pendingMembers.length}
-											<p class="mt-2 text-xs text-white/72 dark:text-muted-foreground">
+											<p class="dark:text-muted-foreground mt-2 text-xs text-white/72">
 												+{(data.pendingMembersCount ?? 0) - data.pendingMembers.length} more on the full
 												list.
 											</p>
 										{/if}
 									{/if}
 								{:else}
-									<p class="text-sm text-white/82 dark:text-muted-foreground">
+									<p class="dark:text-muted-foreground text-sm text-white/82">
 										No Prospects right now.
 									</p>
 								{/if}
@@ -505,9 +529,9 @@
 						>
 							<Card.Title
 								id="invites-heading"
-								class="flex min-w-0 items-center gap-2 text-lg font-semibold tracking-tight text-white drop-shadow-sm dark:text-foreground"
+								class="dark:text-foreground flex min-w-0 items-center gap-2 text-lg font-semibold tracking-tight text-white drop-shadow-sm"
 							>
-								<LinkIcon class="size-5 shrink-0 text-white dark:text-primary" />
+								<LinkIcon class="dark:text-primary size-5 shrink-0 text-white" />
 								Invitation links
 							</Card.Title>
 							{#if canCreateInvites}
@@ -557,9 +581,7 @@
 												} else if (result.type === "failure") {
 													const msg = result.data?.message;
 													inviteErrorMessage =
-														typeof msg === "string"
-															? msg
-															: "Could not create an invitation link.";
+														typeof msg === "string" ? msg : "Could not create an invitation link.";
 													inviteErrorOpen = true;
 												}
 											};
@@ -604,7 +626,7 @@
 							</Dialog.Root>
 						{/if}
 						<Card.Description
-							class="max-w-none text-pretty leading-snug text-white/88 dark:text-muted-foreground"
+							class="dark:text-muted-foreground max-w-none leading-snug text-pretty text-white/88"
 						>
 							Create secure, one-time signup links to invite Prospects. Use the copy icon on active
 							rows to copy a link.
@@ -617,7 +639,7 @@
 									class="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/60"
 								/>
 								<AlertDialog.Content
-									class="bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed left-[50%] top-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-md"
+									class="bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-md"
 								>
 									<div class="flex flex-col gap-2">
 										<AlertDialog.Title class="text-lg font-semibold tracking-tight">
@@ -648,11 +670,16 @@
 									</Alert.Description>
 								</Alert.Root>
 								<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-									<p class="text-sm text-white/88 dark:text-muted-foreground">
-										You have {data.prospectGate.meetingCount} of {data.prospectGate.meetingsRequired} meetings saved.
-										Add the remaining {meetingsRemaining} on this dashboard to continue.
+									<p class="dark:text-muted-foreground text-sm text-white/88">
+										You have {data.prospectGate.meetingCount} of {data.prospectGate
+											.meetingsRequired} meetings saved. Add the remaining {meetingsRemaining} on this
+										dashboard to continue.
 									</p>
-									<Button class="shrink-0 shadow-md" type="button" onclick={() => (prospectProgressDialogOpen = true)}>
+									<Button
+										class="shrink-0 shadow-md"
+										type="button"
+										onclick={() => (prospectProgressDialogOpen = true)}
+									>
 										View progress
 									</Button>
 								</div>
@@ -665,7 +692,7 @@
 									</Alert.Description>
 								</Alert.Root>
 								<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-									<p class="text-sm text-white/88 dark:text-muted-foreground">
+									<p class="dark:text-muted-foreground text-sm text-white/88">
 										Complete the IBC test to unlock invitations. An admin will review your profile
 										after you pass the test.
 									</p>
@@ -682,7 +709,7 @@
 										invitation links.
 									</Alert.Description>
 								</Alert.Root>
-								<p class="text-sm text-white/88 dark:text-muted-foreground">
+								<p class="dark:text-muted-foreground text-sm text-white/88">
 									{#if data.user.test_passed != null}
 										You’ve passed the IBC test. An admin will review your profile and assign your
 										member number when you’re accepted.
@@ -692,17 +719,15 @@
 								</p>
 							{:else}
 								<div class="mt-6 space-y-3">
-									<div
-										class="flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-1"
-									>
+									<div class="flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-1">
 										<h4
-											class="text-sm font-semibold text-white drop-shadow-sm dark:text-foreground"
+											class="dark:text-foreground text-sm font-semibold text-white drop-shadow-sm"
 										>
 											Invites this year
 										</h4>
 										<a
 											href="/dashboard/invitations"
-											class="text-xs font-semibold text-amber-200/95 underline-offset-4 hover:underline dark:text-primary"
+											class="dark:text-primary text-xs font-semibold text-amber-200/95 underline-offset-4 hover:underline"
 										>
 											View all
 										</a>
@@ -723,17 +748,26 @@
 														class="flex min-h-10 w-full min-w-0 flex-nowrap items-center {rowChrome}"
 													>
 														<div
-															class="text-white/92 dark:text-foreground flex w-max max-w-[9rem] shrink-0 items-center px-2 py-2 text-xs font-medium sm:max-w-[11rem] sm:px-3"
+															class="dark:text-foreground flex w-max max-w-[9rem] shrink-0 items-center px-2 py-2 text-xs font-medium text-white/92 sm:max-w-[11rem] sm:px-3"
 														>
-															<span class="truncate"
-																>{invitation.invite_name?.trim() || "—"}</span
-															>
+															<div class="flex items-center gap-2 truncate">
+																<span class="truncate">{invitation.invite_name?.trim() || "—"}</span
+																>
+																{#if invitation.prospectMeetingCount !== null}
+																	<Badge
+																		variant="secondary"
+																		class={`shrink-0 rounded-sm px-1.5 py-0 text-[10px] tabular-nums ${prospectMeetingBadgeClass(invitation.prospectMeetingCount)}`}
+																	>
+																		{invitation.prospectMeetingCount}
+																	</Badge>
+																{/if}
+															</div>
 														</div>
 														<div class="flex shrink-0 items-center">
 															<Separator orientation="vertical" class={hubTableColSepClass} />
 															<div class="flex items-center px-2 py-2 sm:px-3">
 																<span
-																	class="font-mono text-xs text-white/88 tabular-nums dark:text-muted-foreground"
+																	class="dark:text-muted-foreground font-mono text-xs text-white/88 tabular-nums"
 																>
 																	{invitation.token.slice(0, 8)}…
 																</span>
@@ -742,7 +776,7 @@
 														<div class="flex min-w-0 flex-1 items-center">
 															<Separator orientation="vertical" class={hubTableColSepClass} />
 															<div
-																class="text-white/78 dark:text-muted-foreground flex min-w-0 flex-1 items-center px-2 py-2 text-xs sm:px-3"
+																class="dark:text-muted-foreground flex min-w-0 flex-1 items-center px-2 py-2 text-xs text-white/78 sm:px-3"
 															>
 																<span class="truncate"
 																	>Created {formatDateTime(invitation.created_at)}</span
@@ -795,7 +829,7 @@
 											{/each}
 										</ul>
 									{:else}
-										<p class="text-sm text-white/78 dark:text-muted-foreground">
+										<p class="dark:text-muted-foreground text-sm text-white/78">
 											No invites from {data.invitationYear} yet.
 										</p>
 									{/if}
@@ -820,14 +854,22 @@
 				<div class="space-y-4">
 					<div class="grid grid-cols-3 gap-2">
 						{#each [1, 2, 3] as slot}
-							<div class="rounded-xl border p-3 text-center">
+							<button
+								type="button"
+								class="hover:bg-muted/50 focus-visible:ring-ring rounded-xl border p-3 text-center transition-colors focus-visible:ring-2 focus-visible:outline-none"
+								onclick={() => jumpToMeetingSlot(slot)}
+							>
 								<div class="mb-2 flex justify-center">
 									{#if slot <= data.prospectGate.meetingCount}
-										<div class="bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300 flex size-8 items-center justify-center rounded-full">
+										<div
+											class="flex size-8 items-center justify-center rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+										>
 											<CheckIcon class="size-4" />
 										</div>
 									{:else}
-										<div class="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-full">
+										<div
+											class="bg-muted text-muted-foreground flex size-8 items-center justify-center rounded-full"
+										>
 											<ClockIcon class="size-4" />
 										</div>
 									{/if}
@@ -836,19 +878,24 @@
 								<p class="text-muted-foreground mt-1 text-xs">
 									{data.prospectGate.meetingDates[slot - 1] || "Not saved yet"}
 								</p>
-							</div>
+							</button>
 						{/each}
 					</div>
-					<p class="text-sm text-muted-foreground">
+					<p class="text-muted-foreground text-sm">
 						{#if data.prospectGate.canTakeTestNow}
 							Nice — all three meetings are logged. You can take the IBC test now.
 						{:else}
-							You’re {meetingsRemaining} meeting{meetingsRemaining === 1 ? "" : "s"} away from unlocking the test.
+							You’re {meetingsRemaining} meeting{meetingsRemaining === 1 ? "" : "s"} away from unlocking
+							the test.
 						{/if}
 					</p>
 				</div>
 				<Dialog.Footer>
-					<Button type="button" variant="outline" onclick={() => (prospectProgressDialogOpen = false)}>Close</Button>
+					<Button
+						type="button"
+						variant="outline"
+						onclick={() => (prospectProgressDialogOpen = false)}>Close</Button
+					>
 					{#if data.prospectGate.canTakeTestNow}
 						<Button href="/test">Take test</Button>
 					{/if}
@@ -863,8 +910,8 @@
 						<div class="space-y-1">
 							<Card.Title class="text-xl">Log your first 3 meetings</Card.Title>
 							<Card.Description>
-								Before you can take the IBC test or view exclusive member info, save the dates of the
-								three beer club meetings you attended.
+								Before you can take the IBC test or view exclusive member info, save the dates of
+								the three beer club meetings you attended.
 							</Card.Description>
 						</div>
 						<Badge variant="secondary" class="text-sm">
@@ -884,24 +931,23 @@
 							{#if data.prospectGate.canTakeTestNow}
 								You can head straight to the IBC test now.
 							{:else}
-								Save each meeting whenever you attend it — you do not need to fill all three at once.
+								Save each meeting whenever you attend it — you do not need to fill all three at
+								once.
 							{/if}
 						</Alert.Description>
 					</Alert.Root>
 				</Card.Header>
 				<Card.Content class="space-y-6">
 					<div class="grid gap-4 lg:grid-cols-3">
-						{#each [
-							{ slot: 1, label: "Meeting 1", value: meeting1Date },
-							{ slot: 2, label: "Meeting 2", value: meeting2Date },
-							{ slot: 3, label: "Meeting 3", value: meeting3Date }
-						] as meeting}
+						{#each [{ slot: 1, label: "Meeting 1", value: meeting1Date }, { slot: 2, label: "Meeting 2", value: meeting2Date }, { slot: 3, label: "Meeting 3", value: meeting3Date }] as meeting}
 							<div class="rounded-xl border p-4">
 								<div class="mb-3 flex items-center justify-between gap-3">
 									<div>
 										<h3 class="font-medium">{meeting.label}</h3>
 										<p class="text-muted-foreground text-xs">
-											{meeting.value ? "Saved and editable anytime." : "Save whenever you attend it."}
+											{meeting.value
+												? "Saved and editable anytime."
+												: "Save whenever you attend it."}
 										</p>
 									</div>
 									{#if meeting.value}
@@ -911,16 +957,40 @@
 								<form method="POST" action="?/saveProspectMeetingDate" class="space-y-3">
 									<input type="hidden" name="slot" value={meeting.slot} />
 									{#if meeting.slot === 1}
-										<DatePickerField id="meeting-1-date" name="meetingDate" bind:value={meeting1Date} />
+										<DatePickerField
+											id="meeting-1-date"
+											name="meetingDate"
+											bind:value={meeting1Date}
+											maxValue={offsetDateString(meeting2Date, -7)}
+											isDateUnavailable={isWednesdayCalendarDate}
+										/>
 									{:else if meeting.slot === 2}
-										<DatePickerField id="meeting-2-date" name="meetingDate" bind:value={meeting2Date} />
+										<DatePickerField
+											id="meeting-2-date"
+											name="meetingDate"
+											bind:value={meeting2Date}
+											minValue={offsetDateString(meeting1Date, 7)}
+											maxValue={offsetDateString(meeting3Date, -7)}
+											isDateUnavailable={isWednesdayCalendarDate}
+										/>
 									{:else}
-										<DatePickerField id="meeting-3-date" name="meetingDate" bind:value={meeting3Date} />
+										<DatePickerField
+											id="meeting-3-date"
+											name="meetingDate"
+											bind:value={meeting3Date}
+											minValue={offsetDateString(meeting2Date, 7)}
+											isDateUnavailable={isWednesdayCalendarDate}
+										/>
 									{/if}
 									<div class="flex flex-wrap gap-2">
 										<Button type="submit" size="sm">Save date</Button>
 										{#if meeting.value}
-											<button class="text-sm text-muted-foreground hover:text-foreground" type="submit" formaction="?/clearProspectMeetingDate" formmethod="POST">
+											<button
+												class="text-muted-foreground hover:text-foreground text-sm"
+												type="submit"
+												formaction="?/clearProspectMeetingDate"
+												formmethod="POST"
+											>
 												Clear
 											</button>
 										{/if}
@@ -930,7 +1000,11 @@
 						{/each}
 					</div>
 					<div class="flex flex-wrap items-center gap-3">
-						<Button type="button" variant="outline" onclick={() => (prospectProgressDialogOpen = true)}>
+						<Button
+							type="button"
+							variant="outline"
+							onclick={() => (prospectProgressDialogOpen = true)}
+						>
 							View progress
 						</Button>
 						{#if data.prospectGate.canTakeTestNow}
@@ -965,27 +1039,27 @@
 						>
 							<Card.Title
 								id="tables-heading"
-								class="flex min-w-0 items-center gap-2 text-lg font-semibold tracking-tight text-white drop-shadow-sm dark:text-foreground"
+								class="dark:text-foreground flex min-w-0 items-center gap-2 text-lg font-semibold tracking-tight text-white drop-shadow-sm"
 							>
-								<Calendar class="size-5 shrink-0 text-white dark:text-primary" />
+								<Calendar class="dark:text-primary size-5 shrink-0 text-white" />
 								Upcoming events
 							</Card.Title>
 							<a
 								href="/events"
-								class="text-xs font-semibold text-amber-200/95 underline-offset-4 hover:underline dark:text-primary"
+								class="dark:text-primary text-xs font-semibold text-amber-200/95 underline-offset-4 hover:underline"
 							>
 								View all
 							</a>
 						</div>
 						<Card.Description
-							class="max-w-none text-pretty leading-snug text-white/88 dark:text-muted-foreground"
+							class="dark:text-muted-foreground max-w-none leading-snug text-pretty text-white/88"
 						>
 							Next on the club calendar
 						</Card.Description>
 					</div>
 					<Card.Content class="relative z-10 flex flex-1 flex-col p-2 md:p-6">
 						{#if data.upcomingEvents.length === 0}
-							<p class="text-sm text-white/78 dark:text-muted-foreground">
+							<p class="dark:text-muted-foreground text-sm text-white/78">
 								No upcoming published events.
 							</p>
 						{:else}
@@ -1000,11 +1074,11 @@
 											class="flex min-h-10 w-full min-w-0 flex-nowrap items-center {inviteRowIdleClass}"
 										>
 											<div
-												class="text-white/92 dark:text-foreground flex min-w-0 max-w-[9rem] flex-1 items-center px-3 py-2 text-xs font-medium sm:max-w-[11rem] sm:px-4"
+												class="dark:text-foreground flex max-w-[9rem] min-w-0 flex-1 items-center px-3 py-2 text-xs font-medium text-white/92 sm:max-w-[11rem] sm:px-4"
 											>
 												<a
 													href="/events"
-													class="truncate transition-colors hover:text-white/95 dark:hover:text-primary"
+													class="dark:hover:text-primary truncate transition-colors hover:text-white/95"
 												>
 													{ev.title}
 												</a>
@@ -1012,7 +1086,7 @@
 											<div class="flex min-w-0 items-center">
 												<Separator orientation="vertical" class={hubTableColSepClass} />
 												<div
-													class="flex min-w-0 items-center px-3 py-2 text-xs tabular-nums text-white/88 sm:px-4 dark:text-muted-foreground"
+													class="dark:text-muted-foreground flex min-w-0 items-center px-3 py-2 text-xs text-white/88 tabular-nums sm:px-4"
 												>
 													{ev.event_date ? formatDate(new Date(ev.event_date)) : "—"}
 												</div>
@@ -1020,7 +1094,7 @@
 											<div class="hidden min-w-0 items-center sm:flex">
 												<Separator orientation="vertical" class={hubTableColSepClass} />
 												<div
-													class="flex max-w-[10rem] min-w-0 items-center px-3 py-2 text-xs text-white/85 sm:px-4 dark:text-muted-foreground"
+													class="dark:text-muted-foreground flex max-w-[10rem] min-w-0 items-center px-3 py-2 text-xs text-white/85 sm:px-4"
 												>
 													<span class="truncate">{ev.location ?? "—"}</span>
 												</div>
@@ -1040,7 +1114,7 @@
 													{:else}
 														<Badge
 															variant="outline"
-															class="shrink-0 rounded-sm border-white/40 bg-black/15 px-2 py-0.5 text-[10px] whitespace-nowrap text-white/90 dark:border-border dark:bg-transparent dark:text-foreground"
+															class="dark:border-border dark:text-foreground shrink-0 rounded-sm border-white/40 bg-black/15 px-2 py-0.5 text-[10px] whitespace-nowrap text-white/90 dark:bg-transparent"
 														>
 															Public
 														</Badge>
@@ -1070,7 +1144,10 @@
 							<LayoutGrid class="text-primary size-5" />
 						</div>
 						<div class="min-w-0">
-							<Card.Title id="actions-heading" class="text-foreground text-lg font-semibold tracking-tight">
+							<Card.Title
+								id="actions-heading"
+								class="text-foreground text-lg font-semibold tracking-tight"
+							>
 								Quick actions
 							</Card.Title>
 							<Card.Description class="text-muted-foreground text-sm leading-snug">

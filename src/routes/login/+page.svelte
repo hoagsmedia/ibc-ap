@@ -1,8 +1,10 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
-	import type { ActionData } from './$types';
+	import { enhance } from "$app/forms";
+	import type { ActionData, PageData } from "./$types";
+	import { Eye, EyeOff } from "@lucide/svelte";
 
-	let { form }: { form: ActionData } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
+	let showPassword = $state(false);
 </script>
 
 <svelte:head>
@@ -15,7 +17,19 @@
 		<h2 class="text-foreground mt-6 text-center text-3xl font-extrabold">Island Beer Club</h2>
 		<p class="text-muted-foreground mt-2 text-center text-sm">Sign in to your account</p>
 
-		<!-- Login instructions -->
+		{#if data.registered}
+			<div class="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-4">
+				<div class="text-center">
+					<p class="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+						Account created. Please sign in to continue.
+					</p>
+					<p class="text-muted-foreground mt-1 text-xs">
+						Use the email and password you just created.
+					</p>
+				</div>
+			</div>
+		{/if}
+
 		<div class="bg-accent mt-4 rounded-md p-4">
 			<div class="text-center">
 				<p class="text-accent-foreground text-sm">
@@ -41,6 +55,7 @@
 							name="email"
 							type="text"
 							autocomplete="username"
+							value={data.email}
 							required
 							class="border-input bg-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full appearance-none rounded-md border px-3 py-2 focus:outline-none sm:text-sm"
 						/>
@@ -51,15 +66,27 @@
 					<label for="password" class="text-card-foreground block text-sm font-medium">
 						Password
 					</label>
-					<div class="mt-1">
+					<div class="relative mt-1">
 						<input
 							id="password"
 							name="password"
-							type="password"
+							type={showPassword ? "text" : "password"}
 							autocomplete="current-password"
 							required
-							class="border-input bg-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full appearance-none rounded-md border px-3 py-2 focus:outline-none sm:text-sm"
+							class="border-input bg-input text-foreground placeholder-muted-foreground focus:border-ring focus:ring-ring block w-full appearance-none rounded-md border px-3 py-2 pr-10 focus:outline-none sm:text-sm"
 						/>
+						<button
+							type="button"
+							onclick={() => (showPassword = !showPassword)}
+							class="text-muted-foreground hover:text-foreground absolute inset-y-0 right-0 flex items-center pr-3"
+							aria-label={showPassword ? "Hide password" : "Show password"}
+						>
+							{#if showPassword}
+								<EyeOff class="size-4" />
+							{:else}
+								<Eye class="size-4" />
+							{/if}
+						</button>
 					</div>
 				</div>
 

@@ -37,6 +37,74 @@ function parseDateInput(value: FormDataEntryValue | null): Date | null {
 	return Number.isFinite(parsed.getTime()) ? parsed : null;
 }
 
+function isWednesday(date: Date): boolean {
+	return date.getUTCDay() === 3;
+}
+
+function compareDateOnly(a: Date, b: Date): number {
+	return a.getTime() - b.getTime();
+}
+
+function validateProspectMeetingDateSequence(
+	slot: number,
+	date: Date,
+	existing: {
+		meeting_1_date: Date | null;
+		meeting_2_date: Date | null;
+		meeting_3_date: Date | null;
+	}
+): string | null {
+	if (!isWednesday(date)) {
+		return "Prospect meeting dates must be Wednesdays.";
+	}
+
+	const previousDate =
+		slot === 2 ? existing.meeting_1_date : slot === 3 ? existing.meeting_2_date : null;
+	const nextDate =
+		slot === 1 ? existing.meeting_2_date : slot === 2 ? existing.meeting_3_date : null;
+
+	if (previousDate && compareDateOnly(date, previousDate) <= 0) {
+		return `Meeting ${slot} must be later than Meeting ${slot - 1}.`;
+	}
+
+	if (nextDate && compareDateOnly(date, nextDate) >= 0) {
+		return `Meeting ${slot} must be earlier than Meeting ${slot + 1}.`;
+	}
+
+	return null;
+}
+
+function validateProspectMeetingDateClear(
+	slot: number,
+	existing: {
+		meeting_1_date: Date | null;
+		meeting_2_date: Date | null;
+		meeting_3_date: Date | null;
+	}
+): string | null {
+	if (slot === 1 && (existing.meeting_2_date || existing.meeting_3_date)) {
+		return "Clear Meeting 3 and Meeting 2 before clearing Meeting 1.";
+	}
+	if (slot === 2 && existing.meeting_3_date) {
+		return "Clear Meeting 3 before clearing Meeting 2.";
+	}
+	return null;
+}
+
+async function getProspectMeetingState(userId: string) {
+	const [user] = await db
+		.select({
+			meeting_1_date: users.meeting_1_date,
+			meeting_2_date: users.meeting_2_date,
+			meeting_3_date: users.meeting_3_date
+		})
+		.from(users)
+		.where(eq(users.id, userId))
+		.limit(1);
+
+	return user ?? { meeting_1_date: null, meeting_2_date: null, meeting_3_date: null };
+}
+
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
 		throw redirect(302, "/login");
@@ -49,20 +117,19 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const prospectGate = canAccessExclusiveFeatures
 		? null
 		: {
-			active: true,
-			meetingCount,
-			meetingsRequired: 3,
-			canTakeTestNow,
-			requiresTest: requiresIbcTest(locals.user),
-			testPassed: locals.user.test_passed != null,
-			meetingDates: [
-				toDateInputValue(locals.user.meeting_1_date),
-				toDateInputValue(locals.user.meeting_2_date),
-				toDateInputValue(locals.user.meeting_3_date)
-			]
-		};
+				active: true,
+				meetingCount,
+				meetingsRequired: 3,
+				canTakeTestNow,
+				requiresTest: requiresIbcTest(locals.user),
+				testPassed: locals.user.test_passed != null,
+				meetingDates: [
+					toDateInputValue(locals.user.meeting_1_date),
+					toDateInputValue(locals.user.meeting_2_date),
+					toDateInputValue(locals.user.meeting_3_date)
+				]
+			};
 
-	// Latest 3 invites created in the current calendar year (UTC), for dashboard card
 	const invitations = canAccessExclusiveFeatures
 		? await getInvitationsByUser(locals.user.id, {
 				limit: 3,
@@ -70,7 +137,6 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			})
 		: [];
 
-	// IBC-20: For admins only — up to 3 most recent Prospects (oldest-first) + total count
 	let pendingMembers:
 		| { id: string; name: string; email: string | null; test_passed: Date }[]
 		| undefined;
@@ -192,7 +258,14 @@ export const actions: Actions = {
 			return fail(400, { message: "Pick a valid meeting date before saving." });
 		}
 
-		const column = slot === 1 ? users.meeting_1_date : slot === 2 ? users.meeting_2_date : users.meeting_3_date;
+		const existing = await getProspectMeetingState(locals.user.id);
+		const validationError = validateProspectMeetingDateSequence(slot, date, existing);
+		if (validationError) {
+			return fail(400, { message: validationError });
+		}
+
+		const column =
+			slot === 1 ? users.meeting_1_date : slot === 2 ? users.meeting_2_date : users.meeting_3_date;
 		await db
 			.update(users)
 			.set({ [column.name]: date, updated_at: new Date() })
@@ -215,7 +288,14 @@ export const actions: Actions = {
 			return fail(400, { message: "Invalid meeting slot" });
 		}
 
-		const column = slot === 1 ? users.meeting_1_date : slot === 2 ? users.meeting_2_date : users.meeting_3_date;
+		const existing = await getProspectMeetingState(locals.user.id);
+		const validationError = validateProspectMeetingDateClear(slot, existing);
+		if (validationError) {
+			return fail(400, { message: validationError });
+		}
+
+		const column =
+			slot === 1 ? users.meeting_1_date : slot === 2 ? users.meeting_2_date : users.meeting_3_date;
 		await db
 			.update(users)
 			.set({ [column.name]: null, updated_at: new Date() })
@@ -240,7 +320,6 @@ export const actions: Actions = {
 			return fail(400, { message: "Invite name must be 120 characters or fewer." });
 		}
 
-		// Only full members (role + MBR assigned) or admins can create invite links
 		if (locals.user.role !== "member" && locals.user.role !== "admin") {
 			if (requiresIbcTest(locals.user)) {
 				return fail(403, {
@@ -262,37 +341,34 @@ export const actions: Actions = {
 		if (locals.user.role === "member" && locals.user.mbr == null) {
 			return fail(403, {
 				message:
-					"You must be assigned a member number by an admin before you can create invitation links."
+					"You must have a member number assigned before creating invitation links. An admin will assign it once your membership is finalized."
 			});
 		}
 
-		// Members can create up to 3 invitation links in a rolling 7-day window (admins exempt)
-		if (locals.user.role !== "admin") {
-			const inviteCountInWindow = await getInvitationCountInWindow(locals.user.id);
-			if (inviteCountInWindow >= INVITATION_MEMBER_WEEKLY_LIMIT) {
-				return fail(429, {
-					message: `You can create up to ${INVITATION_MEMBER_WEEKLY_LIMIT} invitation links every ${INVITATION_LIMIT_WINDOW_DAYS} days. Please try again later.`
-				});
-			}
+		const createdInWindow = await getInvitationCountInWindow(
+			locals.user.id,
+			INVITATION_LIMIT_WINDOW_DAYS
+		);
+		if (locals.user.role === "member" && createdInWindow >= INVITATION_MEMBER_WEEKLY_LIMIT) {
+			return fail(429, {
+				message: `You’ve reached your ${INVITATION_MEMBER_WEEKLY_LIMIT} invite limit for the last ${INVITATION_LIMIT_WINDOW_DAYS} days.`
+			});
 		}
 
 		try {
 			const invitation = await createInvitationToken(
 				locals.user.id,
 				inviteName,
-				locals.user.name?.trim() || "Member"
+				locals.user.name,
+				7
 			);
-
-			if (dev && ibcDebugEnabled()) {
-				console.log("[IBC-LOG] [dashboard] Invitation created", {
-					userId: locals.user.id.slice(0, 5) + "..."
-				});
-			}
-
-			return { invitation };
+			return {
+				success: true,
+				invitation
+			};
 		} catch (error) {
-			console.error("Error creating invitation:", error);
-			return fail(500, { message: "Failed to create invitation link" });
+			console.error("Failed to create invitation", error);
+			return fail(500, { message: "Could not create invite right now. Please try again." });
 		}
 	}
 };

@@ -4,6 +4,7 @@
 	import * as Popover from "$lib/components/ui/popover/index.js";
 	import ChevronDownIcon from "@lucide/svelte/icons/chevron-down";
 	import { CalendarDate } from "@internationalized/date";
+	import type { DateValue } from "@internationalized/date";
 	import { cn } from "$lib/utils.js";
 
 	let {
@@ -12,6 +13,9 @@
 		value = $bindable(""),
 		placeholder = "Select date",
 		disabled = false,
+		minValue,
+		maxValue,
+		isDateUnavailable,
 		"aria-invalid": ariaInvalid,
 		class: className
 	}: {
@@ -20,6 +24,9 @@
 		value: string;
 		placeholder?: string;
 		disabled?: boolean;
+		minValue?: string;
+		maxValue?: string;
+		isDateUnavailable?: (date: DateValue) => boolean;
 		"aria-invalid"?: boolean | "true" | "false";
 		class?: string;
 	} = $props();
@@ -28,7 +35,7 @@
 		return String(n).padStart(2, "0");
 	}
 
-	function parseDateOnly(s: string): CalendarDate | undefined {
+	function parseDateOnly(s: string | undefined): CalendarDate | undefined {
 		if (!s?.trim()) return undefined;
 		const m = s.match(/^(\d{4})-(\d{2})-(\d{2})$/);
 		if (!m) return undefined;
@@ -78,7 +85,7 @@
 	});
 </script>
 
-<input type="hidden" {id} {name} bind:value disabled={disabled} />
+<input type="hidden" {id} {name} bind:value {disabled} />
 
 <Popover.Root bind:open>
 	<Popover.Trigger>
@@ -87,10 +94,10 @@
 				{...props}
 				type="button"
 				variant="outline"
-				disabled={disabled}
+				{disabled}
 				aria-invalid={ariaInvalid}
 				class={cn(
-					"h-8 w-full min-w-0 max-w-full justify-between gap-2 px-3 text-sm font-normal",
+					"h-8 w-full max-w-full min-w-0 justify-between gap-2 px-3 text-sm font-normal",
 					!value && "text-muted-foreground",
 					className
 				)}
@@ -106,9 +113,18 @@
 			bind:value={dateValue}
 			captionLayout="dropdown"
 			class="rounded-none border-0 shadow-none"
+			minValue={parseDateOnly(minValue)}
+			maxValue={parseDateOnly(maxValue)}
+			{isDateUnavailable}
 		/>
 		<div class="border-border flex justify-end border-t p-2">
-			<Button type="button" variant="secondary" size="sm" class="w-full sm:w-auto" onclick={() => (open = false)}>
+			<Button
+				type="button"
+				variant="secondary"
+				size="sm"
+				class="w-full sm:w-auto"
+				onclick={() => (open = false)}
+			>
 				Done
 			</Button>
 		</div>

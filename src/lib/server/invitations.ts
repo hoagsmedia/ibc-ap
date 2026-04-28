@@ -7,6 +7,10 @@ const DAY_IN_MS = 1000 * 60 * 60 * 24;
 export const INVITATION_LIMIT_WINDOW_DAYS = 7;
 export const INVITATION_MEMBER_WEEKLY_LIMIT = 3;
 
+export type InvitationWithProspectProgress = table.InvitationToken & {
+	prospectMeetingCount: number | null;
+};
+
 /** Matches `scripts/ensure-invitation-tokens-schema.ts` — local DBs often lag Vercel build ensures. */
 let invitationTokenColumnsEnsured = false;
 
@@ -120,7 +124,7 @@ export async function markInvitationTokenAsUsed(token: string, usedById: string)
 export async function getInvitationsByUser(
 	userId: string,
 	options?: { limit?: number; year?: number }
-): Promise<table.InvitationToken[]> {
+): Promise<InvitationWithProspectProgress[]> {
 	await ensureInvitationTokenColumns();
 	const conditions = [eq(table.invitationTokens.created_by_id, userId)];
 	if (options?.year != null) {
@@ -131,12 +135,25 @@ export async function getInvitationsByUser(
 		conditions.push(lt(table.invitationTokens.created_at, end));
 	}
 	const base = db
-		.select()
+		.select({
+			invitation: table.invitationTokens,
+			usedByUser: {
+				meeting_1_date: table.users.meeting_1_date,
+				meeting_2_date: table.users.meeting_2_date,
+				meeting_3_date: table.users.meeting_3_date
+			}
+		})
 		.from(table.invitationTokens)
+		.leftJoin(table.users, eq(table.invitationTokens.used_by_id, table.users.id))
 		.where(and(...conditions))
 		.orderBy(desc(table.invitationTokens.created_at));
-	if (options?.limit != null) {
-		return await base.limit(options.limit);
-	}
-	return await base;
+	const rows = options?.limit != null ? await base.limit(options.limit) : await base;
+	return rows.map(({ invitation, usedByUser }) => ({
+		...invitation,
+		prospectMeetingCount: usedByUser
+			? [usedByUser.meeting_1_date, usedByUser.meeting_2_date, usedByUser.meeting_3_date].filter(
+					Boolean
+				).length
+			: null
+	}));
 }
