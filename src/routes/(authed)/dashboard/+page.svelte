@@ -853,7 +853,7 @@
 				</Dialog.Header>
 				<div class="space-y-4">
 					<div class="grid grid-cols-3 gap-2">
-						{#each [1, 2, 3] as slot}
+						{#each [1, 2, 3] as slot (slot)}
 							<button
 								type="button"
 								class="hover:bg-muted/50 focus-visible:ring-ring rounded-xl border p-3 text-center transition-colors focus-visible:ring-2 focus-visible:outline-none"
@@ -939,7 +939,7 @@
 				</Card.Header>
 				<Card.Content class="space-y-6">
 					<div class="grid gap-4 lg:grid-cols-3">
-						{#each [{ slot: 1, label: "Meeting 1", value: meeting1Date }, { slot: 2, label: "Meeting 2", value: meeting2Date }, { slot: 3, label: "Meeting 3", value: meeting3Date }] as meeting}
+						{#each [{ slot: 1, label: "Meeting 1", value: meeting1Date }, { slot: 2, label: "Meeting 2", value: meeting2Date }, { slot: 3, label: "Meeting 3", value: meeting3Date }] as meeting (meeting.slot)}
 							<div class="rounded-xl border p-4">
 								<div class="mb-3 flex items-center justify-between gap-3">
 									<div>
