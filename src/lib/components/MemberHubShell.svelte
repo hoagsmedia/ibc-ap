@@ -20,6 +20,7 @@
 	import LayoutDashboard from "@lucide/svelte/icons/layout-dashboard";
 	import Users from "@lucide/svelte/icons/users";
 	import Calendar from "@lucide/svelte/icons/calendar";
+import CalendarDays from "@lucide/svelte/icons/calendar-days";
 	import Settings from "@lucide/svelte/icons/settings";
 	import UserPlus from "@lucide/svelte/icons/user-plus";
 	import Beer from "@lucide/svelte/icons/beer";
@@ -60,10 +61,6 @@ import LinkIcon from "@lucide/svelte/icons/link";
 
 	const headerTitle = $derived(memberHubTitle(path));
 
-	const eventsNavHref = $derived(user?.role === "admin" ? "/admin/events" : "/events");
-	const eventsNavActive = $derived(
-		user?.role === "admin" ? navActive("/admin/events") : navActive("/events")
-	);
 	const canAccessExclusiveFeatures = $derived(user ? canAccessMemberDirectoryAndStats(user) : false);
 </script>
 
@@ -155,19 +152,18 @@ import LinkIcon from "@lucide/svelte/icons/link";
 								</Sidebar.MenuButton>
 							</Sidebar.MenuItem>
 						{/if}
-						<Sidebar.MenuItem>
-							<Sidebar.MenuButton
-								isActive={eventsNavActive}
-								tooltipContent={user?.role === "admin" ? "Manage Events" : "Events"}
-							>
-								{#snippet child({ props })}
-									<a href={eventsNavHref} {...props}>
-										<Calendar />
-										<span>{user?.role === "admin" ? "Manage Events" : "Events"}</span>
-									</a>
-								{/snippet}
-							</Sidebar.MenuButton>
-						</Sidebar.MenuItem>
+						{#if user?.role !== "admin"}
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton isActive={navActive("/events")} tooltipContent="Events">
+									{#snippet child({ props })}
+										<a href="/events" {...props}>
+											<Calendar />
+											<span>Events</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
+						{/if}
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton isActive={navActive("/settings")} tooltipContent="Settings">
 								{#snippet child({ props })}
@@ -201,6 +197,19 @@ import LinkIcon from "@lucide/svelte/icons/link";
 					<Sidebar.GroupLabel>Admin</Sidebar.GroupLabel>
 					<Sidebar.GroupContent>
 						<Sidebar.Menu>
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton
+									isActive={navActive("/admin/events")}
+									tooltipContent="Manage Events"
+								>
+									{#snippet child({ props })}
+										<a href="/admin/events" {...props}>
+											<CalendarDays />
+											<span>Manage Events</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton
 									isActive={navActive("/admin/stats", true)}
