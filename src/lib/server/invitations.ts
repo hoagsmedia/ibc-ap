@@ -1,6 +1,6 @@
 import { client, db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
-import { and, count, desc, eq, gte, lt } from "drizzle-orm";
+import { and, count, desc, eq, gte, isNull, lt } from "drizzle-orm";
 import { encodeBase64url } from "@oslojs/encoding";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
@@ -156,4 +156,22 @@ export async function getInvitationsByUser(
 				).length
 			: null
 	}));
+}
+
+export async function deleteExpiredInvitationByUser(userId: string, token: string): Promise<boolean> {
+	await ensureInvitationTokenColumns();
+	const now = new Date();
+	const deleted = await db
+		.delete(table.invitationTokens)
+		.where(
+			and(
+				eq(table.invitationTokens.created_by_id, userId),
+				eq(table.invitationTokens.token, token),
+				lt(table.invitationTokens.expires_at, now),
+				isNull(table.invitationTokens.used_at)
+			)
+		)
+		.returning({ id: table.invitationTokens.id });
+
+	return deleted.length > 0;
 }

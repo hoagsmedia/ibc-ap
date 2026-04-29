@@ -5,6 +5,7 @@ import { users } from "$lib/server/db/schema";
 import { getMbrConflictMessage } from "$lib/server/mbr-uniqueness";
 import { getUsernameForMemberWithMbr } from "$lib/server/username";
 import { and, asc, eq, isNotNull, isNull } from "drizzle-orm";
+import { assignMemberSchema } from "./assign-member-schema";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -46,13 +47,16 @@ export const actions: Actions = {
 		if (locals.user.role !== "admin") return fail(403, { message: "Admin required" });
 
 		const formData = await request.formData();
-		const userId = formData.get("userId") as string | null;
-		const mbrRaw = formData.get("mbr");
-
-		if (!userId) return fail(400, { message: "Missing user" });
-		const mbr = mbrRaw != null && mbrRaw !== "" ? parseInt(String(mbrRaw), 10) : NaN;
-		if (Number.isNaN(mbr) || mbr < 1)
-			return fail(400, { message: "Enter a valid member number (1 or higher)" });
+		const parsed = assignMemberSchema.safeParse({
+			userId: formData.get("userId"),
+			mbr: formData.get("mbr")
+		});
+		if (!parsed.success) {
+			return fail(400, {
+				message: parsed.error.issues[0]?.message ?? "Enter a valid member number (1 or higher)"
+			});
+		}
+		const { userId, mbr } = parsed.data;
 
 		const [member] = await db.select().from(users).where(eq(users.id, userId));
 		if (!member) return fail(404, { message: "Member not found" });

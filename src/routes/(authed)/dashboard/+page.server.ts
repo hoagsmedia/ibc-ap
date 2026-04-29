@@ -20,6 +20,11 @@ import {
 	requiresIbcTest
 } from "$lib/ibc-test";
 import { and, asc, count, desc, eq, gte, isNotNull, isNull } from "drizzle-orm";
+import {
+	clearProspectMeetingDateSchema,
+	createInvitationSchema,
+	saveProspectMeetingDateSchema
+} from "./action-schemas";
 
 function toDateInputValue(date: Date | null | undefined): string {
 	if (!date) return "";
@@ -249,11 +254,15 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
-		const slot = Number(formData.get("slot"));
-		const date = parseDateInput(formData.get("meetingDate"));
-		if (![1, 2, 3].includes(slot)) {
-			return fail(400, { message: "Invalid meeting slot" });
+		const parsed = saveProspectMeetingDateSchema.safeParse({
+			slot: formData.get("slot"),
+			meetingDate: formData.get("meetingDate")
+		});
+		if (!parsed.success) {
+			return fail(400, { message: parsed.error.issues[0]?.message ?? "Invalid meeting date input" });
 		}
+		const { slot } = parsed.data;
+		const date = parseDateInput(parsed.data.meetingDate);
 		if (!date) {
 			return fail(400, { message: "Pick a valid meeting date before saving." });
 		}
@@ -283,10 +292,13 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
-		const slot = Number(formData.get("slot"));
-		if (![1, 2, 3].includes(slot)) {
-			return fail(400, { message: "Invalid meeting slot" });
+		const parsed = clearProspectMeetingDateSchema.safeParse({
+			slot: formData.get("slot")
+		});
+		if (!parsed.success) {
+			return fail(400, { message: parsed.error.issues[0]?.message ?? "Invalid meeting slot" });
 		}
+		const { slot } = parsed.data;
 
 		const existing = await getProspectMeetingState(locals.user.id);
 		const validationError = validateProspectMeetingDateClear(slot, existing);
@@ -310,15 +322,13 @@ export const actions: Actions = {
 		}
 
 		const formData = await request.formData();
-		const inviteName = String(formData.get("inviteName") ?? "").trim();
-		if (!inviteName) {
-			return fail(400, {
-				message: "Add a name for this invite so you remember who it’s for."
-			});
+		const parsed = createInvitationSchema.safeParse({
+			inviteName: formData.get("inviteName")
+		});
+		if (!parsed.success) {
+			return fail(400, { message: parsed.error.issues[0]?.message ?? "Invalid invite name." });
 		}
-		if (inviteName.length > 120) {
-			return fail(400, { message: "Invite name must be 120 characters or fewer." });
-		}
+		const { inviteName } = parsed.data;
 
 		if (locals.user.role !== "member" && locals.user.role !== "admin") {
 			if (requiresIbcTest(locals.user)) {

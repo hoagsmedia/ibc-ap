@@ -24,6 +24,7 @@
 	import UserPlus from "@lucide/svelte/icons/user-plus";
 	import Beer from "@lucide/svelte/icons/beer";
 	import Package from "@lucide/svelte/icons/package";
+import LinkIcon from "@lucide/svelte/icons/link";
 	import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
 	import LogOut from "@lucide/svelte/icons/log-out";
 	import Home from "@lucide/svelte/icons/home";
@@ -136,6 +137,19 @@
 										<a href="/dashboard/members" {...props}>
 											<Users />
 											<span>Members</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton
+									isActive={navActive("/dashboard/invitations")}
+									tooltipContent="Invite links"
+								>
+									{#snippet child({ props })}
+										<a href="/dashboard/invitations" {...props}>
+											<LinkIcon />
+											<span>Invite links</span>
 										</a>
 									{/snippet}
 								</Sidebar.MenuButton>

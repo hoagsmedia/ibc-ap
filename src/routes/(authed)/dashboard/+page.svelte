@@ -14,6 +14,7 @@
 	import * as Tooltip from "$lib/components/ui/tooltip/index.js";
 	import { Separator } from "$lib/components/ui/separator";
 	import DatePickerField from "$lib/components/DatePickerField.svelte";
+	import InvitationRow from "$lib/components/dashboard/InvitationRow.svelte";
 	import QuickActionLink from "$lib/components/dashboard/QuickActionLink.svelte";
 	import {
 		Beer,
@@ -47,8 +48,7 @@
 		inviteRowIdleClass,
 		inviteRowShellClass
 	} from "$lib/dashboard-hub-classes";
-	import { formatDate, formatDateTime } from "$lib/utils";
-	import CustomCopy from "$lib/components/Custom-Copy.svelte";
+	import { formatDate } from "$lib/utils";
 	import type { DateValue } from "@internationalized/date";
 
 	let { data }: { data: PageData } = $props();
@@ -62,15 +62,15 @@
 	let meeting1Date = $state(data.prospectGate?.meetingDates?.[0] ?? "");
 	let meeting2Date = $state(data.prospectGate?.meetingDates?.[1] ?? "");
 	let meeting3Date = $state(data.prospectGate?.meetingDates?.[2] ?? "");
-
-	function prospectMeetingBadgeClass(count: number | null) {
-		return count === 3
-			? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-			: "";
-	}
+	let activeMeetingSlot = $state(
+		data.prospectGate
+			? Math.min(data.prospectGate.meetingCount + 1, data.prospectGate.meetingsRequired)
+			: 1
+	);
 
 	function jumpToMeetingSlot(slot: number) {
 		prospectProgressDialogOpen = false;
+		activeMeetingSlot = slot;
 
 		if (typeof window === "undefined") return;
 
@@ -125,6 +125,14 @@
 	const canAccessExclusiveFeatures = $derived(Boolean(data.canAccessExclusiveFeatures));
 	const meetingsRemaining = $derived(
 		data.prospectGate ? data.prospectGate.meetingsRequired - data.prospectGate.meetingCount : 0
+	);
+	const meetingSlots = $derived([
+		{ slot: 1, label: "Meeting 1", value: meeting1Date },
+		{ slot: 2, label: "Meeting 2", value: meeting2Date },
+		{ slot: 3, label: "Meeting 3", value: meeting3Date }
+	]);
+	const activeMeeting = $derived(
+		meetingSlots.find((meeting) => meeting.slot === activeMeetingSlot) ?? meetingSlots[0]
 	);
 </script>
 
@@ -735,97 +743,16 @@
 									{#if visibleInvitations.length > 0}
 										<ul class="flex min-w-0 flex-col" role="list">
 											{#each visibleInvitations as invitation (invitation.token)}
-												{@const inviteUrl = `${data.baseUrl}/invite/${invitation.token}`}
-												{@const canCopyInvite =
-													!invitation.used_at &&
-													Date.now() < new Date(invitation.expires_at).getTime()}
-												{@const isNewHighlight = invitation.token === highlightInviteToken}
-												{@const rowChrome = isNewHighlight
-													? inviteRowHighlightClass
-													: inviteRowIdleClass}
-												<li class="{inviteRowShellClass} list-none p-0">
-													<div
-														class="flex min-h-10 w-full min-w-0 flex-nowrap items-center {rowChrome}"
-													>
-														<div
-															class="dark:text-foreground flex w-max max-w-[9rem] shrink-0 items-center px-2 py-2 text-xs font-medium text-white/92 sm:max-w-[11rem] sm:px-3"
-														>
-															<div class="flex items-center gap-2 truncate">
-																<span class="truncate">{invitation.invite_name?.trim() || "—"}</span
-																>
-																{#if invitation.prospectMeetingCount !== null}
-																	<Badge
-																		variant="secondary"
-																		class={`shrink-0 rounded-sm px-1.5 py-0 text-[10px] tabular-nums ${prospectMeetingBadgeClass(invitation.prospectMeetingCount)}`}
-																	>
-																		{invitation.prospectMeetingCount}
-																	</Badge>
-																{/if}
-															</div>
-														</div>
-														<div class="flex shrink-0 items-center">
-															<Separator orientation="vertical" class={hubTableColSepClass} />
-															<div class="flex items-center px-2 py-2 sm:px-3">
-																<span
-																	class="dark:text-muted-foreground font-mono text-xs text-white/88 tabular-nums"
-																>
-																	{invitation.token.slice(0, 8)}…
-																</span>
-															</div>
-														</div>
-														<div class="flex min-w-0 flex-1 items-center">
-															<Separator orientation="vertical" class={hubTableColSepClass} />
-															<div
-																class="dark:text-muted-foreground flex min-w-0 flex-1 items-center px-2 py-2 text-xs text-white/78 sm:px-3"
-															>
-																<span class="truncate"
-																	>Created {formatDateTime(invitation.created_at)}</span
-																>
-															</div>
-														</div>
-														<div class="flex shrink-0 items-center">
-															<Separator orientation="vertical" class={hubTableColSepClass} />
-															<div
-																class="flex min-h-10 shrink-0 items-center gap-2 px-2 py-2 sm:px-3"
-															>
-																<!-- Fixed badge column + fixed copy slot so Active/Used badges line up across rows -->
-																<div
-																	class="flex w-[6.5rem] shrink-0 items-center justify-start sm:w-[7rem]"
-																>
-																	{#if canCopyInvite}
-																		<Badge
-																			class="shrink-0 rounded-sm px-2 py-0.5 text-[10px] whitespace-nowrap"
-																		>
-																			<ClockIcon class="mr-1 size-3" />
-																			Active
-																		</Badge>
-																	{:else}
-																		<Badge
-																			variant="secondary"
-																			class="shrink-0 rounded-sm px-2 py-0.5 text-[10px] whitespace-nowrap"
-																		>
-																			<CheckIcon class="mr-1 size-3" />
-																			Used
-																		</Badge>
-																	{/if}
-																</div>
-																<div
-																	class="flex size-8 shrink-0 items-center justify-center"
-																	aria-hidden={!canCopyInvite}
-																>
-																	{#if canCopyInvite}
-																		<CustomCopy
-																			text={inviteUrl}
-																			ariaLabel="Copy invitation link for {invitation.invite_name?.trim() ||
-																				'this invite'}"
-																			class={inviteCopyBtnClass}
-																		/>
-																	{/if}
-																</div>
-															</div>
-														</div>
-													</div>
-												</li>
+												<InvitationRow
+													{invitation}
+													baseUrl={data.baseUrl}
+													isHighlighted={invitation.token === highlightInviteToken}
+													{hubTableColSepClass}
+													{inviteCopyBtnClass}
+													{inviteRowHighlightClass}
+													{inviteRowIdleClass}
+													{inviteRowShellClass}
+												/>
 											{/each}
 										</ul>
 									{:else}
@@ -938,66 +865,76 @@
 					</Alert.Root>
 				</Card.Header>
 				<Card.Content class="space-y-6">
-					<div class="grid gap-4 lg:grid-cols-3">
-						{#each [{ slot: 1, label: "Meeting 1", value: meeting1Date }, { slot: 2, label: "Meeting 2", value: meeting2Date }, { slot: 3, label: "Meeting 3", value: meeting3Date }] as meeting (meeting.slot)}
-							<div class="rounded-xl border p-4">
-								<div class="mb-3 flex items-center justify-between gap-3">
-									<div>
-										<h3 class="font-medium">{meeting.label}</h3>
-										<p class="text-muted-foreground text-xs">
-											{meeting.value
-												? "Saved and editable anytime."
-												: "Save whenever you attend it."}
-										</p>
-									</div>
-									{#if meeting.value}
-										<Badge variant="secondary">Saved</Badge>
-									{/if}
-								</div>
-								<form method="POST" action="?/saveProspectMeetingDate" class="space-y-3">
-									<input type="hidden" name="slot" value={meeting.slot} />
-									{#if meeting.slot === 1}
-										<DatePickerField
-											id="meeting-1-date"
-											name="meetingDate"
-											bind:value={meeting1Date}
-											maxValue={offsetDateString(meeting2Date, -7)}
-											isDateUnavailable={isWednesdayCalendarDate}
-										/>
-									{:else if meeting.slot === 2}
-										<DatePickerField
-											id="meeting-2-date"
-											name="meetingDate"
-											bind:value={meeting2Date}
-											minValue={offsetDateString(meeting1Date, 7)}
-											maxValue={offsetDateString(meeting3Date, -7)}
-											isDateUnavailable={isWednesdayCalendarDate}
-										/>
-									{:else}
-										<DatePickerField
-											id="meeting-3-date"
-											name="meetingDate"
-											bind:value={meeting3Date}
-											minValue={offsetDateString(meeting2Date, 7)}
-											isDateUnavailable={isWednesdayCalendarDate}
-										/>
-									{/if}
-									<div class="flex flex-wrap gap-2">
-										<Button type="submit" size="sm">Save date</Button>
-										{#if meeting.value}
-											<button
-												class="text-muted-foreground hover:text-foreground text-sm"
-												type="submit"
-												formaction="?/clearProspectMeetingDate"
-												formmethod="POST"
-											>
-												Clear
-											</button>
-										{/if}
-									</div>
-								</form>
-							</div>
+					<div class="grid grid-cols-3 gap-2">
+						{#each meetingSlots as meeting (meeting.slot)}
+							<button
+								type="button"
+								class={`hover:bg-muted/60 rounded-xl border px-3 py-2 text-left text-sm transition-colors ${
+									activeMeetingSlot === meeting.slot ? "border-primary bg-primary/5" : ""
+								}`}
+								onclick={() => (activeMeetingSlot = meeting.slot)}
+							>
+								<p class="font-medium">{meeting.label}</p>
+								<p class="text-muted-foreground text-xs">
+									{meeting.value ? "Saved" : "Not saved"}
+								</p>
+							</button>
 						{/each}
+					</div>
+					<div class="rounded-xl border p-4">
+						<div class="mb-3 flex items-center justify-between gap-3">
+							<div>
+								<h3 class="font-medium">{activeMeeting.label}</h3>
+								<p class="text-muted-foreground text-xs">
+									Choose a date, then click Save date.
+								</p>
+							</div>
+							{#if activeMeeting.value}
+								<Badge variant="secondary">Saved</Badge>
+							{/if}
+						</div>
+						<form method="POST" action="?/saveProspectMeetingDate" class="space-y-3">
+							<input type="hidden" name="slot" value={activeMeeting.slot} />
+							{#if activeMeeting.slot === 1}
+								<DatePickerField
+									id="meeting-1-date"
+									name="meetingDate"
+									bind:value={meeting1Date}
+									maxValue={offsetDateString(meeting2Date, -7)}
+									isDateUnavailable={isWednesdayCalendarDate}
+								/>
+							{:else if activeMeeting.slot === 2}
+								<DatePickerField
+									id="meeting-2-date"
+									name="meetingDate"
+									bind:value={meeting2Date}
+									minValue={offsetDateString(meeting1Date, 7)}
+									maxValue={offsetDateString(meeting3Date, -7)}
+									isDateUnavailable={isWednesdayCalendarDate}
+								/>
+							{:else}
+								<DatePickerField
+									id="meeting-3-date"
+									name="meetingDate"
+									bind:value={meeting3Date}
+									minValue={offsetDateString(meeting2Date, 7)}
+									isDateUnavailable={isWednesdayCalendarDate}
+								/>
+							{/if}
+							<div class="flex flex-wrap gap-2">
+								<Button type="submit" size="sm">Save date</Button>
+								{#if activeMeeting.value}
+									<button
+										class="text-muted-foreground hover:text-foreground text-sm"
+										type="submit"
+										formaction="?/clearProspectMeetingDate"
+										formmethod="POST"
+									>
+										Clear
+									</button>
+								{/if}
+							</div>
+						</form>
 					</div>
 					<div class="flex flex-wrap items-center gap-3">
 						<Button

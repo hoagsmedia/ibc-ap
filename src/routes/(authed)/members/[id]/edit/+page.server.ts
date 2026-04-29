@@ -13,11 +13,12 @@ import { hash } from "argon2";
 import { encodeBase32LowerCase } from "@oslojs/encoding";
 import { userWithoutPasswordHash } from "$lib/server/user-client";
 import { msdFromDateInput, msdToDateInputValue } from "$lib/server/msd";
+import { resolveMemberBackLink } from "$lib/server/member-back-link";
 
 /** Must match the main `superForm` `id` on the edit page (multiple forms share `data.form`). */
 const MEMBER_EDIT_FORM_ID = "member-edit";
 
-export const load: PageServerLoad = async ({ locals, params }) => {
+export const load: PageServerLoad = async ({ locals, params, url, request }) => {
 	if (!locals.user) {
 		throw redirect(302, "/login");
 	}
@@ -59,7 +60,12 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	return {
 		member: userWithoutPasswordHash(member),
 		user: locals.user,
-		form: await superValidate(memberData, zod(memberSchema), { id: MEMBER_EDIT_FORM_ID })
+		form: await superValidate(memberData, zod(memberSchema), { id: MEMBER_EDIT_FORM_ID }),
+		backLink: resolveMemberBackLink({
+			backQuery: url.searchParams.get("back"),
+			referer: request.headers.get("referer"),
+			urlOrigin: url.origin
+		})
 	};
 };
 

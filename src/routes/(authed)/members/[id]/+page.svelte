@@ -50,9 +50,9 @@
 <div class="flex w-full min-w-0 flex-col gap-6">
 	<div class="flex flex-wrap items-center justify-between gap-4">
 		<h1 class="min-w-0 text-3xl font-bold">Member Details</h1>
-		<HubBackLink size="sm" onclick={() => history.back()} class="shrink-0 gap-2">
+		<HubBackLink href={data.backLink.href} size="sm" class="shrink-0 gap-2">
 			<ArrowLeft class="size-4" />
-			Back to Members
+			{data.backLink.label}
 		</HubBackLink>
 	</div>
 
@@ -188,7 +188,9 @@
 					</Card.Header>
 					<Card.Content>
 						<div class="flex flex-col gap-2 md:flex-row">
-							<Button variant="outline" href={`/members/${data.member.id}/edit`}>Edit Member</Button>
+							<Button variant="outline" href={`/members/${data.member.id}/edit?back=${data.backLink.key}`}
+								>Edit Member</Button
+							>
 							<!-- <Button disabled variant="outline">Send Message</Button> -->
 						</div>
 					</Card.Content>
