@@ -321,10 +321,12 @@
 			<p class="text-muted-foreground text-sm">Update member information and account details.</p>
 		</div>
 		<div class="flex items-center gap-2">
-			<Button href={`/members/${data.member.id}`} variant="outline" size="sm">View Member Profile</Button>
-			<HubBackLink size="sm" onclick={() => history.back()} class="shrink-0 gap-2">
+			<Button href={`/members/${data.member.id}?back=${data.backLink.key}`} variant="outline" size="sm"
+				>View Member Profile</Button
+			>
+			<HubBackLink href={data.backLink.href} size="sm" class="shrink-0 gap-2">
 				<ArrowLeft class="size-4" />
-				Back to Members
+				{data.backLink.label}
 			</HubBackLink>
 		</div>
 	</div>

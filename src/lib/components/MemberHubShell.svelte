@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from "svelte";
 	import { page } from "$app/state";
+	import { canAccessMemberDirectoryAndStats } from "$lib/ibc-test";
 	import { cn } from "$lib/utils.js";
 	import * as Sidebar from "$lib/components/ui/sidebar";
 	import { Button } from "$lib/components/ui/button";
@@ -19,10 +20,12 @@
 	import LayoutDashboard from "@lucide/svelte/icons/layout-dashboard";
 	import Users from "@lucide/svelte/icons/users";
 	import Calendar from "@lucide/svelte/icons/calendar";
+import CalendarDays from "@lucide/svelte/icons/calendar-days";
 	import Settings from "@lucide/svelte/icons/settings";
 	import UserPlus from "@lucide/svelte/icons/user-plus";
 	import Beer from "@lucide/svelte/icons/beer";
 	import Package from "@lucide/svelte/icons/package";
+import LinkIcon from "@lucide/svelte/icons/link";
 	import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
 	import LogOut from "@lucide/svelte/icons/log-out";
 	import Home from "@lucide/svelte/icons/home";
@@ -58,10 +61,7 @@
 
 	const headerTitle = $derived(memberHubTitle(path));
 
-	const eventsNavHref = $derived(user?.role === "admin" ? "/admin/events" : "/events");
-	const eventsNavActive = $derived(
-		user?.role === "admin" ? navActive("/admin/events") : navActive("/events")
-	);
+	const canAccessExclusiveFeatures = $derived(user ? canAccessMemberDirectoryAndStats(user) : false);
 </script>
 
 <Sidebar.Provider>
@@ -124,32 +124,46 @@
 								{/snippet}
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
-						<Sidebar.MenuItem>
-							<Sidebar.MenuButton
-								isActive={navActive("/dashboard/members")}
-								tooltipContent="Member directory"
-							>
-								{#snippet child({ props })}
-									<a href="/dashboard/members" {...props}>
-										<Users />
-										<span>Members</span>
-									</a>
-								{/snippet}
-							</Sidebar.MenuButton>
-						</Sidebar.MenuItem>
-						<Sidebar.MenuItem>
-							<Sidebar.MenuButton
-								isActive={eventsNavActive}
-								tooltipContent={user?.role === "admin" ? "Manage Events" : "Events"}
-							>
-								{#snippet child({ props })}
-									<a href={eventsNavHref} {...props}>
-										<Calendar />
-										<span>{user?.role === "admin" ? "Manage Events" : "Events"}</span>
-									</a>
-								{/snippet}
-							</Sidebar.MenuButton>
-						</Sidebar.MenuItem>
+						{#if canAccessExclusiveFeatures}
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton
+									isActive={navActive("/dashboard/members")}
+									tooltipContent="Member directory"
+								>
+									{#snippet child({ props })}
+										<a href="/dashboard/members" {...props}>
+											<Users />
+											<span>Members</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton
+									isActive={navActive("/dashboard/invitations")}
+									tooltipContent="Invite links"
+								>
+									{#snippet child({ props })}
+										<a href="/dashboard/invitations" {...props}>
+											<LinkIcon />
+											<span>Invite links</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
+						{/if}
+						{#if user?.role !== "admin"}
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton isActive={navActive("/events")} tooltipContent="Events">
+									{#snippet child({ props })}
+										<a href="/events" {...props}>
+											<Calendar />
+											<span>Events</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
+						{/if}
 						<Sidebar.MenuItem>
 							<Sidebar.MenuButton isActive={navActive("/settings")} tooltipContent="Settings">
 								{#snippet child({ props })}
@@ -160,7 +174,7 @@
 								{/snippet}
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
-						{#if user?.role !== "admin"}
+						{#if user?.role !== "admin" && canAccessExclusiveFeatures}
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton
 									isActive={navActive("/stats")}
@@ -183,6 +197,19 @@
 					<Sidebar.GroupLabel>Admin</Sidebar.GroupLabel>
 					<Sidebar.GroupContent>
 						<Sidebar.Menu>
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton
+									isActive={navActive("/admin/events")}
+									tooltipContent="Manage Events"
+								>
+									{#snippet child({ props })}
+										<a href="/admin/events" {...props}>
+											<CalendarDays />
+											<span>Manage Events</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton
 									isActive={navActive("/admin/stats", true)}

@@ -2,7 +2,6 @@ import type { PageServerLoad, Actions } from "./$types";
 import { validateInvitationToken, markInvitationTokenAsUsed } from "$lib/server/invitations";
 import { getUniqueUsernameForNewUser } from "$lib/server/username";
 import { error, redirect, fail } from "@sveltejs/kit";
-import { generateSessionToken, createSession, setSessionTokenCookie } from "$lib/server/auth";
 import { hash } from "argon2";
 import { db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
@@ -16,13 +15,13 @@ export const load: PageServerLoad = async ({ params, locals }) => {
 	const { token } = params;
 
 	if (!token) {
-		error(404, "Invalid invitation link");
+		throw error(404, "Invalid invitation link");
 	}
 
 	const { valid, invitation } = await validateInvitationToken(token);
 
 	if (!valid || !invitation) {
-		error(404, "Invalid or expired invitation link");
+		throw error(404, "Invalid or expired invitation link");
 	}
 
 	return {
@@ -45,25 +44,25 @@ export const actions: Actions = {
 			return fail(400, { message: "Invalid invitation token" });
 		}
 
-		// Validate token again
-		const { valid } = await validateInvitationToken(token);
-		if (!valid) {
+		const { valid, invitation } = await validateInvitationToken(token);
+		if (!valid || !invitation) {
 			return fail(400, { message: "Invalid or expired invitation link" });
 		}
 
 		const formData = await request.formData();
-		const name = formData.get("name") as string;
-		const email = formData.get("email") as string;
-		const password = formData.get("password") as string;
-		const confirmPassword = formData.get("confirmPassword") as string;
-		const phone = formData.get("phone") as string;
-		const address = formData.get("address") as string;
-		const bio = formData.get("bio") as string;
-		const hobbies = formData.get("hobbies") as string;
-		const likes = formData.get("likes") as string;
-		const sponsor = formData.get("sponsor") as string;
+		const name = String(formData.get("name") ?? "").trim();
+		const email = String(formData.get("email") ?? "")
+			.trim()
+			.toLowerCase();
+		const password = String(formData.get("password") ?? "");
+		const confirmPassword = String(formData.get("confirmPassword") ?? "");
+		const phone = String(formData.get("phone") ?? "").trim();
+		const address = String(formData.get("address") ?? "").trim();
+		const bio = String(formData.get("bio") ?? "").trim();
+		const hobbies = String(formData.get("hobbies") ?? "").trim();
+		const likes = String(formData.get("likes") ?? "").trim();
+		const sponsorName = invitation.inviter_name?.trim() || null;
 
-		// Validation
 		if (!name || name.length < 2) {
 			return fail(400, { message: "Name must be at least 2 characters long" });
 		}
@@ -81,7 +80,6 @@ export const actions: Actions = {
 		}
 
 		try {
-			// Check if email already exists
 			const [existingUser] = await db
 				.select()
 				.from(table.users)
@@ -91,13 +89,9 @@ export const actions: Actions = {
 				return fail(400, { message: "Email address is already registered" });
 			}
 
-			// Hash password
 			const passwordHash = await hash(password);
-
-			// Assign username (same format as rest: last name base, unique suffix)
 			const username = await getUniqueUsernameForNewUser(name);
 
-			// Create user
 			const userId = crypto.randomUUID();
 			const newUser = {
 				id: userId,
@@ -114,29 +108,28 @@ export const actions: Actions = {
 				likes: likes || null,
 				mbr: null,
 				msd: null,
-				sponsor: sponsor || null,
+				sponsor: sponsorName,
 				dops: false,
 				dops_date: null,
+				meeting_1_date: null,
+				meeting_2_date: null,
+				meeting_3_date: null,
 				test_passed: null,
 				created_at: new Date(),
 				updated_at: new Date()
 			};
 
 			await db.insert(table.users).values(newUser);
-
-			// Mark invitation as used
 			await markInvitationTokenAsUsed(token, userId);
-
-			// Create session and log user in
-			const sessionToken = generateSessionToken();
-			const session = await createSession(sessionToken, userId);
-			setSessionTokenCookie(event, sessionToken, session.expires_at);
 		} catch (error) {
 			console.error("Registration error:", error);
 			return fail(500, { message: "Failed to create account. Please try again." });
 		}
 
-		// Redirect after successful registration (outside try-catch)
-		redirect(302, "/dashboard");
+		const loginParams = new URLSearchParams({
+			registered: "1",
+			email
+		});
+		throw redirect(302, `/login?${loginParams.toString()}`);
 	}
 };

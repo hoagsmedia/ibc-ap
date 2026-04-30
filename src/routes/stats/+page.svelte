@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { page } from "$app/state";
+	import { canAccessMemberDirectoryAndStats } from "$lib/ibc-test";
+	import * as Alert from "$lib/components/ui/alert";
 	import { cn } from "$lib/utils.js";
 	import * as Card from "$lib/components/ui/card/index.js";
 	import * as Table from "$lib/components/ui/table/index.js";
@@ -15,6 +17,7 @@
 	const { data }: { data: PageData } = $props();
 
 	const user = $derived(page.data.user);
+	const isRestrictedProspect = $derived(Boolean(user && !canAccessMemberDirectoryAndStats(user)));
 
 	function fmtNum(n: number, digits = 1) {
 		if (!Number.isFinite(n)) return "—";
@@ -51,6 +54,17 @@
 	/>
 </svelte:head>
 
+{#if isRestrictedProspect}
+	<section class={cn("w-full space-y-6 py-10 md:py-14")}>
+		<Alert.Root variant="destructive" class="max-w-3xl">
+			<Alert.Title>Stats unlock after your first 3 meetings</Alert.Title>
+			<Alert.Description>
+				Save three beer club meeting dates on your dashboard first. Then you can take the IBC test and access member-only stats.
+			</Alert.Description>
+		</Alert.Root>
+		<Button href="/dashboard">Back to dashboard</Button>
+	</section>
+{:else}
 <section class={cn("w-full space-y-10 py-10 md:py-14")}>
 	<header class="space-y-4">
 		<h1 class="text-foreground text-3xl font-bold tracking-tight md:text-4xl">IBC Keg Credits &amp; Consumption</h1>
@@ -298,3 +312,4 @@
 		</Card.Content>
 	</Card.Root>
 </section>
+{/if}

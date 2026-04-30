@@ -1,32 +1,39 @@
-import { hash, verify } from 'argon2';
-import { encodeBase32LowerCase } from '@oslojs/encoding';
-import { fail, redirect } from '@sveltejs/kit';
-import { eq, or } from 'drizzle-orm';
-import * as auth from '$lib/server/auth';
-import { db } from '$lib/server/db';
-import * as table from '$lib/server/db/schema';
-import type { Actions, PageServerLoad } from './$types';
+import { hash, verify } from "argon2";
+import { encodeBase32LowerCase } from "@oslojs/encoding";
+import { fail, redirect } from "@sveltejs/kit";
+import { eq, or } from "drizzle-orm";
+import * as auth from "$lib/server/auth";
+import { db } from "$lib/server/db";
+import * as table from "$lib/server/db/schema";
+import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
 	if (event.locals.user) {
-		return redirect(302, '/dashboard');
+		return redirect(302, "/dashboard");
 	}
-	return {};
+
+	const registered = event.url.searchParams.get("registered") === "1";
+	const email = event.url.searchParams.get("email")?.trim() ?? "";
+
+	return {
+		registered,
+		email
+	};
 };
 
 export const actions: Actions = {
 	login: async (event) => {
 		const formData = await event.request.formData();
-		const emailOrUsername = formData.get('email');
-		const password = formData.get('password');
+		const emailOrUsername = formData.get("email");
+		const password = formData.get("password");
 
 		if (!validateEmailOrUsername(emailOrUsername)) {
 			return fail(400, {
-				message: 'Invalid email or username'
+				message: "Invalid email or username"
 			});
 		}
 		if (!validatePassword(password)) {
-			return fail(400, { message: 'Invalid password (min 6, max 255 characters)' });
+			return fail(400, { message: "Invalid password (min 6, max 255 characters)" });
 		}
 
 		const results = await db
@@ -41,7 +48,7 @@ export const actions: Actions = {
 
 		const existingUser = results.at(0);
 		if (!existingUser) {
-			return fail(400, { message: 'Incorrect email or password' });
+			return fail(400, { message: "Incorrect email or password" });
 		}
 
 		// Handle users with dev-hash (first-time login)
@@ -66,13 +73,13 @@ export const actions: Actions = {
 		// }
 
 		// Argon2 hashes are in PHC format and must start with $
-		const hash = existingUser.password_hash?.trim() ?? '';
-		if (!hash.startsWith('$')) {
-			return fail(400, { message: 'Incorrect email or password' });
+		const hash = existingUser.password_hash?.trim() ?? "";
+		if (!hash.startsWith("$")) {
+			return fail(400, { message: "Incorrect email or password" });
 		}
 		const validPassword = await verify(hash, password);
 		if (!validPassword) {
-			return fail(400, { message: 'Incorrect email or password' });
+			return fail(400, { message: "Incorrect email or password" });
 		}
 
 		const sessionToken = auth.generateSessionToken();
@@ -81,23 +88,22 @@ export const actions: Actions = {
 
 		auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
 
-		// Use the standard SvelteKit redirect with explicit options
-		throw redirect(302, '/dashboard');
+		throw redirect(302, "/dashboard");
 	},
 	register: async (event) => {
 		const formData = await event.request.formData();
-		const name = formData.get('name');
-		const email = formData.get('email');
-		const password = formData.get('password');
+		const name = formData.get("name");
+		const email = formData.get("email");
+		const password = formData.get("password");
 
 		if (!validateName(name)) {
-			return fail(400, { message: 'Invalid name (min 2, max 100 characters)' });
+			return fail(400, { message: "Invalid name (min 2, max 100 characters)" });
 		}
 		if (!validateEmail(email)) {
-			return fail(400, { message: 'Invalid email address' });
+			return fail(400, { message: "Invalid email address" });
 		}
 		if (!validatePassword(password)) {
-			return fail(400, { message: 'Invalid password (min 6, max 24 characters)' });
+			return fail(400, { message: "Invalid password (min 6, max 24 characters)" });
 		}
 
 		const userId = generateUserId();
@@ -109,16 +115,16 @@ export const actions: Actions = {
 				name: name as string,
 				email: email as string,
 				password_hash,
-				role: 'guest'
+				role: "guest"
 			});
 
 			const sessionToken = auth.generateSessionToken();
 			const session = await auth.createSession(sessionToken, userId);
 			auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
 		} catch {
-			return fail(500, { message: 'An error has occurred' });
+			return fail(500, { message: "An error has occurred" });
 		}
-		return redirect(302, '/dashboard');
+		return redirect(302, "/dashboard");
 	}
 };
 
@@ -130,12 +136,12 @@ function generateUserId() {
 }
 
 function validateName(name: unknown): name is string {
-	return typeof name === 'string' && name.length >= 2 && name.length <= 100;
+	return typeof name === "string" && name.length >= 2 && name.length <= 100;
 }
 
 function validateEmail(email: unknown): email is string {
 	return (
-		typeof email === 'string' &&
+		typeof email === "string" &&
 		email.length >= 3 &&
 		email.length <= 255 &&
 		/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
@@ -143,12 +149,12 @@ function validateEmail(email: unknown): email is string {
 }
 
 function validateEmailOrUsername(input: unknown): input is string {
-	if (typeof input !== 'string' || input.length < 1 || input.length > 255) return false;
-	if (input.includes('@')) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
+	if (typeof input !== "string" || input.length < 1 || input.length > 255) return false;
+	if (input.includes("@")) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(input);
 	// Username: alphanumeric, underscore, 1–64 chars
 	return /^[a-zA-Z0-9_]{1,64}$/.test(input.trim());
 }
 
 function validatePassword(password: unknown): password is string {
-	return typeof password === 'string' && password.length >= 6 && password.length <= 24;
+	return typeof password === "string" && password.length >= 6 && password.length <= 24;
 }

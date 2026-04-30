@@ -1,5 +1,6 @@
 import { dev } from "$app/environment";
 import { error, redirect } from "@sveltejs/kit";
+import { canAccessMemberDirectoryAndStats } from "$lib/ibc-test";
 import { db } from "$lib/server/db";
 import { users } from "$lib/server/db/schema";
 import { ibcDebugEnabled } from "$lib/server/ibc-debug";
@@ -9,6 +10,9 @@ import type { PageServerLoad } from "./$types";
 export const load: PageServerLoad = async ({ locals, url }) => {
 	if (!locals.user) {
 		throw redirect(302, "/login");
+	}
+	if (!canAccessMemberDirectoryAndStats(locals.user)) {
+		throw redirect(302, "/dashboard?restricted=directory");
 	}
 
 	const page = Number(url.searchParams.get("page") || "1");
