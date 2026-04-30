@@ -5,6 +5,7 @@ import { z } from 'zod';
 import { db } from '$lib/server/db/index.js';
 import { events } from '$lib/server/db/schema.js';
 import type { PageServerLoad, Actions } from './$types.js';
+import { isAdmin, requireAdmin, requireUser } from '$lib/server/authz';
 
 function generateId(): string {
 	return Date.now().toString(36) + Math.random().toString(36).substr(2, 9);
@@ -23,9 +24,7 @@ const createEventSchema = z.object({
 });
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user || locals.user.role !== 'admin') {
-		throw redirect(302, '/');
-	}
+	requireAdmin(locals);
 
 	return {
 		form: await superValidate(zod(createEventSchema))
@@ -34,7 +33,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
 	default: async ({ request, locals }) => {
-		if (!locals.user || locals.user.role !== 'admin') {
+		const user = requireUser(locals);
+		if (!isAdmin(user)) {
 			return fail(403, { message: 'Forbidden' });
 		}
 
@@ -58,7 +58,7 @@ export const actions: Actions = {
 				is_published: form.data.is_published ? 1 : 0,
 				members_only: form.data.members_only,
 				img: form.data.img || null,
-				created_by_id: locals.user.id
+				created_by_id: user.id
 			});
 		} catch (error) {
 			console.error('Error creating event:', error);

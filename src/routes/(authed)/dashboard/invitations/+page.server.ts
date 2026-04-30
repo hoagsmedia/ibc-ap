@@ -1,21 +1,16 @@
-import { fail, redirect } from "@sveltejs/kit";
-import { canAccessMemberDirectoryAndStats } from "$lib/ibc-test";
+import { fail } from "@sveltejs/kit";
 import type { Actions, PageServerLoad } from "./$types";
 import { deleteExpiredInvitationByUser, getInvitationsByUser } from "$lib/server/invitations";
 import { deleteExpiredInvitationSchema } from "./delete-expired-schema";
+import { requireMemberDirectoryAccess } from "$lib/server/authz";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	if (!locals.user) {
-		throw redirect(302, "/login");
-	}
-	if (!canAccessMemberDirectoryAndStats(locals.user)) {
-		throw redirect(302, "/dashboard?restricted=invitations");
-	}
+	const user = requireMemberDirectoryAccess(locals, { forbiddenPath: "/dashboard?restricted=invitations" });
 
-	const invitations = await getInvitationsByUser(locals.user.id);
+	const invitations = await getInvitationsByUser(user.id);
 
 	return {
-		user: locals.user,
+		user,
 		invitations,
 		baseUrl: url.origin
 	};
@@ -23,12 +18,9 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 export const actions: Actions = {
 	deleteExpired: async ({ locals, request }) => {
-		if (!locals.user) {
-			throw redirect(302, "/login");
-		}
-		if (!canAccessMemberDirectoryAndStats(locals.user)) {
-			throw redirect(302, "/dashboard?restricted=invitations");
-		}
+		const user = requireMemberDirectoryAccess(locals, {
+			forbiddenPath: "/dashboard?restricted=invitations"
+		});
 
 		const formData = await request.formData();
 		const parsed = deleteExpiredInvitationSchema.safeParse({
@@ -39,7 +31,7 @@ export const actions: Actions = {
 		}
 		const { token } = parsed.data;
 
-		const deleted = await deleteExpiredInvitationByUser(locals.user.id, token);
+		const deleted = await deleteExpiredInvitationByUser(user.id, token);
 		if (!deleted) {
 			return fail(400, { message: "Only unused expired invites can be deleted." });
 		}
