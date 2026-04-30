@@ -1,13 +1,12 @@
-import { redirect, fail } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import { db } from '$lib/server/db/index.js';
 import { events } from '$lib/server/db/schema.js';
 import { desc, eq } from 'drizzle-orm';
 import type { PageServerLoad, Actions } from './$types.js';
+import { isAdmin, requireAdmin, requireUser } from '$lib/server/authz';
 
 export const load: PageServerLoad = async ({ locals }) => {
-	if (!locals.user || locals.user.role !== 'admin') {
-		throw redirect(302, '/');
-	}
+	requireAdmin(locals);
 
 	const allEvents = await db.select().from(events).orderBy(desc(events.created_at));
 
@@ -18,7 +17,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 
 export const actions: Actions = {
 	delete: async ({ request, locals }) => {
-		if (!locals.user || locals.user.role !== 'admin') {
+		const user = requireUser(locals);
+		if (!isAdmin(user)) {
 			return fail(403, { message: 'Forbidden' });
 		}
 
@@ -39,7 +39,8 @@ export const actions: Actions = {
 	},
 
 	togglePublish: async ({ request, locals }) => {
-		if (!locals.user || locals.user.role !== 'admin') {
+		const user = requireUser(locals);
+		if (!isAdmin(user)) {
 			return fail(403, { message: 'Forbidden' });
 		}
 
