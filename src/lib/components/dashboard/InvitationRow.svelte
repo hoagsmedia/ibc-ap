@@ -50,7 +50,7 @@
 		>
 			<div class="flex items-center gap-2 truncate">
 				<span class="truncate">{invitation.invite_name?.trim() || "—"}</span>
-				{#if invitation.prospectMeetingCount !== null}
+				<div class="flex w-6 shrink-0 justify-center">
 					<Tooltip.Root>
 						<Tooltip.Trigger>
 							{#snippet child({ props })}
@@ -63,7 +63,7 @@
 							<p>Meetings logged</p>
 						</Tooltip.Content>
 					</Tooltip.Root>
-				{/if}
+				</div>
 			</div>
 		</div>
 		<div class="flex shrink-0 items-center">

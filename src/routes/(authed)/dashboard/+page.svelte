@@ -50,6 +50,7 @@
 	} from "$lib/dashboard-hub-classes";
 	import { formatDate } from "$lib/utils";
 	import type { DateValue } from "@internationalized/date";
+	import { toast } from "svelte-sonner";
 
 	let { data }: { data: PageData } = $props();
 
@@ -62,6 +63,7 @@
 	let meeting1Date = $state(data.prospectGate?.meetingDates?.[0] ?? "");
 	let meeting2Date = $state(data.prospectGate?.meetingDates?.[1] ?? "");
 	let meeting3Date = $state(data.prospectGate?.meetingDates?.[2] ?? "");
+	const persistedMeetingDates = $derived(data.prospectGate?.meetingDates ?? ["", "", ""]);
 	let activeMeetingSlot = $state(
 		data.prospectGate
 			? Math.min(data.prospectGate.meetingCount + 1, data.prospectGate.meetingsRequired)
@@ -98,6 +100,33 @@
 		return `${year}-${month}-${day}`;
 	}
 
+	function isMeetingSaved(slot: number) {
+		return Boolean(persistedMeetingDates[slot - 1]);
+	}
+
+	$effect(() => {
+		if (!data.prospectGate) return;
+		meeting1Date = persistedMeetingDates[0] ?? "";
+		meeting2Date = persistedMeetingDates[1] ?? "";
+		meeting3Date = persistedMeetingDates[2] ?? "";
+	});
+
+	function enhanceProspectMeetingAction() {
+		return async ({
+			result,
+			update
+		}: {
+			result: { type: string; data?: Record<string, unknown> };
+			update: () => Promise<void>;
+		}) => {
+			await update();
+			if (result.type === "failure") {
+				const msg = result.data?.message;
+				toast.error(typeof msg === "string" ? msg : "Could not save meeting date.");
+			}
+		};
+	}
+
 	const engagementPct = $derived(
 		data.user && data.clubStats.totalMembers > 0
 			? Math.round((data.clubStats.activeMembers / data.clubStats.totalMembers) * 100)
@@ -127,9 +156,27 @@
 		data.prospectGate ? data.prospectGate.meetingsRequired - data.prospectGate.meetingCount : 0
 	);
 	const meetingSlots = $derived([
-		{ slot: 1, label: "Meeting 1", value: meeting1Date },
-		{ slot: 2, label: "Meeting 2", value: meeting2Date },
-		{ slot: 3, label: "Meeting 3", value: meeting3Date }
+		{
+			slot: 1,
+			label: "Meeting 1",
+			value: meeting1Date,
+			saved: isMeetingSaved(1),
+			dirty: meeting1Date !== (persistedMeetingDates[0] ?? "")
+		},
+		{
+			slot: 2,
+			label: "Meeting 2",
+			value: meeting2Date,
+			saved: isMeetingSaved(2),
+			dirty: meeting2Date !== (persistedMeetingDates[1] ?? "")
+		},
+		{
+			slot: 3,
+			label: "Meeting 3",
+			value: meeting3Date,
+			saved: isMeetingSaved(3),
+			dirty: meeting3Date !== (persistedMeetingDates[2] ?? "")
+		}
 	]);
 	const activeMeeting = $derived(
 		meetingSlots.find((meeting) => meeting.slot === activeMeetingSlot) ?? meetingSlots[0]
@@ -876,7 +923,7 @@
 							>
 								<p class="font-medium">{meeting.label}</p>
 								<p class="text-muted-foreground text-xs">
-									{meeting.value ? "Saved" : "Not saved"}
+									{meeting.dirty ? "Not saved" : meeting.saved ? "Saved" : "Not saved"}
 								</p>
 							</button>
 						{/each}
@@ -889,11 +936,16 @@
 									Choose a date, then click Save date.
 								</p>
 							</div>
-							{#if activeMeeting.value}
+							{#if activeMeeting.saved && !activeMeeting.dirty}
 								<Badge variant="secondary">Saved</Badge>
 							{/if}
 						</div>
-						<form method="POST" action="?/saveProspectMeetingDate" class="space-y-3">
+						<form
+							method="POST"
+							action="?/saveProspectMeetingDate"
+							use:enhance={enhanceProspectMeetingAction}
+							class="space-y-3"
+						>
 							<input type="hidden" name="slot" value={activeMeeting.slot} />
 							{#if activeMeeting.slot === 1}
 								<DatePickerField
@@ -923,7 +975,7 @@
 							{/if}
 							<div class="flex flex-wrap gap-2">
 								<Button type="submit" size="sm">Save date</Button>
-								{#if activeMeeting.value}
+								{#if isMeetingSaved(activeMeeting.slot)}
 									<button
 										class="text-muted-foreground hover:text-foreground text-sm"
 										type="submit"
