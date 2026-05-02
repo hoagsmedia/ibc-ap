@@ -106,7 +106,10 @@
 	}
 
 	$effect(() => {
-		if (!data.prospectGate) return;
+		if (!data.prospectGate) {
+			prospectProgressDialogOpen = false;
+			return;
+		}
 		meeting1Date = persistedMeetingDates[0] ?? "";
 		meeting2Date = persistedMeetingDates[1] ?? "";
 		meeting3Date = persistedMeetingDates[2] ?? "";
