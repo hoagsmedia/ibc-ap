@@ -5,7 +5,7 @@
 	import MemberHubPageHeader from "$lib/components/MemberHubPageHeader.svelte";
 	import { Badge } from "$lib/components/ui/badge";
 	import * as DropdownMenu from "$lib/components/ui/dropdown-menu";
-	import ProspectMeetingBadge from "$lib/components/dashboard/ProspectMeetingBadge.svelte";
+	import InvitationProgressBadge from "$lib/components/dashboard/InvitationProgressBadge.svelte";
 	import { formatDateTime } from "$lib/utils";
 	import { CheckIcon, ClockIcon, Trash2Icon } from "@lucide/svelte/icons";
 	import { toast } from "svelte-sonner";
@@ -34,6 +34,28 @@
 		if (typeof document === "undefined") return;
 		const form = document.getElementById(`delete-expired-${token}`) as HTMLFormElement | null;
 		form?.requestSubmit();
+	}
+
+	type InvitationRow = PageData["invitations"][number];
+
+	/**
+	 * Single status badge per row.
+	 * Expired (delete) only when the window passed and nobody joined via this token (`used_by_id`).
+	 */
+	function inviteRowKind(
+		invitation: InvitationRow,
+		isExpired: boolean
+	): "active" | "used" | "expired" | "inactive" {
+		switch (true) {
+			case Boolean(invitation.used_by_id):
+				return "used";
+			case !invitation.used_at && !isExpired:
+				return "active";
+			case isExpired && !invitation.used_by_id:
+				return "expired";
+			default:
+				return "inactive";
+		}
 	}
 </script>
 
@@ -67,10 +89,10 @@
 				<ul class="flex flex-col overflow-hidden rounded-b-lg border border-t-0" role="list">
 					{#each data.invitations as invitation (invitation.token)}
 						{@const inviteUrl = `${data.baseUrl}/invite/${invitation.token}`}
-						{@const canCopy =
-							!invitation.used_at && Date.now() < new Date(invitation.expires_at).getTime()}
+						{@const isExpired = Date.now() >= new Date(invitation.expires_at).getTime()}
+						{@const rowKind = inviteRowKind(invitation, isExpired)}
 						<li class="border-border/60 list-none border-b p-0 last:border-b-0">
-							{#if canCopy}
+							{#if rowKind === "active"}
 								<button
 									type="button"
 									class={`hover:bg-muted/40 font-inherit focus-visible:ring-ring flex min-h-11 w-full flex-row flex-nowrap items-center gap-0 border-0 bg-transparent px-0 py-0 text-left outline-none focus-visible:ring-2 ${inviteTableDesktopGrid}`}
@@ -82,7 +104,11 @@
 										<span class="truncate">{invitation.invite_name?.trim() || "—"}</span>
 									</div>
 									<div class={`${inviteProgressCellClass} flex items-center justify-center`}>
-										<ProspectMeetingBadge count={invitation.prospectMeetingCount} />
+										<InvitationProgressBadge
+											usedById={invitation.used_by_id}
+											redeemerMbr={invitation.redeemerMbr}
+											prospectMeetingCount={invitation.prospectMeetingCount}
+										/>
 									</div>
 									<div class={inviteMetaCellClass}>
 										<span class="shrink-0 font-mono tabular-nums"
@@ -99,7 +125,7 @@
 										</Badge>
 									</div>
 								</button>
-							{:else if invitation.used_at && invitation.used_by_id}
+							{:else if rowKind === "used"}
 								<a
 									href={`/members/${invitation.used_by_id}?back=invitations`}
 									class={`hover:bg-muted/40 focus-visible:ring-ring flex min-h-11 w-full flex-row flex-nowrap items-center gap-0 text-left opacity-90 outline-none focus-visible:ring-2 ${inviteTableDesktopGrid}`}
@@ -109,7 +135,11 @@
 										<span class="truncate">{invitation.invite_name?.trim() || "—"}</span>
 									</div>
 									<div class={`${inviteProgressCellClass} flex items-center justify-center`}>
-										<ProspectMeetingBadge count={invitation.prospectMeetingCount} />
+										<InvitationProgressBadge
+											usedById={invitation.used_by_id}
+											redeemerMbr={invitation.redeemerMbr}
+											prospectMeetingCount={invitation.prospectMeetingCount}
+										/>
 									</div>
 									<div class={inviteMetaCellClass}>
 										<span class="shrink-0 font-mono tabular-nums"
@@ -126,6 +156,32 @@
 										</Badge>
 									</div>
 								</a>
+							{:else if rowKind === "inactive"}
+								<div
+									class={`flex min-h-11 flex-row flex-nowrap items-center gap-0 opacity-90 ${inviteTableDesktopGrid}`}
+								>
+									<div class={inviteNameCellClass}>
+										<span class="truncate">{invitation.invite_name?.trim() || "—"}</span>
+									</div>
+									<div class={`${inviteProgressCellClass} flex items-center justify-center`}>
+										<InvitationProgressBadge
+											usedById={invitation.used_by_id}
+											redeemerMbr={invitation.redeemerMbr}
+											prospectMeetingCount={invitation.prospectMeetingCount}
+										/>
+									</div>
+									<div class={inviteMetaCellClass}>
+										<span class="shrink-0 font-mono tabular-nums"
+											>{invitation.token.slice(0, 8)}…</span
+										>
+										<span class="min-w-0 truncate"
+											>Created {formatDateTime(invitation.created_at)}</span
+										>
+									</div>
+									<div class="w-[7.75rem] shrink-0 px-3 py-2">
+										<Badge variant="outline" class={inviteBadgeClass}>Unavailable</Badge>
+									</div>
+								</div>
 							{:else}
 								<div
 									class={`flex min-h-11 flex-row flex-nowrap items-center gap-0 opacity-90 ${inviteTableDesktopGrid}`}
@@ -134,7 +190,11 @@
 										<span class="truncate">{invitation.invite_name?.trim() || "—"}</span>
 									</div>
 									<div class={`${inviteProgressCellClass} flex items-center justify-center`}>
-										<ProspectMeetingBadge count={invitation.prospectMeetingCount} />
+										<InvitationProgressBadge
+											usedById={invitation.used_by_id}
+											redeemerMbr={invitation.redeemerMbr}
+											prospectMeetingCount={invitation.prospectMeetingCount}
+										/>
 									</div>
 									<div class={inviteMetaCellClass}>
 										<span class="shrink-0 font-mono tabular-nums"

@@ -4,7 +4,7 @@
 	import { Separator } from "$lib/components/ui/separator";
 	import { formatDateTime } from "$lib/utils";
 	import CustomCopy from "$lib/components/Custom-Copy.svelte";
-	import ProspectMeetingBadge from "$lib/components/dashboard/ProspectMeetingBadge.svelte";
+	import InvitationProgressBadge from "$lib/components/dashboard/InvitationProgressBadge.svelte";
 	import { CheckIcon, ClockIcon } from "@lucide/svelte/icons";
 
 	type DashboardInvitation = {
@@ -13,7 +13,9 @@
 		created_at: Date;
 		expires_at: Date;
 		used_at: Date | null;
+		used_by_id: string | null;
 		prospectMeetingCount: number | null;
+		redeemerMbr: number | null;
 	};
 
 	let {
@@ -55,12 +57,18 @@
 						<Tooltip.Trigger>
 							{#snippet child({ props })}
 								<span {...props}>
-									<ProspectMeetingBadge count={invitation.prospectMeetingCount} />
+									<InvitationProgressBadge
+										usedById={invitation.used_by_id}
+										redeemerMbr={invitation.redeemerMbr}
+										prospectMeetingCount={invitation.prospectMeetingCount}
+									/>
 								</span>
 							{/snippet}
 						</Tooltip.Trigger>
 						<Tooltip.Content side="top" align="center" sideOffset={6}>
-							<p>Meetings logged</p>
+							<p>
+								{invitation.redeemerMbr != null ? "Joined as member" : "Meetings logged"}
+							</p>
 						</Tooltip.Content>
 					</Tooltip.Root>
 				</div>
