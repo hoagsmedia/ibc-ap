@@ -102,7 +102,7 @@
 					</Badge>
 				{/if}
 			</div>
-			<div class="flex size-8 shrink-0 items-center justify-center" aria-hidden={!canCopyInvite}>
+			<div class="flex size-8 shrink-0 items-center justify-center">
 				{#if canCopyInvite}
 					<CustomCopy
 						text={inviteUrl}
