@@ -205,6 +205,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 				.select({
 					id: events.id,
 					title: events.title,
+					description: events.description,
 					event_date: events.event_date,
 					location: events.location,
 					members_only: events.members_only

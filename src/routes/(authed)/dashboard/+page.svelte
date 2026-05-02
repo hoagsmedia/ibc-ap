@@ -12,7 +12,6 @@
 	import { Label } from "$lib/components/ui/label";
 	import { Skeleton } from "$lib/components/ui/skeleton/index.js";
 	import * as Tooltip from "$lib/components/ui/tooltip/index.js";
-	import { Separator } from "$lib/components/ui/separator";
 	import DatePickerField from "$lib/components/DatePickerField.svelte";
 	import InvitationRow from "$lib/components/dashboard/InvitationRow.svelte";
 	import QuickActionLink from "$lib/components/dashboard/QuickActionLink.svelte";
@@ -44,6 +43,7 @@
 		hubHeroScrimLrClass,
 		hubHeroScrimTbClass,
 		hubTableColSepClass,
+		upcomingEventsRowGridClass,
 		inviteCopyBtnClass,
 		inviteRowHighlightClass,
 		inviteRowIdleClass,
@@ -1070,60 +1070,51 @@
 							<ul
 								class="flex flex-col overflow-hidden"
 								role="list"
-								aria-label="Upcoming events: title, date, location, and access"
+								aria-label="Upcoming events: title, date, description or location, and access"
 							>
 								{#each data.upcomingEvents as ev (ev.id)}
 									<li class="{inviteRowShellClass} list-none p-0">
-										<div
-											class="flex min-h-10 w-full min-w-0 flex-nowrap items-center {inviteRowIdleClass}"
-										>
+										<div class="{upcomingEventsRowGridClass} {inviteRowIdleClass}">
 											<div
-												class="dark:text-foreground flex max-w-[9rem] min-w-0 flex-1 items-center px-3 py-2 text-xs font-medium text-white/92 sm:max-w-[11rem] sm:px-4"
+												class="dark:text-foreground min-w-0 px-3 py-2 text-xs font-medium text-white/92 sm:px-4"
 											>
 												<a
 													href="/dashboard/events"
-													class="dark:hover:text-primary truncate transition-colors hover:text-white/95"
+													class="dark:hover:text-primary block truncate transition-colors hover:text-white/95"
 												>
 													{ev.title}
 												</a>
 											</div>
-											<div class="flex min-w-0 items-center">
-												<Separator orientation="vertical" class={hubTableColSepClass} />
-												<div
-													class="dark:text-muted-foreground flex min-w-0 items-center px-3 py-2 text-xs text-white/88 tabular-nums sm:px-4"
-												>
+											<div
+												class="dark:text-muted-foreground w-full min-w-0 px-3 py-2 text-xs text-white/88 tabular-nums sm:px-4"
+											>
+												<span class="block truncate text-left">
 													{ev.event_date ? formatDate(new Date(ev.event_date)) : "—"}
-												</div>
+												</span>
 											</div>
-											<div class="hidden min-w-0 items-center sm:flex">
-												<Separator orientation="vertical" class={hubTableColSepClass} />
-												<div
-													class="dark:text-muted-foreground flex max-w-[10rem] min-w-0 items-center px-3 py-2 text-xs text-white/85 sm:px-4"
-												>
-													<span class="truncate">{ev.location ?? "—"}</span>
-												</div>
+											<div
+												class="dark:text-muted-foreground hidden min-w-0 px-3 py-2 text-xs text-white/85 sm:block sm:px-4"
+											>
+												<span class="block truncate">
+													{ev.description?.trim() || ev.location?.trim() || "—"}
+												</span>
 											</div>
-											<div class="flex min-w-0 flex-1 items-center justify-end">
-												<Separator orientation="vertical" class={hubTableColSepClass} />
-												<div
-													class="flex min-h-10 min-w-0 flex-1 items-center justify-end px-2 py-2 sm:px-3"
-												>
-													{#if ev.members_only}
-														<Badge
-															variant="secondary"
-															class="shrink-0 rounded-sm px-2 py-0.5 text-[10px] whitespace-nowrap"
-														>
-															Members
-														</Badge>
-													{:else}
-														<Badge
-															variant="outline"
-															class="dark:border-border dark:text-foreground shrink-0 rounded-sm border-white/40 bg-black/15 px-2 py-0.5 text-[10px] whitespace-nowrap text-white/90 dark:bg-transparent"
-														>
-															Public
-														</Badge>
-													{/if}
-												</div>
+											<div class="flex min-h-10 items-center justify-center px-2 py-2 sm:px-3">
+												{#if ev.members_only}
+													<Badge
+														variant="secondary"
+														class="w-full max-w-[5.25rem] justify-center rounded-sm px-2 py-0.5 text-center text-[10px] whitespace-nowrap"
+													>
+														Members
+													</Badge>
+												{:else}
+													<Badge
+														variant="outline"
+														class="dark:border-border dark:text-foreground w-full max-w-[5.25rem] justify-center rounded-sm border-white/40 bg-black/15 px-2 py-0.5 text-center text-[10px] whitespace-nowrap text-white/90 dark:bg-transparent"
+													>
+														Public
+													</Badge>
+												{/if}
 											</div>
 										</div>
 									</li>

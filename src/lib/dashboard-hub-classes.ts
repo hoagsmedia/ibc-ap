@@ -11,14 +11,20 @@ export const hubHeroActionBtnClass =
 export const hubTableColSepClass =
 	"!h-5 w-px shrink-0 bg-white/25 data-[orientation=vertical]:!h-5 dark:bg-border";
 
-export const inviteRowIdleClass =
-	"bg-transparent hover:bg-white/[0.04] dark:hover:bg-white/[0.05]";
+export const inviteRowIdleClass = "bg-transparent hover:bg-white/[0.04] dark:hover:bg-white/[0.05]";
 
 export const inviteRowHighlightClass =
 	"bg-emerald-500/[0.07] shadow-[inset_0_0_0_1px_rgba(52,211,153,0.22)] hover:bg-emerald-500/[0.1] dark:bg-emerald-500/[0.08] dark:shadow-[inset_0_0_0_1px_rgba(16,185,129,0.2)] dark:hover:bg-emerald-500/[0.11]";
 
 export const inviteRowShellClass =
 	"flex min-h-10 flex-nowrap items-center border-b border-white/10 transition-colors last:border-b-0 dark:border-border/35";
+
+/**
+ * Upcoming events table row: fixed columns so cells align (title flexes most; status fixed for “Public” / “Members”).
+ * Below `sm`, description column is omitted (hidden); only title, date, and access show.
+ */
+export const upcomingEventsRowGridClass =
+	"grid w-full min-w-0 min-h-10 max-sm:grid-cols-[minmax(0,1fr)_9rem_5.5rem] sm:grid-cols-[minmax(0,1fr)_9rem_minmax(11rem,15rem)_5.5rem] items-center divide-x divide-white/15 dark:divide-border/40";
 
 export const inviteCopyBtnClass =
 	"min-h-8 min-w-8 shrink-0 border-white/35 bg-black/35 text-white shadow-sm hover:bg-black/50 hover:text-white";
