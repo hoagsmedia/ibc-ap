@@ -1095,9 +1095,9 @@
 												</a>
 											</div>
 											<div
-												class="dark:text-muted-foreground w-full min-w-0 px-3 py-2 text-xs text-white/88 tabular-nums sm:px-4"
+												class="dark:text-muted-foreground flex w-full min-w-0 items-center justify-center px-2 py-2 text-xs text-white/88 tabular-nums sm:px-3"
 											>
-												<span class="block truncate text-left">
+												<span class="block w-full truncate text-center">
 													{ev.event_date ? formatDate(new Date(ev.event_date)) : "—"}
 												</span>
 											</div>

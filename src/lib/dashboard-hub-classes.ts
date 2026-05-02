@@ -21,10 +21,10 @@ export const inviteRowShellClass =
 
 /**
  * Upcoming events table row: fixed columns so cells align (title flexes most; status fixed for “Public” / “Members”).
- * Below `sm`, description column is omitted (hidden); only title, date, and access show.
+ * Date track ~`DD-MMM-YY` (narrow); below `sm`, description column is omitted (hidden).
  */
 export const upcomingEventsRowGridClass =
-	"grid w-full min-w-0 min-h-10 max-sm:grid-cols-[minmax(0,1fr)_9rem_5.5rem] sm:grid-cols-[minmax(0,1fr)_9rem_minmax(11rem,15rem)_5.5rem] items-center divide-x divide-white/15 dark:divide-border/40";
+	"grid w-full min-w-0 min-h-10 max-sm:grid-cols-[minmax(0,1fr)_6.75rem_5.5rem] sm:grid-cols-[minmax(0,1fr)_6.75rem_minmax(11rem,15rem)_5.5rem] items-center divide-x divide-white/15 dark:divide-border/40";
 
 export const inviteCopyBtnClass =
 	"min-h-8 min-w-8 shrink-0 border-white/35 bg-black/35 text-white shadow-sm hover:bg-black/50 hover:text-white";
