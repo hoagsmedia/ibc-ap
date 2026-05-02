@@ -1,10 +1,11 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
 	import type { ActionData, PageData } from "./$types";
-	import { Eye, EyeOff } from "@lucide/svelte";
+	import { Eye, EyeOff, Loader2 } from "@lucide/svelte";
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 	let showPassword = $state(false);
+	let submitting = $state(false);
 </script>
 
 <svelte:head>
@@ -44,7 +45,21 @@
 
 	<div class="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
 		<div class="bg-card px-4 py-8 shadow sm:rounded-lg sm:px-10">
-			<form method="post" action="?/login" use:enhance class="space-y-6">
+			<form
+				method="post"
+				action="?/login"
+				use:enhance={() => {
+					submitting = true;
+					return async ({ update }) => {
+						try {
+							await update();
+						} finally {
+							submitting = false;
+						}
+					};
+				}}
+				class="space-y-6"
+			>
 				<div>
 					<label for="email" class="text-card-foreground block text-sm font-medium">
 						Email or username
@@ -93,9 +108,16 @@
 				<div>
 					<button
 						type="submit"
-						class="bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-ring flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none"
+						disabled={submitting}
+						aria-busy={submitting}
+						class="bg-primary text-primary-foreground hover:bg-primary/90 focus:ring-ring flex w-full items-center justify-center gap-2 rounded-md border border-transparent px-4 py-2 text-sm font-medium shadow-sm focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none disabled:opacity-70"
 					>
-						Sign in
+						{#if submitting}
+							<Loader2 class="size-4 shrink-0 animate-spin" aria-hidden="true" />
+							<span>Signing in…</span>
+						{:else}
+							<span>Sign in</span>
+						{/if}
 					</button>
 				</div>
 			</form>

@@ -12,7 +12,6 @@
 	import { Label } from "$lib/components/ui/label";
 	import { Skeleton } from "$lib/components/ui/skeleton/index.js";
 	import * as Tooltip from "$lib/components/ui/tooltip/index.js";
-	import { Separator } from "$lib/components/ui/separator";
 	import DatePickerField from "$lib/components/DatePickerField.svelte";
 	import InvitationRow from "$lib/components/dashboard/InvitationRow.svelte";
 	import QuickActionLink from "$lib/components/dashboard/QuickActionLink.svelte";
@@ -43,7 +42,7 @@
 		hubHeroActionBtnClass,
 		hubHeroScrimLrClass,
 		hubHeroScrimTbClass,
-		hubTableColSepClass,
+		upcomingEventsRowGridClass,
 		inviteCopyBtnClass,
 		inviteRowHighlightClass,
 		inviteRowIdleClass,
@@ -194,7 +193,7 @@
 	<meta name="description" content="Island Beer Club member dashboard" />
 </svelte:head>
 
-<div class="mx-auto flex max-w-[1600px] flex-col gap-8">
+<div class="mx-auto flex w-full max-w-[1600px] min-w-0 flex-col gap-8">
 	{#if data.user && canAccessExclusiveFeatures}
 		<section
 			class="grid grid-cols-3 gap-2 sm:gap-4 md:gap-5"
@@ -326,7 +325,10 @@
 
 	<!-- Hero + insights -->
 	{#if data.user}
-		<section class="grid grid-cols-1 gap-8 lg:grid-cols-3" aria-labelledby="welcome-heading">
+		<section
+			class="grid w-full min-w-0 grid-cols-1 gap-8 lg:grid-cols-3"
+			aria-labelledby="welcome-heading"
+		>
 			<div
 				class="ibc-lounge-hero relative col-span-1 flex min-h-[260px] flex-col overflow-hidden rounded-2xl border shadow-md {data
 					.user.role === 'admin'
@@ -379,7 +381,7 @@
 								{/if}
 							</div>
 						</div>
-						<div class="max-w-xl space-y-4 sm:space-y-5">
+						<div class="max-w-3xl space-y-4 sm:space-y-5 lg:max-w-4xl xl:max-w-5xl">
 							<h1
 								id="welcome-heading"
 								class="text-3xl font-bold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-4xl"
@@ -803,13 +805,12 @@
 												</a>
 											</div>
 											{#if visibleInvitations.length > 0}
-												<ul class="flex min-w-0 flex-col" role="list">
+												<ul class="@container/invite-widget flex min-w-0 flex-col" role="list">
 													{#each visibleInvitations as invitation (invitation.token)}
 														<InvitationRow
 															{invitation}
 															baseUrl={data.baseUrl}
 															isHighlighted={invitation.token === highlightInviteToken}
-															{hubTableColSepClass}
 															{inviteCopyBtnClass}
 															{inviteRowHighlightClass}
 															{inviteRowIdleClass}
@@ -835,19 +836,19 @@
 
 	{#if isProspectOnboarding && data.prospectGate}
 		<Dialog.Root bind:open={prospectProgressDialogOpen}>
-			<Dialog.Content class="sm:max-w-xl">
+			<Dialog.Content class="w-[min(100vw-2rem,40rem)] sm:max-w-2xl">
 				<Dialog.Header>
 					<Dialog.Title>Prospect progress</Dialog.Title>
 					<Dialog.Description>
 						Attend and log three beer club meetings to unlock the IBC test and member-only tools.
 					</Dialog.Description>
 				</Dialog.Header>
-				<div class="space-y-4">
-					<div class="grid grid-cols-3 gap-2">
+				<div class="space-y-4 md:space-y-5">
+					<div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 md:gap-5">
 						{#each [1, 2, 3] as slot (slot)}
 							<button
 								type="button"
-								class="hover:bg-muted/50 focus-visible:ring-ring rounded-xl border p-3 text-center transition-colors focus-visible:ring-2 focus-visible:outline-none"
+								class="hover:bg-muted/50 focus-visible:ring-ring min-h-[4.75rem] rounded-xl border p-4 text-center transition-colors focus-visible:ring-2 focus-visible:outline-none sm:min-h-0 md:p-5"
 								onclick={() => jumpToMeetingSlot(slot)}
 							>
 								<div class="mb-2 flex justify-center">
@@ -894,9 +895,11 @@
 			</Dialog.Content>
 		</Dialog.Root>
 
-		<section id="prospect-progress" class="space-y-6">
-			<Card.Root class="border-primary/20 overflow-hidden rounded-2xl border shadow-sm">
-				<Card.Header class="space-y-3">
+		<section id="prospect-progress" class="w-full min-w-0 space-y-6 md:space-y-8">
+			<Card.Root
+				class="border-primary/20 w-full min-w-0 overflow-hidden rounded-2xl border shadow-sm"
+			>
+				<Card.Header class="space-y-3 md:space-y-4">
 					<div class="flex flex-wrap items-start justify-between gap-3">
 						<div class="space-y-1">
 							<Card.Title class="text-xl">Log your first 3 meetings</Card.Title>
@@ -928,12 +931,12 @@
 						</Alert.Description>
 					</Alert.Root>
 				</Card.Header>
-				<Card.Content class="space-y-6">
-					<div class="grid grid-cols-3 gap-2">
+				<Card.Content class="space-y-6 sm:space-y-8 md:space-y-10">
+					<div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 md:gap-5">
 						{#each meetingSlots as meeting (meeting.slot)}
 							<button
 								type="button"
-								class={`hover:bg-muted/60 rounded-xl border px-3 py-2 text-left text-sm transition-colors ${
+								class={`hover:bg-muted/60 min-h-[3.25rem] rounded-xl border px-4 py-3 text-left text-sm transition-colors sm:min-h-0 md:px-5 md:py-4 ${
 									activeMeetingSlot === meeting.slot ? "border-primary bg-primary/5" : ""
 								}`}
 								onclick={() => (activeMeetingSlot = meeting.slot)}
@@ -945,11 +948,15 @@
 							</button>
 						{/each}
 					</div>
-					<div class="rounded-xl border p-4">
-						<div class="mb-3 flex items-center justify-between gap-3">
-							<div>
-								<h3 class="font-medium">{activeMeeting.label}</h3>
-								<p class="text-muted-foreground text-xs">Choose a date, then click Save date.</p>
+					<div class="rounded-xl border p-4 md:p-6 lg:p-8">
+						<div
+							class="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between"
+						>
+							<div class="min-w-0">
+								<h3 class="text-base font-medium md:text-lg">{activeMeeting.label}</h3>
+								<p class="text-muted-foreground mt-1 text-xs sm:text-sm">
+									Choose a date, then click Save date.
+								</p>
 							</div>
 							{#if activeMeeting.saved && !activeMeeting.dirty}
 								<Badge variant="secondary">Saved</Badge>
@@ -1070,60 +1077,51 @@
 							<ul
 								class="flex flex-col overflow-hidden"
 								role="list"
-								aria-label="Upcoming events: title, date, location, and access"
+								aria-label="Upcoming events: title, date, description or location, and access"
 							>
 								{#each data.upcomingEvents as ev (ev.id)}
 									<li class="{inviteRowShellClass} list-none p-0">
-										<div
-											class="flex min-h-10 w-full min-w-0 flex-nowrap items-center {inviteRowIdleClass}"
-										>
+										<div class="{upcomingEventsRowGridClass} {inviteRowIdleClass}">
 											<div
-												class="dark:text-foreground flex max-w-[9rem] min-w-0 flex-1 items-center px-3 py-2 text-xs font-medium text-white/92 sm:max-w-[11rem] sm:px-4"
+												class="dark:text-foreground min-w-0 px-3 py-2 text-xs font-medium text-white/92 sm:px-4"
 											>
 												<a
 													href="/dashboard/events"
-													class="dark:hover:text-primary truncate transition-colors hover:text-white/95"
+													class="dark:hover:text-primary block truncate transition-colors hover:text-white/95"
 												>
 													{ev.title}
 												</a>
 											</div>
-											<div class="flex min-w-0 items-center">
-												<Separator orientation="vertical" class={hubTableColSepClass} />
-												<div
-													class="dark:text-muted-foreground flex min-w-0 items-center px-3 py-2 text-xs text-white/88 tabular-nums sm:px-4"
-												>
+											<div
+												class="dark:text-muted-foreground flex w-full min-w-0 items-center justify-center px-2 py-2 text-xs text-white/88 tabular-nums sm:px-3"
+											>
+												<span class="block w-full truncate text-center">
 													{ev.event_date ? formatDate(new Date(ev.event_date)) : "—"}
-												</div>
+												</span>
 											</div>
-											<div class="hidden min-w-0 items-center sm:flex">
-												<Separator orientation="vertical" class={hubTableColSepClass} />
-												<div
-													class="dark:text-muted-foreground flex max-w-[10rem] min-w-0 items-center px-3 py-2 text-xs text-white/85 sm:px-4"
-												>
-													<span class="truncate">{ev.location ?? "—"}</span>
-												</div>
+											<div
+												class="dark:text-muted-foreground hidden min-w-0 px-3 py-2 text-xs text-white/85 sm:block sm:px-4"
+											>
+												<span class="block truncate">
+													{ev.description?.trim() || ev.location?.trim() || "—"}
+												</span>
 											</div>
-											<div class="flex min-w-0 flex-1 items-center justify-end">
-												<Separator orientation="vertical" class={hubTableColSepClass} />
-												<div
-													class="flex min-h-10 min-w-0 flex-1 items-center justify-end px-2 py-2 sm:px-3"
-												>
-													{#if ev.members_only}
-														<Badge
-															variant="secondary"
-															class="shrink-0 rounded-sm px-2 py-0.5 text-[10px] whitespace-nowrap"
-														>
-															Members
-														</Badge>
-													{:else}
-														<Badge
-															variant="outline"
-															class="dark:border-border dark:text-foreground shrink-0 rounded-sm border-white/40 bg-black/15 px-2 py-0.5 text-[10px] whitespace-nowrap text-white/90 dark:bg-transparent"
-														>
-															Public
-														</Badge>
-													{/if}
-												</div>
+											<div class="flex min-h-10 items-center justify-center px-2 py-2 sm:px-3">
+												{#if ev.members_only}
+													<Badge
+														variant="secondary"
+														class="w-full max-w-[5.25rem] justify-center rounded-sm px-2 py-0.5 text-center text-[10px] whitespace-nowrap"
+													>
+														Members
+													</Badge>
+												{:else}
+													<Badge
+														variant="outline"
+														class="dark:border-border dark:text-foreground w-full max-w-[5.25rem] justify-center rounded-sm border-white/40 bg-black/15 px-2 py-0.5 text-center text-[10px] whitespace-nowrap text-white/90 dark:bg-transparent"
+													>
+														Public
+													</Badge>
+												{/if}
 											</div>
 										</div>
 									</li>

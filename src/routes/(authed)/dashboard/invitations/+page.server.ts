@@ -5,7 +5,9 @@ import { deleteExpiredInvitationSchema } from "./delete-expired-schema";
 import { requireMemberDirectoryAccess } from "$lib/server/authz";
 
 export const load: PageServerLoad = async ({ locals, url }) => {
-	const user = requireMemberDirectoryAccess(locals, { forbiddenPath: "/dashboard?restricted=invitations" });
+	const user = requireMemberDirectoryAccess(locals, {
+		forbiddenPath: "/dashboard?restricted=invitations"
+	});
 
 	const invitations = await getInvitationsByUser(user.id);
 
@@ -33,7 +35,9 @@ export const actions: Actions = {
 
 		const deleted = await deleteExpiredInvitationByUser(user.id, token);
 		if (!deleted) {
-			return fail(400, { message: "Only unused expired invites can be deleted." });
+			return fail(400, {
+				message: "Invite not found, not expired yet, or you don’t have permission to delete it."
+			});
 		}
 
 		return { success: true };
