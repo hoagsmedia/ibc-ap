@@ -118,7 +118,7 @@
 		"zod": "^3.25.67"
 	},
 	"engines": {
-		"node": ">=22"
+		"node": "22.x"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
