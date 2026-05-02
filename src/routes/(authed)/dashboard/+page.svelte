@@ -42,7 +42,6 @@
 		hubHeroActionBtnClass,
 		hubHeroScrimLrClass,
 		hubHeroScrimTbClass,
-		hubTableColSepClass,
 		upcomingEventsRowGridClass,
 		inviteCopyBtnClass,
 		inviteRowHighlightClass,
@@ -806,13 +805,12 @@
 												</a>
 											</div>
 											{#if visibleInvitations.length > 0}
-												<ul class="flex min-w-0 flex-col" role="list">
+												<ul class="@container/invite-widget flex min-w-0 flex-col" role="list">
 													{#each visibleInvitations as invitation (invitation.token)}
 														<InvitationRow
 															{invitation}
 															baseUrl={data.baseUrl}
 															isHighlighted={invitation.token === highlightInviteToken}
-															{hubTableColSepClass}
 															{inviteCopyBtnClass}
 															{inviteRowHighlightClass}
 															{inviteRowIdleClass}
