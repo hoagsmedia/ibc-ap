@@ -395,7 +395,7 @@
 				</div>
 			</div>
 		</header>
-		<div class="flex flex-1 flex-col gap-6 p-4 md:p-6">
+		<div class="flex w-full min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
 			{@render children()}
 		</div>
 	</Sidebar.Inset>
