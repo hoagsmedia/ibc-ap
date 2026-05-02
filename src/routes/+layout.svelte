@@ -1,5 +1,8 @@
-<script lang="ts">
+<script module>
 	import "../app.css";
+</script>
+
+<script lang="ts">
 	import Navbar from "$lib/components/Navbar.svelte";
 	import MemberHubShell from "$lib/components/MemberHubShell.svelte";
 	import { dev } from "$app/environment";

@@ -228,8 +228,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		invitationYear,
 		canAccessExclusiveFeatures,
 		prospectGate,
-		...(pendingMembers !== undefined && { pendingMembers }),
-		...(pendingMembersCount !== undefined && { pendingMembersCount }),
+		pendingMembers,
+		pendingMembersCount,
 		baseUrl: url.origin,
 		upcomingEvents,
 		clubStats: {
@@ -259,7 +259,9 @@ export const actions: Actions = {
 			meetingDate: formData.get("meetingDate")
 		});
 		if (!parsed.success) {
-			return fail(400, { message: parsed.error.issues[0]?.message ?? "Invalid meeting date input" });
+			return fail(400, {
+				message: parsed.error.issues[0]?.message ?? "Invalid meeting date input"
+			});
 		}
 		const { slot } = parsed.data;
 		const date = parseDateInput(parsed.data.meetingDate);
