@@ -7,6 +7,7 @@
 		isJeffWilkensFounderKegCredit
 	} from "$lib/stats-keg-credits-display.js";
 	import { statsPublicMemberLabel } from "$lib/stats-public-privacy.js";
+	import MemberHubPageHeader from "$lib/components/MemberHubPageHeader.svelte";
 	import type { PageData } from "./$types.js";
 
 	let { data }: { data: PageData } = $props();
@@ -26,18 +27,10 @@
 </svelte:head>
 
 <div class="mx-auto w-full max-w-3xl space-y-8 py-6 md:py-10">
-	<header class="space-y-2">
-		<p class="text-muted-foreground text-xs font-medium tracking-wide uppercase">Member hub</p>
-		<h1 class="text-foreground text-2xl font-bold tracking-tight md:text-3xl">
-			Keg credits &amp; beer totals
-		</h1>
-		<p class="text-muted-foreground max-w-2xl text-sm leading-relaxed">
-			Live figures from the club database — same totals as the full stats page, with a short
-			keg-credit summary (top and bottom ranks). Pony keg = 1 credit, full keg = 2 credits.
-			<span class="text-foreground font-medium">CIK</span> = credits in kind. Names show given names
-			only.
-		</p>
-	</header>
+	<MemberHubPageHeader
+		title="Keg credits & beer totals"
+		description="Live figures from the club database — same totals as the full stats page, with a short keg-credit summary (top and bottom ranks). Pony keg = 1 credit, full keg = 2 credits. CIK = credits in kind. Names show given names only."
+	/>
 
 	<Card.Root>
 		<Card.Header class="space-y-1">

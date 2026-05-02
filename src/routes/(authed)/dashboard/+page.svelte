@@ -278,7 +278,7 @@
 				</div>
 			</a>
 			<a
-				href="/events"
+				href="/dashboard/events"
 				class="text-foreground from-sidebar/25 to-card hover:border-primary/40 focus-visible:ring-ring relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] hover:shadow-md focus-visible:ring-2 sm:rounded-2xl sm:p-5"
 			>
 				<div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 sm:gap-4">
@@ -1049,7 +1049,7 @@
 								Upcoming events
 							</Card.Title>
 							<a
-								href="/events"
+								href="/dashboard/events"
 								class="dark:text-primary text-xs font-semibold text-amber-200/95 underline-offset-4 hover:underline"
 							>
 								View all
@@ -1081,7 +1081,7 @@
 												class="dark:text-foreground flex max-w-[9rem] min-w-0 flex-1 items-center px-3 py-2 text-xs font-medium text-white/92 sm:max-w-[11rem] sm:px-4"
 											>
 												<a
-													href="/events"
+													href="/dashboard/events"
 													class="dark:hover:text-primary truncate transition-colors hover:text-white/95"
 												>
 													{ev.title}
@@ -1185,7 +1185,7 @@
 								<BarChart3 class="text-primary size-[1.15rem] shrink-0" />
 								<span class="min-w-0 text-left leading-snug">Keg &amp; beer stats</span>
 							</QuickActionLink>
-							<QuickActionLink href="/events">
+							<QuickActionLink href="/dashboard/events">
 								<CalendarRange class="text-primary size-[1.15rem] shrink-0" />
 								View events
 							</QuickActionLink>

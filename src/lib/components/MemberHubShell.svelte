@@ -47,6 +47,7 @@
 		if (pathname.startsWith("/dashboard/pending-members")) return "Prospects";
 		if (pathname.startsWith("/dashboard/members")) return "Member directory";
 		if (pathname.startsWith("/dashboard/stats")) return "Keg & beer stats";
+		if (pathname.startsWith("/dashboard/events")) return "Events";
 		if (pathname.startsWith("/dashboard")) return "Dashboard";
 		if (pathname.startsWith("/members")) return "Members";
 		if (pathname.startsWith("/settings")) return "Settings";
@@ -56,7 +57,6 @@
 		if (pathname.startsWith("/admin/events")) return "Events";
 		if (pathname.startsWith("/admin")) return "Club admin";
 		if (pathname.startsWith("/test")) return "IBC test";
-		if (pathname === "/events" || pathname.startsWith("/events/")) return "Events";
 		return "Member hub";
 	}
 
@@ -160,9 +160,12 @@
 						{/if}
 						{#if user?.role !== "admin"}
 							<Sidebar.MenuItem>
-								<Sidebar.MenuButton isActive={navActive("/events")} tooltipContent="Events">
+								<Sidebar.MenuButton
+									isActive={navActive("/dashboard/events")}
+									tooltipContent="Events"
+								>
 									{#snippet child({ props })}
-										<a href="/events" {...props}>
+										<a href="/dashboard/events" {...props}>
 											<Calendar />
 											<span>Events</span>
 										</a>

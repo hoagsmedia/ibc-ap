@@ -16,6 +16,7 @@
 	import { Label } from "$lib/components/ui/label/index.js";
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
 	import { Checkbox } from "$lib/components/ui/checkbox/index.js";
+	import { Badge } from "$lib/components/ui/badge/index.js";
 	import { ArrowLeft, Upload, X } from "@lucide/svelte";
 	import { createUploadThing } from "$lib/utils";
 	import EventDateTimeField from "$lib/components/EventDateTimeField.svelte";
@@ -151,6 +152,13 @@
 
 		formEl?.requestSubmit(hiddenSubmitEl ?? undefined);
 	}
+
+	const publishBadgeVariant = $derived(
+		$form.is_published ? ("default" as const) : ("outline" as const)
+	);
+	const visibilityBadgeVariant = $derived(
+		$form.members_only ? ("secondary" as const) : ("outline" as const)
+	);
 </script>
 
 <svelte:head>
@@ -170,9 +178,19 @@
 	</div>
 
 	<Card class="ibc-hub-surface bg-card/50 dark:bg-card/35 mx-auto w-full max-w-2xl">
-		<CardHeader>
-			<CardTitle>Event Details</CardTitle>
-			<CardDescription>Edit the information for this event</CardDescription>
+		<CardHeader class="flex flex-row flex-wrap items-start justify-between gap-4 space-y-0">
+			<div class="min-w-0 space-y-1.5">
+				<CardTitle>Event Details</CardTitle>
+				<CardDescription>Edit the information for this event</CardDescription>
+			</div>
+			<div class="flex shrink-0 flex-wrap items-center justify-end gap-2">
+				<Badge variant={publishBadgeVariant}>
+					{$form.is_published ? "Published" : "Unpublished"}
+				</Badge>
+				<Badge variant={visibilityBadgeVariant}>
+					{$form.members_only ? "Private" : "Public"}
+				</Badge>
+			</div>
 		</CardHeader>
 		<CardContent>
 			<form bind:this={formEl} method="POST" use:enhance class="space-y-6">

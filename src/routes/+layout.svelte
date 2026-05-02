@@ -22,9 +22,7 @@
 			(p !== "/members" && p.startsWith("/members")) ||
 			p.startsWith("/settings") ||
 			p.startsWith("/admin") ||
-			p.startsWith("/test") ||
-			p === "/events" ||
-			p.startsWith("/events/")
+			p.startsWith("/test")
 		);
 	});
 
