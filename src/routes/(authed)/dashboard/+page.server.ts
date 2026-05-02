@@ -10,7 +10,13 @@ import {
 import { fail, redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { getDashboardClubStats } from "$lib/server/dashboard-club-stats-cache";
-import { events, users } from "$lib/server/db/schema";
+import { events, users, type Event } from "$lib/server/db/schema";
+
+/** Matches dashboard upcoming-events query (explicit so `[]` branch doesn’t erase fields). */
+type DashboardUpcomingEvent = Pick<
+	Event,
+	"id" | "title" | "description" | "event_date" | "location" | "members_only"
+>;
 import { ibcDebugEnabled } from "$lib/server/ibc-debug";
 import {
 	canAccessMemberDirectoryAndStats,
@@ -119,21 +125,21 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 	const canAccessExclusiveFeatures = canAccessMemberDirectoryAndStats(locals.user);
 	const meetingCount = prospectMeetingCount(locals.user);
 	const canTakeTestNow = canTakeIbcTest(locals.user);
-	const prospectGate = canAccessExclusiveFeatures
-		? null
-		: {
-				active: true,
-				meetingCount,
-				meetingsRequired: 3,
-				canTakeTestNow,
-				requiresTest: requiresIbcTest(locals.user),
-				testPassed: locals.user.test_passed != null,
-				meetingDates: [
-					toDateInputValue(locals.user.meeting_1_date),
-					toDateInputValue(locals.user.meeting_2_date),
-					toDateInputValue(locals.user.meeting_3_date)
-				]
-			};
+	const prospectGate =
+		canAccessExclusiveFeatures || locals.user.test_passed != null
+			? null
+			: {
+					active: true,
+					meetingCount,
+					meetingsRequired: 3,
+					canTakeTestNow,
+					requiresTest: requiresIbcTest(locals.user),
+					meetingDates: [
+						toDateInputValue(locals.user.meeting_1_date),
+						toDateInputValue(locals.user.meeting_2_date),
+						toDateInputValue(locals.user.meeting_3_date)
+					]
+				};
 
 	const invitations = canAccessExclusiveFeatures
 		? await getInvitationsByUser(locals.user.id, {
@@ -200,11 +206,12 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 
 	const membersOnlyVisibility = canViewMemberEvents ? undefined : eq(events.members_only, false);
 
-	const upcomingEvents = canAccessExclusiveFeatures
+	const upcomingEvents: DashboardUpcomingEvent[] = canAccessExclusiveFeatures
 		? await db
 				.select({
 					id: events.id,
 					title: events.title,
+					description: events.description,
 					event_date: events.event_date,
 					location: events.location,
 					members_only: events.members_only
@@ -228,8 +235,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		invitationYear,
 		canAccessExclusiveFeatures,
 		prospectGate,
-		...(pendingMembers !== undefined && { pendingMembers }),
-		...(pendingMembersCount !== undefined && { pendingMembersCount }),
+		pendingMembers,
+		pendingMembersCount,
 		baseUrl: url.origin,
 		upcomingEvents,
 		clubStats: {
@@ -259,7 +266,9 @@ export const actions: Actions = {
 			meetingDate: formData.get("meetingDate")
 		});
 		if (!parsed.success) {
-			return fail(400, { message: parsed.error.issues[0]?.message ?? "Invalid meeting date input" });
+			return fail(400, {
+				message: parsed.error.issues[0]?.message ?? "Invalid meeting date input"
+			});
 		}
 		const { slot } = parsed.data;
 		const date = parseDateInput(parsed.data.meetingDate);

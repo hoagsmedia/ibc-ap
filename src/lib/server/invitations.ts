@@ -1,6 +1,6 @@
 import { client, db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
-import { and, count, desc, eq, gte, isNull, lt } from "drizzle-orm";
+import { and, count, desc, eq, gte, lt } from "drizzle-orm";
 import { encodeBase64url } from "@oslojs/encoding";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
@@ -8,7 +8,10 @@ export const INVITATION_LIMIT_WINDOW_DAYS = 7;
 export const INVITATION_MEMBER_WEEKLY_LIMIT = 3;
 
 export type InvitationWithProspectProgress = table.InvitationToken & {
+	/** Prospect meeting slots filled; UI uses this only when redeemer has no `mbr` */
 	prospectMeetingCount: number | null;
+	/** If set, invite progress shows Member regardless of meeting dates (legacy-safe) */
+	redeemerMbr: number | null;
 };
 
 /** Matches `scripts/ensure-invitation-tokens-schema.ts` — local DBs often lag Vercel build ensures. */
@@ -140,7 +143,8 @@ export async function getInvitationsByUser(
 			usedByUser: {
 				meeting_1_date: table.users.meeting_1_date,
 				meeting_2_date: table.users.meeting_2_date,
-				meeting_3_date: table.users.meeting_3_date
+				meeting_3_date: table.users.meeting_3_date,
+				mbr: table.users.mbr
 			}
 		})
 		.from(table.invitationTokens)
@@ -154,11 +158,15 @@ export async function getInvitationsByUser(
 			? [usedByUser.meeting_1_date, usedByUser.meeting_2_date, usedByUser.meeting_3_date].filter(
 					Boolean
 				).length
-			: null
+			: null,
+		redeemerMbr: usedByUser?.mbr ?? null
 	}));
 }
 
-export async function deleteExpiredInvitationByUser(userId: string, token: string): Promise<boolean> {
+export async function deleteExpiredInvitationByUser(
+	userId: string,
+	token: string
+): Promise<boolean> {
 	await ensureInvitationTokenColumns();
 	const now = new Date();
 	const deleted = await db
@@ -167,8 +175,7 @@ export async function deleteExpiredInvitationByUser(userId: string, token: strin
 			and(
 				eq(table.invitationTokens.created_by_id, userId),
 				eq(table.invitationTokens.token, token),
-				lt(table.invitationTokens.expires_at, now),
-				isNull(table.invitationTokens.used_at)
+				lt(table.invitationTokens.expires_at, now)
 			)
 		)
 		.returning({ id: table.invitationTokens.id });

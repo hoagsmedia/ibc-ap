@@ -20,12 +20,12 @@
 	import LayoutDashboard from "@lucide/svelte/icons/layout-dashboard";
 	import Users from "@lucide/svelte/icons/users";
 	import Calendar from "@lucide/svelte/icons/calendar";
-import CalendarDays from "@lucide/svelte/icons/calendar-days";
+	import CalendarDays from "@lucide/svelte/icons/calendar-days";
 	import Settings from "@lucide/svelte/icons/settings";
 	import UserPlus from "@lucide/svelte/icons/user-plus";
 	import Beer from "@lucide/svelte/icons/beer";
 	import Package from "@lucide/svelte/icons/package";
-import LinkIcon from "@lucide/svelte/icons/link";
+	import LinkIcon from "@lucide/svelte/icons/link";
 	import ChevronsUpDown from "@lucide/svelte/icons/chevrons-up-down";
 	import LogOut from "@lucide/svelte/icons/log-out";
 	import Home from "@lucide/svelte/icons/home";
@@ -46,6 +46,8 @@ import LinkIcon from "@lucide/svelte/icons/link";
 		if (pathname.startsWith("/dashboard/invitations")) return "Your invitations";
 		if (pathname.startsWith("/dashboard/pending-members")) return "Prospects";
 		if (pathname.startsWith("/dashboard/members")) return "Member directory";
+		if (pathname.startsWith("/dashboard/stats")) return "Keg & beer stats";
+		if (pathname.startsWith("/dashboard/events")) return "Events";
 		if (pathname.startsWith("/dashboard")) return "Dashboard";
 		if (pathname.startsWith("/members")) return "Members";
 		if (pathname.startsWith("/settings")) return "Settings";
@@ -55,13 +57,14 @@ import LinkIcon from "@lucide/svelte/icons/link";
 		if (pathname.startsWith("/admin/events")) return "Events";
 		if (pathname.startsWith("/admin")) return "Club admin";
 		if (pathname.startsWith("/test")) return "IBC test";
-		if (pathname === "/events" || pathname.startsWith("/events/")) return "Events";
 		return "Member hub";
 	}
 
 	const headerTitle = $derived(memberHubTitle(path));
 
-	const canAccessExclusiveFeatures = $derived(user ? canAccessMemberDirectoryAndStats(user) : false);
+	const canAccessExclusiveFeatures = $derived(
+		user ? canAccessMemberDirectoryAndStats(user) : false
+	);
 </script>
 
 <Sidebar.Provider>
@@ -69,7 +72,7 @@ import LinkIcon from "@lucide/svelte/icons/link";
 	<Sidebar.Root collapsible="icon" class="border-sidebar-border border-r">
 		<Sidebar.Header
 			class={cn(
-				"shrink-0 overflow-hidden px-3 pb-4 pt-5 transition-[max-height,padding,gap,margin] duration-200 ease-out",
+				"shrink-0 overflow-hidden px-3 pt-5 pb-4 transition-[max-height,padding,gap,margin] duration-200 ease-out",
 				"max-h-[min(320px,42vh)]",
 				"group-data-[collapsible=icon]:pointer-events-none group-data-[collapsible=icon]:max-h-0 group-data-[collapsible=icon]:gap-0 group-data-[collapsible=icon]:!p-0",
 				/* Layout: keep header block height until rail is 100% icon width — nav stays put */
@@ -87,7 +90,10 @@ import LinkIcon from "@lucide/svelte/icons/link";
 					"group-data-[state=expanded]:[transition-delay:380ms]"
 				)}
 			>
-				<a href="/" class="flex w-full flex-col items-center gap-2 overflow-hidden py-1 text-center">
+				<a
+					href="/"
+					class="flex w-full flex-col items-center gap-2 overflow-hidden py-1 text-center"
+				>
 					<img
 						src={memberHubLogoUrl}
 						alt=""
@@ -98,7 +104,7 @@ import LinkIcon from "@lucide/svelte/icons/link";
 						class="h-auto w-[min(90%,15rem)] max-w-full shrink-0 object-contain dark:brightness-[0.88] dark:saturate-[0.92]"
 					/>
 					<div class="flex w-full min-w-0 flex-col leading-tight">
-						<span class="w-full truncate text-sm font-semibold tracking-tight text-foreground"
+						<span class="text-foreground w-full truncate text-sm font-semibold tracking-tight"
 							>Island Beer Club</span
 						>
 						<span class="text-muted-foreground w-full truncate text-xs">Member hub</span>
@@ -154,9 +160,12 @@ import LinkIcon from "@lucide/svelte/icons/link";
 						{/if}
 						{#if user?.role !== "admin"}
 							<Sidebar.MenuItem>
-								<Sidebar.MenuButton isActive={navActive("/events")} tooltipContent="Events">
+								<Sidebar.MenuButton
+									isActive={navActive("/dashboard/events")}
+									tooltipContent="Events"
+								>
 									{#snippet child({ props })}
-										<a href="/events" {...props}>
+										<a href="/dashboard/events" {...props}>
 											<Calendar />
 											<span>Events</span>
 										</a>
@@ -177,11 +186,11 @@ import LinkIcon from "@lucide/svelte/icons/link";
 						{#if user?.role !== "admin" && canAccessExclusiveFeatures}
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton
-									isActive={navActive("/stats")}
+									isActive={navActive("/dashboard/stats")}
 									tooltipContent="Keg credits and beer consumed"
 								>
 									{#snippet child({ props })}
-										<a href="/stats" {...props}>
+										<a href="/dashboard/stats" {...props}>
 											<BarChart3 />
 											<span>Keg & beer stats</span>
 										</a>
@@ -283,9 +292,7 @@ import LinkIcon from "@lucide/svelte/icons/link";
 		</Sidebar.Footer>
 		<Sidebar.Rail />
 	</Sidebar.Root>
-	<Sidebar.Inset
-		class="ibc-member-hub-canvas flex min-h-svh min-w-0 flex-1 flex-col"
-	>
+	<Sidebar.Inset class="ibc-member-hub-canvas flex min-h-svh min-w-0 flex-1 flex-col">
 		<header
 			class="border-border/50 bg-card/35 supports-[backdrop-filter]:bg-card/25 sticky top-0 z-40 flex h-14 shrink-0 items-center gap-2 border-b px-3 backdrop-blur-md md:px-4"
 		>
@@ -388,7 +395,7 @@ import LinkIcon from "@lucide/svelte/icons/link";
 				</div>
 			</div>
 		</header>
-		<div class="flex flex-1 flex-col gap-6 p-4 md:p-6">
+		<div class="flex w-full min-w-0 flex-1 flex-col gap-6 p-4 md:p-6">
 			{@render children()}
 		</div>
 	</Sidebar.Inset>

@@ -1,5 +1,8 @@
-<script lang="ts">
+<script module>
 	import "../app.css";
+</script>
+
+<script lang="ts">
 	import Navbar from "$lib/components/Navbar.svelte";
 	import MemberHubShell from "$lib/components/MemberHubShell.svelte";
 	import { dev } from "$app/environment";
@@ -19,9 +22,7 @@
 			(p !== "/members" && p.startsWith("/members")) ||
 			p.startsWith("/settings") ||
 			p.startsWith("/admin") ||
-			p.startsWith("/test") ||
-			p === "/events" ||
-			p.startsWith("/events/")
+			p.startsWith("/test")
 		);
 	});
 
@@ -35,30 +36,28 @@
 </script>
 
 <div class="bg-background relative mx-auto flex min-h-dvh w-full flex-col">
-	{#if !memberHubShell}
+	{#if memberHubShell}
+		<MemberHubShell>
+			{@render children()}
+		</MemberHubShell>
+	{:else}
 		<Navbar />
-	{/if}
-	<main class="w-full flex-1">
-		{#if memberHubShell}
-			<MemberHubShell>
-				{@render children()}
-			</MemberHubShell>
-		{:else}
+		<main id="main-content" class="w-full flex-1">
 			<div class="mx-auto max-w-4xl px-4">
 				{@render children()}
 			</div>
+		</main>
+		{#if !hidePublicFooter}
+			<footer class="py-6 md:px-8 md:py-0">
+				<div class="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
+					<p
+						class="text-muted-foreground text-center text-sm leading-loose text-balance md:text-left"
+					>
+						© {new Date().getFullYear()} Island Beer Club. All rights reserved.
+					</p>
+				</div>
+			</footer>
 		{/if}
-	</main>
-	{#if !memberHubShell && !hidePublicFooter}
-		<footer class="py-6 md:px-8 md:py-0">
-			<div class="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
-				<p
-					class="text-muted-foreground text-center text-sm leading-loose text-balance md:text-left"
-				>
-					© {new Date().getFullYear()} Island Beer Club. All rights reserved.
-				</p>
-			</div>
-		</footer>
 	{/if}
 </div>
 

@@ -7,8 +7,8 @@
 	import { Button } from "$lib/components/ui/button/index.js";
 	import ProfileForm from "./profile-form.svelte";
 	import UpdatePasswordForm from "./update-password-form.svelte";
-	import { ArrowLeft, Trash2 } from "@lucide/svelte";
-	import HubBackLink from "$lib/components/HubBackLink.svelte";
+	import { Trash2 } from "@lucide/svelte";
+	import MemberHubPageHeader from "$lib/components/MemberHubPageHeader.svelte";
 
 	let { data }: { data: PageData } = $props();
 	let uploading = $state(false);
@@ -80,101 +80,99 @@
 </svelte:head>
 
 <div class="mx-auto w-full max-w-2xl">
-		<div class="mb-8 flex flex-wrap items-start justify-between gap-4">
-			<div class="min-w-0">
-				<h1 class="text-foreground text-3xl font-bold">Profile Settings</h1>
-				<p class="text-muted-foreground mt-2 text-sm">
-					Update your profile information and upload a profile image.
-				</p>
-			</div>
-			<HubBackLink href="/dashboard" size="sm" class="shrink-0 gap-2">
-				<ArrowLeft class="size-4" />
-				Back to dashboard
-			</HubBackLink>
-		</div>
+	<MemberHubPageHeader
+		title="Profile Settings"
+		description="Update your profile information and upload a profile image."
+	/>
 
-		<div class="space-y-8">
-			<!-- Profile Image Section (Admins only) -->
-			{#if data.user.role === "admin"}
-				<Card.Root class="ibc-hub-surface bg-card/50 rounded-lg p-6 shadow-sm dark:bg-card/35">
-					<Card.Content class="flex flex-col items-center justify-center gap-4 py-6">
-						<Avatar
-							class="border-primary size-32 rounded-full border-4 shadow"
-							name={data.user.name}
-							img={data.user.img ?? undefined}
-						/>
-						<div class="text-center">
-							<div class="text-card-foreground text-lg font-semibold">{data.user.name}</div>
-							{#if data.user.email ?? data.user.username}
-								<div class="text-muted-foreground text-sm">{data.user.email ?? data.user.username}</div>
-							{/if}
-						</div>
-						<div class="w-full max-w-xs">
-							<label
-								for="profile-image-upload"
-								class="text-card-foreground mb-2 block text-left text-sm font-medium"
-							>
-								Upload new profile image
-							</label>
-							<div
-								class="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-gray-400"
-							>
-								{#if uploading}
-									<div class="flex items-center justify-center">
-										<div class="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
-										<span class="text-muted-foreground ml-3 text-sm">Uploading...</span>
-									</div>
-								{:else}
-									<input
-										bind:this={fileInput}
-										id="profile-image-upload"
-										type="file"
-										accept="image/*"
-										onchange={handleFileChange}
-										class="hidden"
-									/>
-									<div class="flex flex-wrap justify-center gap-2">
-										<Button onclick={handleUploadClick} type="button">
-											Choose Image
-										</Button>
-										{#if data.user.img}
-											<Button variant="destructive" type="button" onclick={() => (deleteImageDialogOpen = true)}>
-												<Trash2 class="size-4" />
-												Delete Image
-											</Button>
-										{/if}
-									</div>
-								{/if}
+	<div class="space-y-8">
+		<!-- Profile Image Section (Admins only) -->
+		{#if data.user.role === "admin"}
+			<Card.Root class="ibc-hub-surface bg-card/50 dark:bg-card/35 rounded-lg p-6 shadow-sm">
+				<Card.Content class="flex flex-col items-center justify-center gap-4 py-6">
+					<Avatar
+						class="border-primary size-32 rounded-full border-4 shadow"
+						name={data.user.name}
+						img={data.user.img ?? undefined}
+					/>
+					<div class="text-center">
+						<div class="text-card-foreground text-lg font-semibold">{data.user.name}</div>
+						{#if data.user.email ?? data.user.username}
+							<div class="text-muted-foreground text-sm">
+								{data.user.email ?? data.user.username}
 							</div>
-							<p class="text-muted-foreground mt-1 text-xs">PNG, JPG, GIF up to 8MB</p>
-						</div>
-					</Card.Content>
-				</Card.Root>
-			{:else}
-				<Card.Root class="ibc-hub-surface bg-card/50 rounded-lg p-6 shadow-sm dark:bg-card/35">
-					<Card.Content class="flex flex-col items-center justify-center gap-4 py-6">
-						<Avatar
-							class="border-primary size-32 rounded-full border-4 shadow"
-							name={data.user.name}
-							img={data.user.img ?? undefined}
-						/>
-						<div class="text-center">
-							<div class="text-card-foreground text-lg font-semibold">{data.user.name}</div>
-							{#if data.user.email ?? data.user.username}
-								<div class="text-muted-foreground text-sm">{data.user.email ?? data.user.username}</div>
+						{/if}
+					</div>
+					<div class="w-full max-w-xs">
+						<label
+							for="profile-image-upload"
+							class="text-card-foreground mb-2 block text-left text-sm font-medium"
+						>
+							Upload new profile image
+						</label>
+						<div
+							class="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-gray-400"
+						>
+							{#if uploading}
+								<div class="flex items-center justify-center">
+									<div class="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
+									<span class="text-muted-foreground ml-3 text-sm">Uploading...</span>
+								</div>
+							{:else}
+								<input
+									bind:this={fileInput}
+									id="profile-image-upload"
+									type="file"
+									accept="image/*"
+									onchange={handleFileChange}
+									class="hidden"
+								/>
+								<div class="flex flex-wrap justify-center gap-2">
+									<Button onclick={handleUploadClick} type="button">Choose Image</Button>
+									{#if data.user.img}
+										<Button
+											variant="destructive"
+											type="button"
+											onclick={() => (deleteImageDialogOpen = true)}
+										>
+											<Trash2 class="size-4" />
+											Delete Image
+										</Button>
+									{/if}
+								</div>
 							{/if}
 						</div>
-					</Card.Content>
-				</Card.Root>
-			{/if}
+						<p class="text-muted-foreground mt-1 text-xs">PNG, JPG, GIF up to 8MB</p>
+					</div>
+				</Card.Content>
+			</Card.Root>
+		{:else}
+			<Card.Root class="ibc-hub-surface bg-card/50 dark:bg-card/35 rounded-lg p-6 shadow-sm">
+				<Card.Content class="flex flex-col items-center justify-center gap-4 py-6">
+					<Avatar
+						class="border-primary size-32 rounded-full border-4 shadow"
+						name={data.user.name}
+						img={data.user.img ?? undefined}
+					/>
+					<div class="text-center">
+						<div class="text-card-foreground text-lg font-semibold">{data.user.name}</div>
+						{#if data.user.email ?? data.user.username}
+							<div class="text-muted-foreground text-sm">
+								{data.user.email ?? data.user.username}
+							</div>
+						{/if}
+					</div>
+				</Card.Content>
+			</Card.Root>
+		{/if}
 
-			<!-- Profile Information Section -->
-			<ProfileForm {data} />
+		<!-- Profile Information Section -->
+		<ProfileForm {data} />
 
-			<!-- Update Password Section  -->
-			<UpdatePasswordForm {data} />
-		</div>
+		<!-- Update Password Section  -->
+		<UpdatePasswordForm {data} />
 	</div>
+</div>
 
 <Dialog.Root bind:open={deleteImageDialogOpen}>
 	<Dialog.Content class="sm:max-w-md">
@@ -189,10 +187,20 @@
 		</Dialog.Header>
 
 		<Dialog.Footer class="mt-4 flex gap-2">
-			<Button type="button" variant="outline" onclick={() => (deleteImageDialogOpen = false)} disabled={deletingImage}>
+			<Button
+				type="button"
+				variant="outline"
+				onclick={() => (deleteImageDialogOpen = false)}
+				disabled={deletingImage}
+			>
 				No
 			</Button>
-			<Button type="button" variant="destructive" onclick={confirmDeleteProfileImage} disabled={deletingImage}>
+			<Button
+				type="button"
+				variant="destructive"
+				onclick={confirmDeleteProfileImage}
+				disabled={deletingImage}
+			>
 				{deletingImage ? "Deleting..." : "Yes, delete it"}
 			</Button>
 		</Dialog.Footer>

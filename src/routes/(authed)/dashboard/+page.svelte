@@ -12,11 +12,11 @@
 	import { Label } from "$lib/components/ui/label";
 	import { Skeleton } from "$lib/components/ui/skeleton/index.js";
 	import * as Tooltip from "$lib/components/ui/tooltip/index.js";
-	import { Separator } from "$lib/components/ui/separator";
 	import DatePickerField from "$lib/components/DatePickerField.svelte";
 	import InvitationRow from "$lib/components/dashboard/InvitationRow.svelte";
 	import QuickActionLink from "$lib/components/dashboard/QuickActionLink.svelte";
 	import {
+		BarChart3,
 		Beer,
 		BookUser,
 		Calendar,
@@ -42,7 +42,7 @@
 		hubHeroActionBtnClass,
 		hubHeroScrimLrClass,
 		hubHeroScrimTbClass,
-		hubTableColSepClass,
+		upcomingEventsRowGridClass,
 		inviteCopyBtnClass,
 		inviteRowHighlightClass,
 		inviteRowIdleClass,
@@ -85,7 +85,8 @@
 		});
 	}
 
-	function isWednesdayCalendarDate(date: DateValue) {
+	/** Bits UI Calendar already applies min/max as disabled days; use this only for “not a Wednesday”. */
+	function disableIfNotWednesdayUtc(date: DateValue) {
 		return new Date(Date.UTC(date.year, date.month - 1, date.day)).getUTCDay() !== 3;
 	}
 
@@ -105,7 +106,10 @@
 	}
 
 	$effect(() => {
-		if (!data.prospectGate) return;
+		if (!data.prospectGate) {
+			prospectProgressDialogOpen = false;
+			return;
+		}
 		meeting1Date = persistedMeetingDates[0] ?? "";
 		meeting2Date = persistedMeetingDates[1] ?? "";
 		meeting3Date = persistedMeetingDates[2] ?? "";
@@ -150,6 +154,10 @@
 				(data.user.role === "admin" || (data.user.role === "member" && data.user.mbr != null))
 		)
 	);
+	/** Hide for prospects who must pass the test first; admins always see it (may not have test_passed). */
+	const showInvitationLinksCard = $derived(
+		Boolean(data.user && (!requiresIbcTest(data.user) || data.user.role === "admin"))
+	);
 	const isProspectOnboarding = $derived(Boolean(data.prospectGate?.active));
 	const canAccessExclusiveFeatures = $derived(Boolean(data.canAccessExclusiveFeatures));
 	const meetingsRemaining = $derived(
@@ -188,7 +196,7 @@
 	<meta name="description" content="Island Beer Club member dashboard" />
 </svelte:head>
 
-<div class="mx-auto flex max-w-[1600px] flex-col gap-8">
+<div class="mx-auto flex w-full max-w-[1600px] min-w-0 flex-col gap-8">
 	{#if data.user && canAccessExclusiveFeatures}
 		<section
 			class="grid grid-cols-3 gap-2 sm:gap-4 md:gap-5"
@@ -197,7 +205,7 @@
 			<h2 id="club-overview-heading" class="sr-only">Club snapshot</h2>
 			<a
 				href="/dashboard/members"
-				class="text-foreground border-border/50 from-sidebar/25 to-card hover:border-primary/40 focus-visible:ring-ring relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] hover:shadow-md focus-visible:ring-2 sm:rounded-2xl sm:p-5"
+				class="text-foreground from-sidebar/25 to-card hover:border-primary/40 focus-visible:ring-ring relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] hover:shadow-md focus-visible:ring-2 sm:rounded-2xl sm:p-5"
 			>
 				<div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 sm:gap-4">
 					<div class="min-w-0">
@@ -234,8 +242,8 @@
 				</div>
 			</a>
 			<a
-				href={data.user.role === "admin" ? "/admin/stats/beer-consumed" : "/stats"}
-				class="text-foreground border-border/50 from-sidebar/25 to-card hover:border-primary/40 focus-visible:ring-ring relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] hover:shadow-md focus-visible:ring-2 sm:rounded-2xl sm:p-5"
+				href={data.user.role === "admin" ? "/admin/stats/beer-consumed" : "/dashboard/stats"}
+				class="text-foreground from-sidebar/25 to-card hover:border-primary/40 focus-visible:ring-ring relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] hover:shadow-md focus-visible:ring-2 sm:rounded-2xl sm:p-5"
 			>
 				<div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 sm:gap-4">
 					<div class="min-w-0">
@@ -272,8 +280,8 @@
 				</div>
 			</a>
 			<a
-				href="/events"
-				class="text-foreground border-border/50 from-sidebar/25 to-card hover:border-primary/40 focus-visible:ring-ring relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] hover:shadow-md focus-visible:ring-2 sm:rounded-2xl sm:p-5"
+				href="/dashboard/events"
+				class="text-foreground from-sidebar/25 to-card hover:border-primary/40 focus-visible:ring-ring relative block min-w-0 overflow-hidden rounded-xl border bg-gradient-to-br p-3 no-underline shadow-sm outline-offset-2 transition-[border-color,box-shadow] hover:shadow-md focus-visible:ring-2 sm:rounded-2xl sm:p-5"
 			>
 				<div class="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-2 sm:gap-4">
 					<div class="min-w-0">
@@ -320,9 +328,12 @@
 
 	<!-- Hero + insights -->
 	{#if data.user}
-		<section class="grid grid-cols-1 gap-8 lg:grid-cols-3" aria-labelledby="welcome-heading">
+		<section
+			class="grid w-full min-w-0 grid-cols-1 gap-8 lg:grid-cols-3"
+			aria-labelledby="welcome-heading"
+		>
 			<div
-				class="ibc-lounge-hero border-border/50 relative col-span-1 flex min-h-[260px] flex-col overflow-hidden rounded-2xl border shadow-md {data
+				class="ibc-lounge-hero relative col-span-1 flex min-h-[260px] flex-col overflow-hidden rounded-2xl border shadow-md {data
 					.user.role === 'admin'
 					? 'lg:col-span-2'
 					: 'lg:col-span-3'}"
@@ -373,7 +384,7 @@
 								{/if}
 							</div>
 						</div>
-						<div class="max-w-xl space-y-4 sm:space-y-5">
+						<div class="max-w-3xl space-y-4 sm:space-y-5 lg:max-w-4xl xl:max-w-5xl">
 							<h1
 								id="welcome-heading"
 								class="text-3xl font-bold tracking-tight text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.45)] sm:text-4xl"
@@ -406,7 +417,7 @@
 			{#if data.user.role === "admin"}
 				<div class="grid min-w-0 grid-cols-2 gap-x-4 gap-y-8 lg:grid-cols-1 lg:gap-8">
 					<Card.Root
-						class="border-border/50 min-w-0 gap-3 rounded-xl border py-4 shadow-sm sm:gap-6 sm:rounded-2xl sm:py-6"
+						class=" min-w-0 gap-3 rounded-xl border py-4 shadow-sm sm:gap-6 sm:rounded-2xl sm:py-6"
 					>
 						<Card.Header class="px-3 pb-2 sm:px-6">
 							<div class="flex items-center gap-1.5 sm:gap-2">
@@ -433,7 +444,7 @@
 						</Card.Content>
 					</Card.Root>
 					<Card.Root
-						class="border-border/50 min-w-0 gap-3 rounded-xl border py-4 shadow-sm sm:gap-6 sm:rounded-2xl sm:py-6"
+						class=" min-w-0 gap-3 rounded-xl border py-4 shadow-sm sm:gap-6 sm:rounded-2xl sm:py-6"
 					>
 						<Card.Header class="px-3 pb-2 sm:px-6">
 							<div class="flex items-center gap-1.5 sm:gap-2">
@@ -464,373 +475,383 @@
 					</Card.Root>
 				</div>
 			{/if}
-			<div
-				class="col-span-1 grid grid-cols-1 gap-8 lg:col-span-3 lg:items-stretch {data.user.role ===
-				'admin'
-					? 'lg:grid-cols-[minmax(0,35fr)_minmax(0,65fr)]'
-					: ''}"
-				aria-label="Prospects and invitation links"
-			>
-				{#if data.user.role === "admin"}
-					<Card.Root
-						class="ibc-lounge-hero border-border/50 border-primary/15 relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border shadow-sm lg:h-full"
-						aria-labelledby="pending-heading"
-					>
-						<div
-							class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/pending-members-hop-bg.png')] bg-cover bg-[position:right_bottom] bg-no-repeat opacity-[0.55] saturate-[1.05]"
-							aria-hidden="true"
-						></div>
-						<div class={hubHeroScrimLrClass} aria-hidden="true"></div>
-						<div class={hubHeroScrimTbClass} aria-hidden="true"></div>
-						<div class="relative z-10 flex w-full min-w-0 flex-col gap-2 px-6">
-							<div
-								class="flex w-full min-w-0 flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2"
-							>
-								<Card.Title
-									id="pending-heading"
-									class="dark:text-foreground flex min-w-0 items-center gap-2 text-lg font-semibold tracking-tight text-white drop-shadow-sm"
-								>
-									<UserPlusIcon class="dark:text-primary size-5 shrink-0 text-white" />
-									Prospects
-								</Card.Title>
-								<Tooltip.Root>
-									<Tooltip.Trigger>
-										{#snippet child({ props })}
-											<Button
-												{...props}
-												href="/dashboard/pending-members"
-												size="sm"
-												variant="default"
-												aria-label="Manage Prospects"
-												class={hubHeroActionBtnClass}
-											>
-												<ClipboardList class="size-4 shrink-0" aria-hidden="true" />
-												<span class="text-xs font-semibold tracking-tight">Manage</span>
-											</Button>
-										{/snippet}
-									</Tooltip.Trigger>
-									<Tooltip.Content side="bottom" align="end" sideOffset={6}>
-										<p>Manage Prospects</p>
-									</Tooltip.Content>
-								</Tooltip.Root>
-							</div>
-							<Card.Description
-								class="dark:text-muted-foreground max-w-none leading-snug text-pretty text-white/88"
-							>
-								Prospects who passed the test but don’t have a member number yet. Manage them and
-								assign member numbers.
-							</Card.Description>
-						</div>
-						<Card.Content class="relative z-10 flex flex-1 flex-col gap-4 pt-0">
-							<div>
-								{#if pendingMembersCardLoading}
-									<div class="space-y-3" aria-busy="true" aria-label="Loading Prospects">
-										<Skeleton class="h-4 w-36" />
-										<Skeleton class="h-4 w-full max-w-md" />
-										<Skeleton class="h-4 w-full max-w-[13rem]" />
-										<Skeleton class="h-3 w-40" />
-									</div>
-								{:else if (data.pendingMembersCount ?? 0) > 0}
-									<p class="dark:text-muted-foreground text-sm text-white/82">
-										<span class="dark:text-foreground font-semibold text-white tabular-nums"
-											>{data.pendingMembersCount}</span
-										>
-										waiting for acceptance.
-									</p>
-									{#if data.pendingMembers && data.pendingMembers.length > 0}
-										<ul class="mt-3 max-h-[7.5rem] space-y-1.5 overflow-hidden text-pretty">
-											{#each data.pendingMembers as pending (pending.id)}
-												<li class="truncate text-sm">
-													<a
-														href="/dashboard/pending-members#prospect-{pending.id}"
-														class="dark:text-muted-foreground dark:hover:text-foreground text-white/88 underline-offset-2 transition-colors hover:text-white hover:underline"
-													>
-														{pending.name}
-													</a>
-												</li>
-											{/each}
-										</ul>
-										{#if (data.pendingMembersCount ?? 0) > data.pendingMembers.length}
-											<p class="dark:text-muted-foreground mt-2 text-xs text-white/72">
-												+{(data.pendingMembersCount ?? 0) - data.pendingMembers.length} more on the full
-												list.
-											</p>
-										{/if}
-									{/if}
-								{:else}
-									<p class="dark:text-muted-foreground text-sm text-white/82">
-										No Prospects right now.
-									</p>
-								{/if}
-							</div>
-						</Card.Content>
-					</Card.Root>
-				{/if}
-
-				<Card.Root
-					class="border-border/50 border-primary/15 relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border shadow-sm lg:h-full"
-					aria-labelledby="invites-heading"
+			{#if data.user.role === "admin" || showInvitationLinksCard}
+				<div
+					class="col-span-1 grid grid-cols-1 gap-8 lg:col-span-3 lg:items-stretch {data.user
+						.role === 'admin' && showInvitationLinksCard
+						? 'lg:grid-cols-[minmax(0,35fr)_minmax(0,65fr)]'
+						: ''}"
+					aria-label="Prospects and invitation links"
 				>
-					<div
-						class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/invitation-barrels-bg.png')] bg-cover bg-[position:85%_center] bg-no-repeat opacity-[0.55] saturate-[1.05] dark:opacity-[0.64]"
-						aria-hidden="true"
-					></div>
-					<div class={hubCardMidWashClass} aria-hidden="true"></div>
-					<div class={hubHeroScrimLrClass} aria-hidden="true"></div>
-					<div class={hubHeroScrimTbClass} aria-hidden="true"></div>
-					<div class="relative z-10 flex w-full min-w-0 flex-col gap-3 px-6">
-						<div
-							class="flex w-full min-w-0 flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2"
+					{#if data.user.role === "admin"}
+						<Card.Root
+							class="ibc-lounge-hero border-primary/15 relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border shadow-sm lg:h-full"
+							aria-labelledby="pending-heading"
 						>
-							<Card.Title
-								id="invites-heading"
-								class="dark:text-foreground flex min-w-0 items-center gap-2 text-lg font-semibold tracking-tight text-white drop-shadow-sm"
-							>
-								<LinkIcon class="dark:text-primary size-5 shrink-0 text-white" />
-								Invitation links
-							</Card.Title>
-							{#if canCreateInvites}
-								<Button
-									type="button"
-									size="sm"
-									variant="default"
-									class={hubHeroActionBtnClass}
-									aria-haspopup="dialog"
-									aria-expanded={inviteCreateDialogOpen}
-									onclick={() => {
-										inviteCreateDialogOpen = true;
-									}}
+							<div
+								class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/pending-members-hop-bg.png')] bg-cover bg-[position:right_bottom] bg-no-repeat opacity-[0.55] saturate-[1.05]"
+								aria-hidden="true"
+							></div>
+							<div class={hubHeroScrimLrClass} aria-hidden="true"></div>
+							<div class={hubHeroScrimTbClass} aria-hidden="true"></div>
+							<div class="relative z-10 flex w-full min-w-0 flex-col gap-2 px-6">
+								<div
+									class="flex w-full min-w-0 flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2"
 								>
-									<Plus class="size-4 shrink-0" aria-hidden="true" />
-									<span class="text-xs font-semibold tracking-tight">New invite</span>
-								</Button>
-							{/if}
-						</div>
-						{#if canCreateInvites}
-							<Dialog.Root bind:open={inviteCreateDialogOpen}>
-								<Dialog.Content class="sm:max-w-md">
-									<Dialog.Header>
-										<Dialog.Title>Create invitation</Dialog.Title>
-										<Dialog.Description>
-											Add a name so you remember who the link is for.
-										</Dialog.Description>
-									</Dialog.Header>
-									<form
-										method="post"
-										action="?/createInvitation"
-										use:enhance={() => {
-											creating = true;
-											return async ({ update, result }) => {
-												await update({ reset: true });
-												creating = false;
-												if (result.type === "success") {
-													inviteCreateDialogOpen = false;
-													const d = result.data as { invitation?: { token?: string } } | undefined;
-													const t = d?.invitation?.token;
-													if (t) {
-														highlightInviteToken = t;
-														setTimeout(() => {
-															highlightInviteToken = null;
-														}, 12_000);
-													}
-												} else if (result.type === "failure") {
-													const msg = result.data?.message;
-													inviteErrorMessage =
-														typeof msg === "string" ? msg : "Could not create an invitation link.";
-													inviteErrorOpen = true;
-												}
-											};
-										}}
-										class="flex flex-col gap-4"
+									<Card.Title
+										id="pending-heading"
+										class="dark:text-foreground flex min-w-0 items-center gap-2 text-lg font-semibold tracking-tight text-white drop-shadow-sm"
 									>
-										<div class="flex flex-col gap-2">
-											<Label for="dialog-invite-name">Who is this invite for?</Label>
-											<Input
-												id="dialog-invite-name"
-												name="inviteName"
-												type="text"
-												required
-												maxlength={120}
-												autocomplete="off"
-												placeholder="e.g. Alex Kim"
-												disabled={creating}
-											/>
+										<UserPlusIcon class="dark:text-primary size-5 shrink-0 text-white" />
+										Prospects
+									</Card.Title>
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											{#snippet child({ props })}
+												<Button
+													{...props}
+													href="/dashboard/pending-members"
+													size="sm"
+													variant="default"
+													aria-label="Manage Prospects"
+													class={hubHeroActionBtnClass}
+												>
+													<ClipboardList class="size-4 shrink-0" aria-hidden="true" />
+													<span class="text-xs font-semibold tracking-tight">Manage</span>
+												</Button>
+											{/snippet}
+										</Tooltip.Trigger>
+										<Tooltip.Content side="bottom" align="end" sideOffset={6}>
+											<p>Manage Prospects</p>
+										</Tooltip.Content>
+									</Tooltip.Root>
+								</div>
+								<Card.Description
+									class="dark:text-muted-foreground max-w-none leading-snug text-pretty text-white/88"
+								>
+									Prospects who passed the test but don’t have a member number yet. Manage them and
+									assign member numbers.
+								</Card.Description>
+							</div>
+							<Card.Content class="relative z-10 flex flex-1 flex-col gap-4 pt-0">
+								<div>
+									{#if pendingMembersCardLoading}
+										<div class="space-y-3" aria-busy="true" aria-label="Loading Prospects">
+											<Skeleton class="h-4 w-36" />
+											<Skeleton class="h-4 w-full max-w-md" />
+											<Skeleton class="h-4 w-full max-w-[13rem]" />
+											<Skeleton class="h-3 w-40" />
 										</div>
-										<Dialog.Footer>
-											<Button
-												type="button"
-												variant="outline"
-												disabled={creating}
-												onclick={() => {
-													inviteCreateDialogOpen = false;
-												}}
+									{:else if (data.pendingMembersCount ?? 0) > 0}
+										<p class="dark:text-muted-foreground text-sm text-white/82">
+											<span class="dark:text-foreground font-semibold text-white tabular-nums"
+												>{data.pendingMembersCount}</span
 											>
-												Cancel
-											</Button>
-											<Button type="submit" disabled={creating} class="gap-1.5">
-												{#if creating}
-													<Loader2 class="size-4 shrink-0 animate-spin" aria-hidden="true" />
-													<span>Generating…</span>
-												{:else}
-													<span>Generate</span>
-												{/if}
-											</Button>
-										</Dialog.Footer>
-									</form>
-								</Dialog.Content>
-							</Dialog.Root>
-						{/if}
-						<Card.Description
-							class="dark:text-muted-foreground max-w-none leading-snug text-pretty text-white/88"
-						>
-							Create secure, one-time signup links to invite Prospects. Use the copy icon on active
-							rows to copy a link.
-						</Card.Description>
-					</div>
-					<Card.Content class="relative z-10 flex flex-1 flex-col p-2 md:p-6">
-						<AlertDialog.Root bind:open={inviteErrorOpen}>
-							<AlertDialog.Portal>
-								<AlertDialog.Overlay
-									class="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/60"
-								/>
-								<AlertDialog.Content
-									class="bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-md"
-								>
-									<div class="flex flex-col gap-2">
-										<AlertDialog.Title class="text-lg font-semibold tracking-tight">
-											Couldn’t create invite
-										</AlertDialog.Title>
-										<AlertDialog.Description class="text-muted-foreground text-sm">
-											{inviteErrorMessage}
-										</AlertDialog.Description>
-									</div>
-									<div class="flex justify-end pt-2">
-										<AlertDialog.Cancel
-											class="ring-offset-background focus-visible:ring-ring bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center rounded-md px-4 text-sm font-medium shadow-sm transition-[color,box-shadow] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
-										>
-											OK
-										</AlertDialog.Cancel>
-									</div>
-								</AlertDialog.Content>
-							</AlertDialog.Portal>
-						</AlertDialog.Root>
-
-						<div class="space-y-4">
-							{#if isProspectOnboarding && data.prospectGate && !data.prospectGate.canTakeTestNow}
-								<Alert.Root class="mb-4" variant="destructive">
-									<ClockIcon class="size-4" />
-									<Alert.Title>Three meeting dates required first</Alert.Title>
-									<Alert.Description>
-										Log all three beer club meetings on your dashboard before the IBC test unlocks.
-									</Alert.Description>
-								</Alert.Root>
-								<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-									<p class="dark:text-muted-foreground text-sm text-white/88">
-										You have {data.prospectGate.meetingCount} of {data.prospectGate
-											.meetingsRequired} meetings saved. Add the remaining {meetingsRemaining} on this
-										dashboard to continue.
-									</p>
-									<Button
-										class="shrink-0 shadow-md"
-										type="button"
-										onclick={() => (prospectProgressDialogOpen = true)}
-									>
-										View progress
-									</Button>
-								</div>
-							{:else if data.user && requiresIbcTest(data.user)}
-								<Alert.Root class="mb-4" variant="destructive">
-									<ClockIcon class="size-4" />
-									<Alert.Title>Test required</Alert.Title>
-									<Alert.Description>
-										You must pass the official IBC test before you can create invitation links.
-									</Alert.Description>
-								</Alert.Root>
-								<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-									<p class="dark:text-muted-foreground text-sm text-white/88">
-										Complete the IBC test to unlock invitations. An admin will review your profile
-										after you pass the test.
-									</p>
-									<Button class="shrink-0 shadow-md">
-										<a href="/test">Take test</a>
-									</Button>
-								</div>
-							{:else if data.user?.role !== "admin" && (data.user?.role !== "member" || data.user?.mbr == null)}
-								<Alert.Root class="mb-4" variant="default">
-									<ClockIcon class="size-4" />
-									<Alert.Title>Prospect acceptance required</Alert.Title>
-									<Alert.Description>
-										You must be accepted as a member and assigned a member number before creating
-										invitation links.
-									</Alert.Description>
-								</Alert.Root>
-								<p class="dark:text-muted-foreground text-sm text-white/88">
-									{#if data.user.test_passed != null}
-										You’ve passed the IBC test. An admin will review your profile and assign your
-										member number when you’re accepted.
+											waiting for acceptance.
+										</p>
+										{#if data.pendingMembers && data.pendingMembers.length > 0}
+											<ul class="mt-3 max-h-[7.5rem] space-y-1.5 overflow-hidden text-pretty">
+												{#each data.pendingMembers as pending (pending.id)}
+													<li class="truncate text-sm">
+														<a
+															href="/dashboard/pending-members#prospect-{pending.id}"
+															class="dark:text-muted-foreground dark:hover:text-foreground text-white/88 underline-offset-2 transition-colors hover:text-white hover:underline"
+														>
+															{pending.name}
+														</a>
+													</li>
+												{/each}
+											</ul>
+											{#if (data.pendingMembersCount ?? 0) > data.pendingMembers.length}
+												<p class="dark:text-muted-foreground mt-2 text-xs text-white/72">
+													+{(data.pendingMembersCount ?? 0) - data.pendingMembers.length} more on the
+													full list.
+												</p>
+											{/if}
+										{/if}
 									{:else}
-										An admin will assign your member number when your account is ready.
-									{/if}
-								</p>
-							{:else}
-								<div class="mt-6 space-y-3">
-									<div class="flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-1">
-										<h4
-											class="dark:text-foreground text-sm font-semibold text-white drop-shadow-sm"
-										>
-											Invites this year
-										</h4>
-										<a
-											href="/dashboard/invitations"
-											class="dark:text-primary text-xs font-semibold text-amber-200/95 underline-offset-4 hover:underline"
-										>
-											View all
-										</a>
-									</div>
-									{#if visibleInvitations.length > 0}
-										<ul class="flex min-w-0 flex-col" role="list">
-											{#each visibleInvitations as invitation (invitation.token)}
-												<InvitationRow
-													{invitation}
-													baseUrl={data.baseUrl}
-													isHighlighted={invitation.token === highlightInviteToken}
-													{hubTableColSepClass}
-													{inviteCopyBtnClass}
-													{inviteRowHighlightClass}
-													{inviteRowIdleClass}
-													{inviteRowShellClass}
-												/>
-											{/each}
-										</ul>
-									{:else}
-										<p class="dark:text-muted-foreground text-sm text-white/78">
-											No invites from {data.invitationYear} yet.
+										<p class="dark:text-muted-foreground text-sm text-white/82">
+											No Prospects right now.
 										</p>
 									{/if}
 								</div>
-							{/if}
-						</div>
-					</Card.Content>
-				</Card.Root>
-			</div>
+							</Card.Content>
+						</Card.Root>
+					{/if}
+
+					{#if showInvitationLinksCard}
+						<Card.Root
+							class=" border-primary/15 relative flex min-h-0 min-w-0 flex-col overflow-hidden rounded-2xl border shadow-sm lg:h-full"
+							aria-labelledby="invites-heading"
+						>
+							<div
+								class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/invitation-barrels-bg.png')] bg-cover bg-[position:85%_center] bg-no-repeat opacity-[0.55] saturate-[1.05] dark:opacity-[0.64]"
+								aria-hidden="true"
+							></div>
+							<div class={hubCardMidWashClass} aria-hidden="true"></div>
+							<div class={hubHeroScrimLrClass} aria-hidden="true"></div>
+							<div class={hubHeroScrimTbClass} aria-hidden="true"></div>
+							<div class="relative z-10 flex w-full min-w-0 flex-col gap-3 px-6">
+								<div
+									class="flex w-full min-w-0 flex-row flex-wrap items-center justify-between gap-x-3 gap-y-2"
+								>
+									<Card.Title
+										id="invites-heading"
+										class="dark:text-foreground flex min-w-0 items-center gap-2 text-lg font-semibold tracking-tight text-white drop-shadow-sm"
+									>
+										<LinkIcon class="dark:text-primary size-5 shrink-0 text-white" />
+										Invitation links
+									</Card.Title>
+									{#if canCreateInvites}
+										<Button
+											type="button"
+											size="sm"
+											variant="default"
+											class={hubHeroActionBtnClass}
+											aria-haspopup="dialog"
+											aria-expanded={inviteCreateDialogOpen}
+											onclick={() => {
+												inviteCreateDialogOpen = true;
+											}}
+										>
+											<Plus class="size-4 shrink-0" aria-hidden="true" />
+											<span class="text-xs font-semibold tracking-tight">New invite</span>
+										</Button>
+									{/if}
+								</div>
+								{#if canCreateInvites}
+									<Dialog.Root bind:open={inviteCreateDialogOpen}>
+										<Dialog.Content class="sm:max-w-md">
+											<Dialog.Header>
+												<Dialog.Title>Create invitation</Dialog.Title>
+												<Dialog.Description>
+													Add a name so you remember who the link is for.
+												</Dialog.Description>
+											</Dialog.Header>
+											<form
+												method="post"
+												action="?/createInvitation"
+												use:enhance={() => {
+													creating = true;
+													return async ({ update, result }) => {
+														await update({ reset: true });
+														creating = false;
+														if (result.type === "success") {
+															inviteCreateDialogOpen = false;
+															const d = result.data as
+																| { invitation?: { token?: string } }
+																| undefined;
+															const t = d?.invitation?.token;
+															if (t) {
+																highlightInviteToken = t;
+																setTimeout(() => {
+																	highlightInviteToken = null;
+																}, 12_000);
+															}
+														} else if (result.type === "failure") {
+															const msg = result.data?.message;
+															inviteErrorMessage =
+																typeof msg === "string"
+																	? msg
+																	: "Could not create an invitation link.";
+															inviteErrorOpen = true;
+														}
+													};
+												}}
+												class="flex flex-col gap-4"
+											>
+												<div class="flex flex-col gap-2">
+													<Label for="dialog-invite-name">Who is this invite for?</Label>
+													<Input
+														id="dialog-invite-name"
+														name="inviteName"
+														type="text"
+														required
+														maxlength={120}
+														autocomplete="off"
+														placeholder="e.g. Alex Kim"
+														disabled={creating}
+													/>
+												</div>
+												<Dialog.Footer>
+													<Button
+														type="button"
+														variant="outline"
+														disabled={creating}
+														onclick={() => {
+															inviteCreateDialogOpen = false;
+														}}
+													>
+														Cancel
+													</Button>
+													<Button type="submit" disabled={creating} class="gap-1.5">
+														{#if creating}
+															<Loader2 class="size-4 shrink-0 animate-spin" aria-hidden="true" />
+															<span>Generating…</span>
+														{:else}
+															<span>Generate</span>
+														{/if}
+													</Button>
+												</Dialog.Footer>
+											</form>
+										</Dialog.Content>
+									</Dialog.Root>
+								{/if}
+								<Card.Description
+									class="dark:text-muted-foreground max-w-none leading-snug text-pretty text-white/88"
+								>
+									Create secure, one-time signup links to invite Prospects. Use the copy icon on
+									active rows to copy a link.
+								</Card.Description>
+							</div>
+							<Card.Content class="relative z-10 flex flex-1 flex-col p-2 md:p-6">
+								<AlertDialog.Root bind:open={inviteErrorOpen}>
+									<AlertDialog.Portal>
+										<AlertDialog.Overlay
+											class="data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 fixed inset-0 z-50 bg-black/60"
+										/>
+										<AlertDialog.Content
+											class="bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-md"
+										>
+											<div class="flex flex-col gap-2">
+												<AlertDialog.Title class="text-lg font-semibold tracking-tight">
+													Couldn’t create invite
+												</AlertDialog.Title>
+												<AlertDialog.Description class="text-muted-foreground text-sm">
+													{inviteErrorMessage}
+												</AlertDialog.Description>
+											</div>
+											<div class="flex justify-end pt-2">
+												<AlertDialog.Cancel
+													class="ring-offset-background focus-visible:ring-ring bg-primary text-primary-foreground hover:bg-primary/90 inline-flex h-9 items-center justify-center rounded-md px-4 text-sm font-medium shadow-sm transition-[color,box-shadow] focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none"
+												>
+													OK
+												</AlertDialog.Cancel>
+											</div>
+										</AlertDialog.Content>
+									</AlertDialog.Portal>
+								</AlertDialog.Root>
+
+								<div class="space-y-4">
+									{#if isProspectOnboarding && data.prospectGate && !data.prospectGate.canTakeTestNow}
+										<Alert.Root class="mb-4" variant="destructive">
+											<ClockIcon class="size-4" />
+											<Alert.Title>Three meeting dates required first</Alert.Title>
+											<Alert.Description>
+												Log all three beer club meetings on your dashboard before the IBC test
+												unlocks.
+											</Alert.Description>
+										</Alert.Root>
+										<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+											<p class="dark:text-muted-foreground text-sm text-white/88">
+												You have {data.prospectGate.meetingCount} of {data.prospectGate
+													.meetingsRequired} meetings saved. Add the remaining {meetingsRemaining} on
+												this dashboard to continue.
+											</p>
+											<Button
+												class="shrink-0 shadow-md"
+												type="button"
+												onclick={() => (prospectProgressDialogOpen = true)}
+											>
+												View progress
+											</Button>
+										</div>
+									{:else if data.user && requiresIbcTest(data.user)}
+										<Alert.Root class="mb-4" variant="destructive">
+											<ClockIcon class="size-4" />
+											<Alert.Title>Test required</Alert.Title>
+											<Alert.Description>
+												You must pass the official IBC test before you can create invitation links.
+											</Alert.Description>
+										</Alert.Root>
+										<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+											<p class="dark:text-muted-foreground text-sm text-white/88">
+												Complete the IBC test to unlock invitations. An admin will review your
+												profile after you pass the test.
+											</p>
+											<Button class="shrink-0 shadow-md">
+												<a href="/test">Take test</a>
+											</Button>
+										</div>
+									{:else if data.user?.role !== "admin" && (data.user?.role !== "member" || data.user?.mbr == null)}
+										<Alert.Root class="mb-4" variant="default">
+											<ClockIcon class="size-4" />
+											<Alert.Title>Prospect acceptance required</Alert.Title>
+											<Alert.Description>
+												You must be accepted as a member and assigned a member number before
+												creating invitation links.
+											</Alert.Description>
+										</Alert.Root>
+										<p class="dark:text-muted-foreground text-sm text-white/88">
+											{#if data.user.test_passed != null}
+												You’ve passed the IBC test. An admin will review your profile and assign
+												your member number when you’re accepted.
+											{:else}
+												An admin will assign your member number when your account is ready.
+											{/if}
+										</p>
+									{:else}
+										<div class="mt-6 space-y-3">
+											<div
+												class="flex flex-row flex-wrap items-center justify-between gap-x-3 gap-y-1"
+											>
+												<h4
+													class="dark:text-foreground text-sm font-semibold text-white drop-shadow-sm"
+												>
+													Invites this year
+												</h4>
+												<a
+													href="/dashboard/invitations"
+													class="dark:text-primary text-xs font-semibold text-amber-200/95 underline-offset-4 hover:underline"
+												>
+													View all
+												</a>
+											</div>
+											{#if visibleInvitations.length > 0}
+												<ul class="@container/invite-widget flex min-w-0 flex-col" role="list">
+													{#each visibleInvitations as invitation (invitation.token)}
+														<InvitationRow
+															{invitation}
+															baseUrl={data.baseUrl}
+															isHighlighted={invitation.token === highlightInviteToken}
+															{inviteCopyBtnClass}
+															{inviteRowHighlightClass}
+															{inviteRowIdleClass}
+															{inviteRowShellClass}
+														/>
+													{/each}
+												</ul>
+											{:else}
+												<p class="dark:text-muted-foreground text-sm text-white/78">
+													No invites from {data.invitationYear} yet.
+												</p>
+											{/if}
+										</div>
+									{/if}
+								</div>
+							</Card.Content>
+						</Card.Root>
+					{/if}
+				</div>
+			{/if}
 		</section>
 	{/if}
 
 	{#if isProspectOnboarding && data.prospectGate}
 		<Dialog.Root bind:open={prospectProgressDialogOpen}>
-			<Dialog.Content class="sm:max-w-xl">
+			<Dialog.Content class="w-[min(100vw-2rem,40rem)] sm:max-w-2xl">
 				<Dialog.Header>
 					<Dialog.Title>Prospect progress</Dialog.Title>
 					<Dialog.Description>
 						Attend and log three beer club meetings to unlock the IBC test and member-only tools.
 					</Dialog.Description>
 				</Dialog.Header>
-				<div class="space-y-4">
-					<div class="grid grid-cols-3 gap-2">
+				<div class="space-y-4 md:space-y-5">
+					<div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 md:gap-5">
 						{#each [1, 2, 3] as slot (slot)}
 							<button
 								type="button"
-								class="hover:bg-muted/50 focus-visible:ring-ring rounded-xl border p-3 text-center transition-colors focus-visible:ring-2 focus-visible:outline-none"
+								class="hover:bg-muted/50 focus-visible:ring-ring min-h-[4.75rem] rounded-xl border p-4 text-center transition-colors focus-visible:ring-2 focus-visible:outline-none sm:min-h-0 md:p-5"
 								onclick={() => jumpToMeetingSlot(slot)}
 							>
 								<div class="mb-2 flex justify-center">
@@ -877,9 +898,11 @@
 			</Dialog.Content>
 		</Dialog.Root>
 
-		<section id="prospect-progress" class="space-y-6">
-			<Card.Root class="border-primary/20 overflow-hidden rounded-2xl border shadow-sm">
-				<Card.Header class="space-y-3">
+		<section id="prospect-progress" class="w-full min-w-0 space-y-6 md:space-y-8">
+			<Card.Root
+				class="border-primary/20 w-full min-w-0 overflow-hidden rounded-2xl border shadow-sm"
+			>
+				<Card.Header class="space-y-3 md:space-y-4">
 					<div class="flex flex-wrap items-start justify-between gap-3">
 						<div class="space-y-1">
 							<Card.Title class="text-xl">Log your first 3 meetings</Card.Title>
@@ -911,12 +934,12 @@
 						</Alert.Description>
 					</Alert.Root>
 				</Card.Header>
-				<Card.Content class="space-y-6">
-					<div class="grid grid-cols-3 gap-2">
+				<Card.Content class="space-y-6 sm:space-y-8 md:space-y-10">
+					<div class="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4 md:gap-5">
 						{#each meetingSlots as meeting (meeting.slot)}
 							<button
 								type="button"
-								class={`hover:bg-muted/60 rounded-xl border px-3 py-2 text-left text-sm transition-colors ${
+								class={`hover:bg-muted/60 min-h-[3.25rem] rounded-xl border px-4 py-3 text-left text-sm transition-colors sm:min-h-0 md:px-5 md:py-4 ${
 									activeMeetingSlot === meeting.slot ? "border-primary bg-primary/5" : ""
 								}`}
 								onclick={() => (activeMeetingSlot = meeting.slot)}
@@ -928,11 +951,13 @@
 							</button>
 						{/each}
 					</div>
-					<div class="rounded-xl border p-4">
-						<div class="mb-3 flex items-center justify-between gap-3">
-							<div>
-								<h3 class="font-medium">{activeMeeting.label}</h3>
-								<p class="text-muted-foreground text-xs">
+					<div class="rounded-xl border p-4 md:p-6 lg:p-8">
+						<div
+							class="mb-4 flex flex-col gap-3 sm:mb-5 sm:flex-row sm:items-center sm:justify-between"
+						>
+							<div class="min-w-0">
+								<h3 class="text-base font-medium md:text-lg">{activeMeeting.label}</h3>
+								<p class="text-muted-foreground mt-1 text-xs sm:text-sm">
 									Choose a date, then click Save date.
 								</p>
 							</div>
@@ -953,7 +978,7 @@
 									name="meetingDate"
 									bind:value={meeting1Date}
 									maxValue={offsetDateString(meeting2Date, -7)}
-									isDateUnavailable={isWednesdayCalendarDate}
+									isDateDisabled={disableIfNotWednesdayUtc}
 								/>
 							{:else if activeMeeting.slot === 2}
 								<DatePickerField
@@ -962,7 +987,7 @@
 									bind:value={meeting2Date}
 									minValue={offsetDateString(meeting1Date, 7)}
 									maxValue={offsetDateString(meeting3Date, -7)}
-									isDateUnavailable={isWednesdayCalendarDate}
+									isDateDisabled={disableIfNotWednesdayUtc}
 								/>
 							{:else}
 								<DatePickerField
@@ -970,7 +995,7 @@
 									name="meetingDate"
 									bind:value={meeting3Date}
 									minValue={offsetDateString(meeting2Date, 7)}
-									isDateUnavailable={isWednesdayCalendarDate}
+									isDateDisabled={disableIfNotWednesdayUtc}
 								/>
 							{/if}
 							<div class="flex flex-wrap gap-2">
@@ -1013,7 +1038,7 @@
 			<!-- Upcoming events -->
 			<section class="min-w-0 lg:flex lg:flex-col" aria-labelledby="tables-heading">
 				<Card.Root
-					class="ibc-lounge-hero border-border/50 border-primary/15 relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border shadow-sm lg:h-full"
+					class="ibc-lounge-hero  border-primary/15 relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-2xl border shadow-sm lg:h-full"
 				>
 					<div
 						class="pointer-events-none absolute inset-0 z-0 bg-[url('/images/upcoming-events-bg.png')] bg-cover bg-[position:center_28%] bg-no-repeat opacity-[0.55] saturate-[1.05] dark:opacity-[0.58]"
@@ -1034,7 +1059,7 @@
 								Upcoming events
 							</Card.Title>
 							<a
-								href="/events"
+								href="/dashboard/events"
 								class="dark:text-primary text-xs font-semibold text-amber-200/95 underline-offset-4 hover:underline"
 							>
 								View all
@@ -1055,60 +1080,51 @@
 							<ul
 								class="flex flex-col overflow-hidden"
 								role="list"
-								aria-label="Upcoming events: title, date, location, and access"
+								aria-label="Upcoming events: title, date, description or location, and access"
 							>
 								{#each data.upcomingEvents as ev (ev.id)}
 									<li class="{inviteRowShellClass} list-none p-0">
-										<div
-											class="flex min-h-10 w-full min-w-0 flex-nowrap items-center {inviteRowIdleClass}"
-										>
+										<div class="{upcomingEventsRowGridClass} {inviteRowIdleClass}">
 											<div
-												class="dark:text-foreground flex max-w-[9rem] min-w-0 flex-1 items-center px-3 py-2 text-xs font-medium text-white/92 sm:max-w-[11rem] sm:px-4"
+												class="dark:text-foreground min-w-0 px-3 py-2 text-xs font-medium text-white/92 sm:px-4"
 											>
 												<a
-													href="/events"
-													class="dark:hover:text-primary truncate transition-colors hover:text-white/95"
+													href="/dashboard/events"
+													class="dark:hover:text-primary block truncate transition-colors hover:text-white/95"
 												>
 													{ev.title}
 												</a>
 											</div>
-											<div class="flex min-w-0 items-center">
-												<Separator orientation="vertical" class={hubTableColSepClass} />
-												<div
-													class="dark:text-muted-foreground flex min-w-0 items-center px-3 py-2 text-xs text-white/88 tabular-nums sm:px-4"
-												>
+											<div
+												class="dark:text-muted-foreground flex w-full min-w-0 items-center justify-center px-2 py-2 text-xs text-white/88 tabular-nums sm:px-3"
+											>
+												<span class="block w-full truncate text-center">
 													{ev.event_date ? formatDate(new Date(ev.event_date)) : "—"}
-												</div>
+												</span>
 											</div>
-											<div class="hidden min-w-0 items-center sm:flex">
-												<Separator orientation="vertical" class={hubTableColSepClass} />
-												<div
-													class="dark:text-muted-foreground flex max-w-[10rem] min-w-0 items-center px-3 py-2 text-xs text-white/85 sm:px-4"
-												>
-													<span class="truncate">{ev.location ?? "—"}</span>
-												</div>
+											<div
+												class="dark:text-muted-foreground hidden min-w-0 px-3 py-2 text-xs text-white/85 sm:block sm:px-4"
+											>
+												<span class="block truncate">
+													{ev.description?.trim() || ev.location?.trim() || "—"}
+												</span>
 											</div>
-											<div class="flex min-w-0 flex-1 items-center justify-end">
-												<Separator orientation="vertical" class={hubTableColSepClass} />
-												<div
-													class="flex min-h-10 min-w-0 flex-1 items-center justify-end px-2 py-2 sm:px-3"
-												>
-													{#if ev.members_only}
-														<Badge
-															variant="secondary"
-															class="shrink-0 rounded-sm px-2 py-0.5 text-[10px] whitespace-nowrap"
-														>
-															Members
-														</Badge>
-													{:else}
-														<Badge
-															variant="outline"
-															class="dark:border-border dark:text-foreground shrink-0 rounded-sm border-white/40 bg-black/15 px-2 py-0.5 text-[10px] whitespace-nowrap text-white/90 dark:bg-transparent"
-														>
-															Public
-														</Badge>
-													{/if}
-												</div>
+											<div class="flex min-h-10 items-center justify-center px-2 py-2 sm:px-3">
+												{#if ev.members_only}
+													<Badge
+														variant="secondary"
+														class="w-full max-w-[5.25rem] justify-center rounded-sm px-2 py-0.5 text-center text-[10px] whitespace-nowrap"
+													>
+														Members
+													</Badge>
+												{:else}
+													<Badge
+														variant="outline"
+														class="dark:border-border dark:text-foreground w-full max-w-[5.25rem] justify-center rounded-sm border-white/40 bg-black/15 px-2 py-0.5 text-center text-[10px] whitespace-nowrap text-white/90 dark:bg-transparent"
+													>
+														Public
+													</Badge>
+												{/if}
 											</div>
 										</div>
 									</li>
@@ -1122,7 +1138,7 @@
 			<!-- Quick actions -->
 			<section class="min-w-0 lg:flex lg:flex-col" aria-labelledby="actions-heading">
 				<Card.Root
-					class="border-border/50 from-sidebar/25 to-card flex min-h-0 min-w-0 flex-1 flex-col rounded-2xl border bg-gradient-to-br shadow-sm lg:h-full"
+					class=" from-sidebar/25 to-card flex min-h-0 min-w-0 flex-1 flex-col rounded-2xl border bg-gradient-to-br shadow-sm lg:h-full"
 					aria-labelledby="actions-heading"
 				>
 					<Card.Header class="flex flex-row items-center gap-3 pb-2">
@@ -1166,15 +1182,11 @@
 								Manage Keg Credits
 							</QuickActionLink>
 						{:else}
-							<QuickActionLink href="/stats#beer-consumed-section" class="whitespace-normal">
-								<Beer class="text-primary size-[1.15rem] shrink-0" />
-								<span class="min-w-0 text-left leading-snug">Beer consumed</span>
+							<QuickActionLink href="/dashboard/stats" class="whitespace-normal">
+								<BarChart3 class="text-primary size-[1.15rem] shrink-0" />
+								<span class="min-w-0 text-left leading-snug">Keg &amp; beer stats</span>
 							</QuickActionLink>
-							<QuickActionLink href="/stats#keg-credits-section">
-								<Package class="text-primary size-[1.15rem] shrink-0" />
-								Keg credits
-							</QuickActionLink>
-							<QuickActionLink href="/events">
+							<QuickActionLink href="/dashboard/events">
 								<CalendarRange class="text-primary size-[1.15rem] shrink-0" />
 								View events
 							</QuickActionLink>

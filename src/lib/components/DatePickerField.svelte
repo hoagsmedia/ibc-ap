@@ -15,6 +15,7 @@
 		disabled = false,
 		minValue,
 		maxValue,
+		isDateDisabled,
 		isDateUnavailable,
 		"aria-invalid": ariaInvalid,
 		class: className
@@ -26,6 +27,9 @@
 		disabled?: boolean;
 		minValue?: string;
 		maxValue?: string;
+		/** Prefer this for “cannot select” days; Bits maps it to `data-disabled`. */
+		isDateDisabled?: (date: DateValue) => boolean;
+		/** Use for “unavailable” semantics (e.g. booked); Bits maps to `data-unavailable` (line-through in default styles). */
 		isDateUnavailable?: (date: DateValue) => boolean;
 		"aria-invalid"?: boolean | "true" | "false";
 		class?: string;
@@ -115,6 +119,7 @@
 			class="rounded-none border-0 shadow-none"
 			minValue={parseDateOnly(minValue)}
 			maxValue={parseDateOnly(maxValue)}
+			{isDateDisabled}
 			{isDateUnavailable}
 		/>
 		<div class="border-border flex justify-end border-t p-2">
