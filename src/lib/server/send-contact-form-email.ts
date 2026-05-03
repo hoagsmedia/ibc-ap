@@ -3,15 +3,8 @@ import { env } from "$env/dynamic/private";
 import { Resend } from "resend";
 
 const DEFAULT_CONTACT_TO = "contact.form@islandbeerclub.com";
-
-function escapeHtml(s: string): string {
-	return s
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;")
-		.replace(/'/g, "&#39;");
-}
+/** Template alias in Resend (vars: MESSAGE, SENDER_EMAIL, SENDER_NAME, SUBMITTED_AT). */
+const DEFAULT_CONTACT_TEMPLATE_ID = "contact-form-submission";
 
 function contactFormIdempotencyKey(input: {
 	name: string;
@@ -48,16 +41,19 @@ export async function sendContactFormEmail(input: {
 	const name = input.name.trim();
 	const email = input.email.trim();
 	const message = input.message.trim();
-	const subject = `IBC website contact — ${name.slice(0, 60)}`;
-
-	const text = [`Name: ${name}`, `Email: ${email}`, "", "Message:", message].join("\n");
-
-	const html = `
-<p><strong>Name:</strong> ${escapeHtml(name)}<br/>
-<strong>Email:</strong> ${escapeHtml(email)}</p>
-<p><strong>Message</strong></p>
-<p style="white-space:pre-wrap">${escapeHtml(message)}</p>
-`.trim();
+	const templateId = env.RESEND_CONTACT_TEMPLATE_ID?.trim() || DEFAULT_CONTACT_TEMPLATE_ID;
+	const subject =
+		env.RESEND_CONTACT_SUBJECT?.trim() || `IBC website contact — ${name.slice(0, 60)}`;
+	const submittedAt = new Date().toLocaleString("en-US", {
+		timeZone: "America/Los_Angeles",
+		weekday: "short",
+		year: "numeric",
+		month: "short",
+		day: "numeric",
+		hour: "numeric",
+		minute: "2-digit",
+		timeZoneName: "short"
+	});
 
 	const resend = new Resend(apiKey);
 	const idempotencyKey = contactFormIdempotencyKey({ name, email, message });
@@ -67,9 +63,16 @@ export async function sendContactFormEmail(input: {
 			from,
 			to,
 			subject,
-			text,
-			html,
 			replyTo: email,
+			template: {
+				id: templateId,
+				variables: {
+					MESSAGE: message,
+					SENDER_EMAIL: email,
+					SENDER_NAME: name,
+					SUBMITTED_AT: submittedAt
+				}
+			},
 			tags: [{ name: "source", value: "website-contact" }]
 		},
 		{ idempotencyKey }
