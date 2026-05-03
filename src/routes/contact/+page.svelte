@@ -29,13 +29,16 @@
 	const form = superForm(data.form, {
 		validators: zodClient(contactSchema),
 		resetForm: true,
-		onResult: ({ result }) => {
-			if (result.type === "success") {
-				toast.success("Message sent. Thanks — we'll be in touch soon.");
+		onUpdated: ({ form: f }) => {
+			if (!f.message) return;
+			if (f.message.startsWith("Thank you")) {
+				toast.success(f.message);
+			} else {
+				toast.error(f.message);
 			}
-			if (result.type === "failure") {
-				toast.error("Please fix the errors in the form.");
-			}
+		},
+		onError: ({ result }) => {
+			toast.error(result.error?.message ?? "Something went wrong. Please try again.");
 		}
 	});
 
@@ -47,7 +50,8 @@
 		hours: "We typically reply within 24–48 hours."
 	};
 
-	const iconBox = "border-primary/45 bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full border shadow-sm";
+	const iconBox =
+		"border-primary/45 bg-primary/10 text-primary flex size-11 shrink-0 items-center justify-center rounded-full border shadow-sm";
 </script>
 
 <svelte:head>
@@ -61,12 +65,10 @@
 <div class="ibc-contact-shell bg-background text-foreground antialiased">
 	<!-- Soft atmosphere (dashboard-adjacent) -->
 	<div class="pointer-events-none absolute inset-0 overflow-hidden" aria-hidden="true">
-		<div
-			class="from-muted/40 via-background to-background absolute inset-0 bg-gradient-to-b"
-		></div>
+		<div class="from-muted/40 via-background to-background absolute inset-0 bg-gradient-to-b"></div>
 		<!-- Screen blend drops solid black from the asset on light backgrounds; normal blend in dark -->
 		<div
-			class="absolute top-0 right-[-8%] h-[min(50vh,480px)] w-[min(88vw,560px)] opacity-[0.2] mix-blend-screen dark:mix-blend-normal dark:opacity-[0.14]"
+			class="absolute top-0 right-[-8%] h-[min(50vh,480px)] w-[min(88vw,560px)] opacity-[0.2] mix-blend-screen dark:opacity-[0.14] dark:mix-blend-normal"
 			style="background-image: url('/images/invitation-barrels-bg.png'); background-size: cover; background-position: center;"
 		></div>
 	</div>
@@ -77,7 +79,7 @@
 			<a
 				href="/"
 				aria-label="Island Beer Club home"
-				class="inline-flex flex-col items-center gap-3 outline-none ring-offset-background focus-visible:ring-2 focus-visible:ring-ring/50"
+				class="ring-offset-background focus-visible:ring-ring/50 inline-flex flex-col items-center gap-3 outline-none focus-visible:ring-2"
 			>
 				<IbcLogo
 					class="h-[4.5rem] w-auto md:h-[5.25rem] [&>svg]:h-full [&>svg]:w-auto"
@@ -119,10 +121,14 @@
 						<h2 class="text-foreground text-2xl font-semibold tracking-tight md:text-[1.35rem]">
 							Let's connect
 						</h2>
-						<Sparkles class="text-primary mt-2 size-5 opacity-80" strokeWidth={1.5} aria-hidden="true" />
+						<Sparkles
+							class="text-primary mt-2 size-5 opacity-80"
+							strokeWidth={1.5}
+							aria-hidden="true"
+						/>
 						<p class="text-muted-foreground mt-5 text-sm leading-relaxed">
-							Whether it’s membership, events, or something you’d love to see on the site — reach out.
-							We read every message.
+							Whether it’s membership, events, or something you’d love to see on the site — reach
+							out. We read every message.
 						</p>
 
 						<ul class="mt-8 space-y-5">
@@ -131,7 +137,9 @@
 									<MapPin class="size-5" strokeWidth={1.75} />
 								</span>
 								<div>
-									<p class="text-muted-foreground text-[0.65rem] font-semibold tracking-[0.18em] uppercase">
+									<p
+										class="text-muted-foreground text-[0.65rem] font-semibold tracking-[0.18em] uppercase"
+									>
 										Location
 									</p>
 									<p class="text-foreground mt-0.5 text-sm font-medium">{contactInfo.address}</p>
@@ -142,7 +150,9 @@
 									<Clock class="size-5" strokeWidth={1.75} />
 								</span>
 								<div>
-									<p class="text-muted-foreground text-[0.65rem] font-semibold tracking-[0.18em] uppercase">
+									<p
+										class="text-muted-foreground text-[0.65rem] font-semibold tracking-[0.18em] uppercase"
+									>
 										Response time
 									</p>
 									<p class="text-foreground mt-0.5 text-sm font-medium">{contactInfo.hours}</p>
@@ -153,7 +163,7 @@
 				</div>
 
 				<!-- Right: Form -->
-				<div class="bg-card/80 p-8 backdrop-blur-[2px] md:p-10 dark:bg-card/60">
+				<div class="bg-card/80 dark:bg-card/60 p-8 backdrop-blur-[2px] md:p-10">
 					<h2 class="text-foreground text-2xl font-semibold tracking-tight md:text-[1.35rem]">
 						Send us a message
 					</h2>
@@ -161,7 +171,8 @@
 						<Field {form} name="name">
 							<Control>
 								{#snippet children({ props })}
-									<Label class="text-muted-foreground mb-2 block text-xs font-semibold tracking-wide uppercase"
+									<Label
+										class="text-muted-foreground mb-2 block text-xs font-semibold tracking-wide uppercase"
 										>Name</Label
 									>
 									<div class="relative">
@@ -237,7 +248,9 @@
 							Send message
 						</Button>
 
-						<p class="text-muted-foreground flex items-center justify-center gap-2 text-center text-xs">
+						<p
+							class="text-muted-foreground flex items-center justify-center gap-2 text-center text-xs"
+						>
 							<Shield class="size-3.5 shrink-0 opacity-80" strokeWidth={2} aria-hidden="true" />
 							We respect your privacy. Your information stays with the club.
 						</p>
@@ -248,7 +261,7 @@
 
 		<!-- Values -->
 		<div
-			class="border-border/50 bg-card/60 mt-10 grid divide-y divide-border/50 rounded-2xl border md:grid-cols-3 md:divide-x md:divide-y-0"
+			class="border-border/50 bg-card/60 divide-border/50 mt-10 grid divide-y rounded-2xl border md:grid-cols-3 md:divide-x md:divide-y-0"
 		>
 			<div class="flex flex-col items-center gap-3 px-6 py-8 text-center md:py-10">
 				<span class={cn(iconBox, "size-12 rounded-xl")}>

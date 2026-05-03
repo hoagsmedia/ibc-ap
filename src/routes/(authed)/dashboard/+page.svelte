@@ -150,6 +150,7 @@
 	const canCreateInvites = $derived(
 		Boolean(
 			data.user &&
+				data.resendInviteConfigured &&
 				!requiresIbcTest(data.user) &&
 				(data.user.role === "admin" || (data.user.role === "member" && data.user.mbr != null))
 		)
@@ -625,7 +626,8 @@
 											<Dialog.Header>
 												<Dialog.Title>Create invitation</Dialog.Title>
 												<Dialog.Description>
-													Add a name so you remember who the link is for.
+													The signup link is sent by email to the prospect. Add their email and a
+													label for your records.
 												</Dialog.Description>
 											</Dialog.Header>
 											<form
@@ -648,6 +650,7 @@
 																	highlightInviteToken = null;
 																}, 12_000);
 															}
+															toast.success("Invite created and emailed.");
 														} else if (result.type === "failure") {
 															const msg = result.data?.message;
 															inviteErrorMessage =
@@ -673,6 +676,18 @@
 														disabled={creating}
 													/>
 												</div>
+												<div class="flex flex-col gap-2">
+													<Label for="dialog-invite-email">Prospect email</Label>
+													<Input
+														id="dialog-invite-email"
+														name="recipientEmail"
+														type="email"
+														required
+														autocomplete="email"
+														placeholder="alex@example.com"
+														disabled={creating}
+													/>
+												</div>
 												<Dialog.Footer>
 													<Button
 														type="button"
@@ -689,7 +704,7 @@
 															<Loader2 class="size-4 shrink-0 animate-spin" aria-hidden="true" />
 															<span>Generating…</span>
 														{:else}
-															<span>Generate</span>
+															<span>Create &amp; send</span>
 														{/if}
 													</Button>
 												</Dialog.Footer>
@@ -700,8 +715,8 @@
 								<Card.Description
 									class="dark:text-muted-foreground max-w-none leading-snug text-pretty text-white/88"
 								>
-									Create secure, one-time signup links to invite Prospects. Use the copy icon on
-									active rows to copy a link.
+									Each invite emails a one-time signup link to the prospect. Use the mail icon on a
+									row to resend or reach a different address — copy is still available as a backup.
 								</Card.Description>
 							</div>
 							<Card.Content class="relative z-10 flex flex-1 flex-col p-2 md:p-6">
@@ -813,6 +828,7 @@
 														<InvitationRow
 															{invitation}
 															baseUrl={data.baseUrl}
+															resendInviteConfigured={data.resendInviteConfigured}
 															isHighlighted={invitation.token === highlightInviteToken}
 															{inviteCopyBtnClass}
 															{inviteRowHighlightClass}

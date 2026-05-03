@@ -31,7 +31,7 @@ export const upcomingEventsRowGridClass =
  * Requires `@container/invite-widget` on the wrapping `<ul>`. Below ~500px container width the token column hides.
  */
 export const inviteDashboardRowGridClass =
-	"grid w-full min-w-0 min-h-10 grid-cols-[minmax(0,1fr)_7.25rem_130px_130px] @max-[500px]/invite-widget:grid-cols-[minmax(0,1fr)_130px_130px] items-center divide-x divide-white/15 dark:divide-border/40";
+	"grid w-full min-w-0 min-h-10 grid-cols-[minmax(0,1fr)_7.25rem_130px_minmax(9.25rem,1fr)] @max-[500px]/invite-widget:grid-cols-[minmax(0,1fr)_130px_minmax(9.25rem,1fr)] items-center divide-x divide-white/15 dark:divide-border/40";
 
 /** Token preview column — hidden when invite-widget container is narrow */
 export const inviteDashboardTokenColClass =

@@ -1,8 +1,12 @@
-import type { Actions, PageServerLoad } from './$types';
-import { message, superValidate } from 'sveltekit-superforms';
-import { zod } from 'sveltekit-superforms/adapters';
-import { contactSchema } from './contact-schema';
-import { fail } from '@sveltejs/kit';
+import type { Actions, PageServerLoad } from "./$types";
+import { fail } from "@sveltejs/kit";
+import { message, superValidate } from "sveltekit-superforms";
+import { zod } from "sveltekit-superforms/adapters";
+import {
+	isResendContactFormConfigured,
+	sendContactFormEmail
+} from "$lib/server/send-contact-form-email";
+import { contactSchema } from "./contact-schema";
 
 export const load: PageServerLoad = async () => {
 	const form = await superValidate(zod(contactSchema));
@@ -19,6 +23,30 @@ export const actions: Actions = {
 		if (!form.valid) {
 			return fail(400, { form });
 		}
-		return message(form, 'Thank you for your message! We will get back to you soon.');
+
+		if (!isResendContactFormConfigured()) {
+			return message(
+				form,
+				"The contact form is not available right now. Please email us directly at info@islandbeerclub.com.",
+				{ status: 503 }
+			);
+		}
+
+		const sent = await sendContactFormEmail({
+			name: form.data.name,
+			email: form.data.email,
+			message: form.data.message
+		});
+
+		if (!sent.ok) {
+			console.error("[contact] send failed", sent.message);
+			return message(
+				form,
+				"We could not send your message. Please try again in a few minutes or email info@islandbeerclub.com.",
+				{ status: 502 }
+			);
+		}
+
+		return message(form, "Thank you for your message! We will get back to you soon.");
 	}
 };

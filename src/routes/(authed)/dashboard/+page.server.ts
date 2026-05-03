@@ -2,21 +2,21 @@ import { dev } from "$app/environment";
 import type { PageServerLoad, Actions } from "./$types";
 import {
 	createInvitationToken,
+	deleteUnusedInvitationForOwner,
 	getInvitationsByUser,
 	getInvitationCountInWindow,
+	getSendableInvitationForUser,
 	INVITATION_MEMBER_WEEKLY_LIMIT,
 	INVITATION_LIMIT_WINDOW_DAYS
 } from "$lib/server/invitations";
+import {
+	isResendInviteConfigured,
+	sendInvitationLinkEmail
+} from "$lib/server/send-invitation-email";
 import { fail, redirect } from "@sveltejs/kit";
 import { db } from "$lib/server/db";
 import { getDashboardClubStats } from "$lib/server/dashboard-club-stats-cache";
 import { events, users, type Event } from "$lib/server/db/schema";
-
-/** Matches dashboard upcoming-events query (explicit so `[]` branch doesn’t erase fields). */
-type DashboardUpcomingEvent = Pick<
-	Event,
-	"id" | "title" | "description" | "event_date" | "location" | "members_only"
->;
 import { ibcDebugEnabled } from "$lib/server/ibc-debug";
 import {
 	canAccessMemberDirectoryAndStats,
@@ -29,8 +29,15 @@ import { and, asc, count, desc, eq, gte, isNotNull, isNull } from "drizzle-orm";
 import {
 	clearProspectMeetingDateSchema,
 	createInvitationSchema,
+	emailInvitationSchema,
 	saveProspectMeetingDateSchema
 } from "./action-schemas";
+
+/** Matches dashboard upcoming-events query (explicit so `[]` branch doesn’t erase fields). */
+type DashboardUpcomingEvent = Pick<
+	Event,
+	"id" | "title" | "description" | "event_date" | "location" | "members_only"
+>;
 
 function toDateInputValue(date: Date | null | undefined): string {
 	if (!date) return "";
@@ -238,6 +245,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 		pendingMembers,
 		pendingMembersCount,
 		baseUrl: url.origin,
+		resendInviteConfigured: isResendInviteConfigured(),
 		upcomingEvents,
 		clubStats: {
 			totalMembers: cached?.totalMembers ?? 0,
@@ -325,19 +333,20 @@ export const actions: Actions = {
 		throw redirect(303, "/dashboard#prospect-progress");
 	},
 
-	createInvitation: async ({ locals, request }) => {
+	createInvitation: async ({ locals, request, url }) => {
 		if (!locals.user) {
 			return fail(401, { message: "Must be logged in to create invitations" });
 		}
 
 		const formData = await request.formData();
 		const parsed = createInvitationSchema.safeParse({
-			inviteName: formData.get("inviteName")
+			inviteName: formData.get("inviteName"),
+			recipientEmail: formData.get("recipientEmail")
 		});
 		if (!parsed.success) {
 			return fail(400, { message: parsed.error.issues[0]?.message ?? "Invalid invite name." });
 		}
-		const { inviteName } = parsed.data;
+		const { inviteName, recipientEmail } = parsed.data;
 
 		if (locals.user.role !== "member" && locals.user.role !== "admin") {
 			if (requiresIbcTest(locals.user)) {
@@ -374,6 +383,13 @@ export const actions: Actions = {
 			});
 		}
 
+		if (!isResendInviteConfigured()) {
+			return fail(503, {
+				message:
+					"Invitation emails require Resend. Set RESEND_API_KEY and RESEND_FROM_EMAIL for this environment."
+			});
+		}
+
 		try {
 			const invitation = await createInvitationToken(
 				locals.user.id,
@@ -381,6 +397,24 @@ export const actions: Actions = {
 				locals.user.name,
 				7
 			);
+
+			const inviteUrl = `${url.origin}/invite/${invitation.token}`;
+			const sent = await sendInvitationLinkEmail({
+				invitationId: invitation.id,
+				to: recipientEmail,
+				inviteUrl,
+				inviteLabel: inviteName,
+				inviterName: locals.user.name
+			});
+
+			if (!sent.ok) {
+				await deleteUnusedInvitationForOwner(invitation.token, locals.user.id);
+				return fail(502, {
+					message:
+						sent.message ?? "The email could not be sent. Check Resend configuration and try again."
+				});
+			}
+
 			return {
 				success: true,
 				invitation
@@ -389,5 +423,51 @@ export const actions: Actions = {
 			console.error("Failed to create invitation", error);
 			return fail(500, { message: "Could not create invite right now. Please try again." });
 		}
+	},
+
+	emailInvitation: async ({ locals, request, url }) => {
+		if (!locals.user) {
+			return fail(401, { message: "Must be logged in" });
+		}
+
+		const formData = await request.formData();
+		const parsed = emailInvitationSchema.safeParse({
+			token: formData.get("token"),
+			recipientEmail: formData.get("recipientEmail")
+		});
+		if (!parsed.success) {
+			return fail(400, {
+				message: parsed.error.issues[0]?.message ?? "Invalid input."
+			});
+		}
+
+		const invitation = await getSendableInvitationForUser(parsed.data.token, locals.user.id);
+		if (!invitation) {
+			return fail(400, {
+				message: "That invitation isn’t available or you don’t own it."
+			});
+		}
+
+		if (!isResendInviteConfigured()) {
+			return fail(503, {
+				message: "Email sending isn’t configured. Add RESEND_API_KEY and RESEND_FROM_EMAIL."
+			});
+		}
+
+		const inviteUrl = `${url.origin}/invite/${invitation.token}`;
+		const inviteLabel = invitation.invite_name?.trim() || "Prospect";
+		const sent = await sendInvitationLinkEmail({
+			invitationId: invitation.id,
+			to: parsed.data.recipientEmail,
+			inviteUrl,
+			inviteLabel,
+			inviterName: locals.user.name
+		});
+
+		if (!sent.ok) {
+			return fail(502, { message: sent.message ?? "Could not send email." });
+		}
+
+		return { success: true, emailSent: true };
 	}
 };
