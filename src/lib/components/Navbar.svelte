@@ -88,9 +88,7 @@
 <header
 	class="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur"
 >
-	<div
-		class="mx-auto flex h-24 w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8"
-	>
+	<div class="mx-auto flex h-24 w-full max-w-7xl items-center px-4 sm:px-6 lg:px-8">
 		<!--
 			Desktop: three equal columns — nav stays visually centered with even side margins.
 			(Matches main content width; avoids justify-between where a wide user block skews the nav.)
@@ -99,64 +97,64 @@
 			Center column is `auto` so it keeps the nav's intrinsic width (equal `1fr` columns use minmax(0,1fr) and clip).
 		-->
 		<div class="hidden h-full w-full grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 md:grid">
-				<div class="flex min-w-0 items-center justify-self-start">
-					<a href="/" class="flex shrink-0 items-center" aria-label="Island Beer Club home">
-						<IbcLogo class="w-[90px] px-2 [&>svg]:h-auto [&>svg]:w-full" decorative />
-					</a>
-				</div>
+			<div class="flex min-w-0 items-center justify-self-start">
+				<a href="/" class="flex shrink-0 items-center" aria-label="Island Beer Club home">
+					<IbcLogo class="w-[90px] px-2 [&>svg]:h-auto [&>svg]:w-full" decorative />
+				</a>
+			</div>
 
-				<div class="flex justify-center">
-					<NavigationMenu.Root
-						viewport={false}
-						class="relative flex w-max max-w-none shrink-0 !flex-none"
-					>
-						<NavigationMenu.List class="!flex-nowrap flex-none justify-center gap-0.5 sm:gap-1">
-							{#each mainNavLinks as link (link.href)}
-								<NavigationMenu.Item>
-									<NavigationMenu.Link href={link.href} active={isActive(link.href)}>
-										{link.label}
-									</NavigationMenu.Link>
-								</NavigationMenu.Item>
-							{/each}
-
+			<div class="flex justify-center">
+				<NavigationMenu.Root
+					viewport={false}
+					class="relative flex w-max max-w-none !flex-none shrink-0"
+				>
+					<NavigationMenu.List class="flex-none !flex-nowrap justify-center gap-0.5 sm:gap-1">
+						{#each mainNavLinks as link (link.href)}
 							<NavigationMenu.Item>
-								<NavigationMenu.Trigger>More</NavigationMenu.Trigger>
-								<NavigationMenu.Content>
-									<ul class="grid w-[300px] gap-3 p-2">
-										{#each dropdownLinks as link (link.href)}
-											<li>
-												<NavigationMenu.Link href={link.href} active={isActive(link.href)}>
-													<div class="font-medium">{link.label}</div>
-													<p class="text-muted-foreground">{link.description}</p>
-												</NavigationMenu.Link>
-											</li>
-										{/each}
-									</ul>
-								</NavigationMenu.Content>
+								<NavigationMenu.Link href={link.href} active={isActive(link.href)}>
+									{link.label}
+								</NavigationMenu.Link>
 							</NavigationMenu.Item>
-							<NavigationMenu.Item>
-								<Button onclick={toggleMode} variant="outline" size="icon">
-									<SunIcon
-										class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
-									/>
-									<MoonIcon
-										class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
-									/>
-									<span class="sr-only">Toggle theme</span>
-								</Button>
-							</NavigationMenu.Item>
-						</NavigationMenu.List>
-					</NavigationMenu.Root>
-				</div>
+						{/each}
 
-				<div class="flex min-w-0 flex-col items-center justify-self-end justify-center gap-1">
-					{#if isAuthenticated && user}
-						<div class="flex flex-col items-center gap-1">
-							<DropdownMenu.Root>
-								<DropdownMenu.Trigger class="rounded-full outline-offset-2">
-									<Avatar class="size-8" name={user.name} img={user.img} />
-									<span class="sr-only">Open user menu</span>
-								</DropdownMenu.Trigger>
+						<NavigationMenu.Item>
+							<NavigationMenu.Trigger>More</NavigationMenu.Trigger>
+							<NavigationMenu.Content>
+								<ul class="grid w-[300px] gap-3 p-2">
+									{#each dropdownLinks as link (link.href)}
+										<li>
+											<NavigationMenu.Link href={link.href} active={isActive(link.href)}>
+												<div class="font-medium">{link.label}</div>
+												<p class="text-muted-foreground">{link.description}</p>
+											</NavigationMenu.Link>
+										</li>
+									{/each}
+								</ul>
+							</NavigationMenu.Content>
+						</NavigationMenu.Item>
+						<NavigationMenu.Item>
+							<Button onclick={toggleMode} variant="outline" size="icon">
+								<SunIcon
+									class="h-[1.2rem] w-[1.2rem] scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90"
+								/>
+								<MoonIcon
+									class="absolute h-[1.2rem] w-[1.2rem] scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0"
+								/>
+								<span class="sr-only">Toggle theme</span>
+							</Button>
+						</NavigationMenu.Item>
+					</NavigationMenu.List>
+				</NavigationMenu.Root>
+			</div>
+
+			<div class="flex min-w-0 flex-col items-center justify-center gap-1 justify-self-end">
+				{#if isAuthenticated && user}
+					<div class="flex flex-col items-center gap-1">
+						<DropdownMenu.Root>
+							<DropdownMenu.Trigger class="rounded-full outline-offset-2">
+								<Avatar class="size-8" name={user.name} img={user.img} />
+								<span class="sr-only">Open user menu</span>
+							</DropdownMenu.Trigger>
 							<DropdownMenu.Content align="center" class="w-56" preventScroll={false}>
 								<DropdownMenu.Label>My Account</DropdownMenu.Label>
 								<DropdownMenu.Separator />
@@ -190,16 +188,17 @@
 								</DropdownMenu.Item>
 							</DropdownMenu.Content>
 						</DropdownMenu.Root>
-							<span class="text-muted-foreground max-w-[10rem] truncate text-center text-xs leading-tight"
-								>{user.name}</span
-							>
-						</div>
-					{:else}
-						<Button variant="ghost">
-							<a href="/login">Login</a>
-						</Button>
-					{/if}
-				</div>
+						<span
+							class="text-muted-foreground max-w-[10rem] truncate text-center text-xs leading-tight"
+							>{user.name}</span
+						>
+					</div>
+				{:else}
+					<Button variant="ghost">
+						<a href="/login">Login</a>
+					</Button>
+				{/if}
+			</div>
 		</div>
 
 		<!-- Mobile Navigation -->
@@ -210,15 +209,17 @@
 			<div class="ml-auto">
 				<Sheet.Root bind:open={isOpen}>
 					<Sheet.Trigger>
-						<Button class="mr-7" variant="ghost" size="icon">
-							<Menu class=" size-7 " />
-							<span class="sr-only">Toggle Menu</span>
-						</Button>
+						{#snippet child({ props })}
+							<Button {...props} class="mr-7" variant="ghost" size="icon">
+								<Menu class=" size-7 " />
+								<span class="sr-only">Toggle Menu</span>
+							</Button>
+						{/snippet}
 					</Sheet.Trigger>
 					<Sheet.Content
 						preventScroll={false}
 						side="right"
-						class="flex h-full min-h-0 w-[min(100vw-2rem,20rem)] max-w-full flex-col gap-0 overflow-x-hidden px-5 pb-5 pt-10 sm:max-w-sm"
+						class="flex h-full min-h-0 w-[min(100vw-2rem,20rem)] max-w-full flex-col gap-0 overflow-x-hidden px-5 pt-10 pb-5 sm:max-w-sm"
 					>
 						<Sheet.Header class="shrink-0 space-y-0 p-0">
 							<div class="flex items-stretch gap-2">
@@ -246,7 +247,10 @@
 							</div>
 							<Separator class="my-3" />
 						</Sheet.Header>
-						<nav class="text-foreground flex min-h-0 min-w-0 flex-1 flex-col pb-6" aria-label="Site pages">
+						<nav
+							class="text-foreground flex min-h-0 min-w-0 flex-1 flex-col pb-6"
+							aria-label="Site pages"
+						>
 							<div
 								class="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto overscroll-contain"
 							>
@@ -264,7 +268,7 @@
 										</a>
 									{/each}
 
-									<div class="mt-3 border-t border-border/60 pt-3">
+									<div class="border-border/60 mt-3 border-t pt-3">
 										<button
 											type="button"
 											class="hover:bg-muted text-foreground flex w-full min-w-0 items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-left text-base font-medium transition-colors"
@@ -293,7 +297,9 @@
 													{@const MoreIcon = mobileSheetIcons[link.href]}
 													<a
 														href={link.href}
-														class="hover:bg-muted flex w-full min-w-0 items-center gap-3 rounded-lg px-3 py-2 text-[0.95rem] font-medium {isActive(link.href)
+														class="hover:bg-muted flex w-full min-w-0 items-center gap-3 rounded-lg px-3 py-2 text-[0.95rem] font-medium {isActive(
+															link.href
+														)
 															? 'bg-primary/10 text-primary'
 															: ''}"
 													>
