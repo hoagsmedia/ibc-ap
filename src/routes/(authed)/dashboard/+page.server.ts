@@ -400,6 +400,7 @@ export const actions: Actions = {
 
 			const inviteUrl = `${url.origin}/invite/${invitation.token}`;
 			const sent = await sendInvitationLinkEmail({
+				invitationId: invitation.id,
 				to: recipientEmail,
 				inviteUrl,
 				inviteLabel: inviteName,
@@ -456,6 +457,7 @@ export const actions: Actions = {
 		const inviteUrl = `${url.origin}/invite/${invitation.token}`;
 		const inviteLabel = invitation.invite_name?.trim() || "Prospect";
 		const sent = await sendInvitationLinkEmail({
+			invitationId: invitation.id,
 			to: parsed.data.recipientEmail,
 			inviteUrl,
 			inviteLabel,
