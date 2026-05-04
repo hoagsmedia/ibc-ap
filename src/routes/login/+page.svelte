@@ -31,6 +31,17 @@
 			</div>
 		{/if}
 
+		{#if data.passwordResetDone}
+			<div class="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-4">
+				<div class="text-center">
+					<p class="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+						Your password was updated.
+					</p>
+					<p class="text-muted-foreground mt-1 text-xs">Sign in with your new password.</p>
+				</div>
+			</div>
+		{/if}
+
 		<div class="bg-accent mt-4 rounded-md p-4">
 			<div class="text-center">
 				<p class="text-accent-foreground text-sm">
@@ -120,6 +131,12 @@
 						{/if}
 					</button>
 				</div>
+
+				<p class="text-center text-sm">
+					<a href="/forgot-password" class="text-primary hover:text-primary/80 font-medium"
+						>Forgot password?</a
+					>
+				</p>
 			</form>
 
 			{#if form?.message}

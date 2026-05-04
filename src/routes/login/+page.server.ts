@@ -13,10 +13,12 @@ export const load: PageServerLoad = async (event) => {
 	}
 
 	const registered = event.url.searchParams.get("registered") === "1";
+	const passwordResetDone = event.url.searchParams.get("reset") === "1";
 	const email = event.url.searchParams.get("email")?.trim() ?? "";
 
 	return {
 		registered,
+		passwordResetDone,
 		email
 	};
 };

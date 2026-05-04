@@ -9,8 +9,11 @@ import { getEmailConflictMessage, getMbrConflictMessage } from "$lib/server/mbr-
 import { superValidate } from "sveltekit-superforms";
 import { memberSchema } from "./edit-member-schema";
 import { zod } from "sveltekit-superforms/adapters";
-import { hash } from "argon2";
-import { encodeBase32LowerCase } from "@oslojs/encoding";
+import { createPasswordResetToken } from "$lib/server/password-reset";
+import {
+	isResendPasswordResetConfigured,
+	sendPasswordResetEmail
+} from "$lib/server/send-password-reset-email";
 import { userWithoutPasswordHash } from "$lib/server/user-client";
 import { msdFromDateInput, msdToDateInputValue } from "$lib/server/msd";
 import { resolveMemberBackLink } from "$lib/server/member-back-link";
@@ -194,7 +197,7 @@ export const actions: Actions = {
 		throw redirect(302, "/dashboard/members");
 	},
 
-	resetPassword: async ({ request, locals, params }) => {
+	resetPassword: async ({ request, locals, params, url }) => {
 		if (!locals.user) throw redirect(302, "/login");
 		if (locals.user.role !== "admin") throw error(403, "Access denied. Admin role required.");
 
@@ -218,29 +221,49 @@ export const actions: Actions = {
 			});
 		}
 
+		const email = member.email?.trim();
+		if (!email) {
+			return fail(400, {
+				message: "This member has no email on file. Add an email before sending a password reset."
+			});
+		}
+
+		if (!isResendPasswordResetConfigured()) {
+			return fail(503, {
+				message:
+					"Password reset emails are not configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL on the server."
+			});
+		}
+
 		try {
-			const tempPassword = generateTemporaryPassword();
-			const passwordHash = await hash(tempPassword);
-			await db
-				.update(users)
-				.set({ password_hash: passwordHash, updated_at: new Date() })
-				.where(eq(users.id, member.id));
+			const { id: resetRequestId, token } = await createPasswordResetToken({
+				userId: member.id,
+				source: "admin",
+				createdByAdminId: locals.user.id
+			});
+			const resetUrl = `${url.origin}/reset-password/${token}`;
+			const sent = await sendPasswordResetEmail({
+				resetRequestId,
+				kind: "admin",
+				to: email,
+				recipientName: member.name,
+				resetUrl
+			});
+
+			if (!sent.ok) {
+				console.error("[admin reset password] email failed", sent.message);
+				return fail(502, {
+					message: sent.message ?? "Could not send the reset email. Check Resend configuration."
+				});
+			}
 
 			return {
 				success: true,
-				message: "Password reset successfully",
-				tempPassword,
-				memberName: member.name,
-				memberEmail: member.email
+				message: `A reset link was sent to ${email}. It expires in one hour.`
 			};
 		} catch (err) {
 			console.error("Error resetting password:", err);
-			return fail(500, { message: "Failed to reset password" });
+			return fail(500, { message: "Failed to send password reset" });
 		}
 	}
 };
-
-function generateTemporaryPassword(): string {
-	const bytes = crypto.getRandomValues(new Uint8Array(12));
-	return encodeBase32LowerCase(bytes).slice(0, 16);
-}
