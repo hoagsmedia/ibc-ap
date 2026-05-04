@@ -14,12 +14,4 @@ export {
 	PrevButton,
 	NextButton,
 	Ellipsis,
-	//
-	Root as Pagination,
-	Content as PaginationContent,
-	Item as PaginationItem,
-	Link as PaginationLink,
-	PrevButton as PaginationPrevButton,
-	NextButton as PaginationNextButton,
-	Ellipsis as PaginationEllipsis,
 };

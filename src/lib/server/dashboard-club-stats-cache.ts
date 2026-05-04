@@ -129,8 +129,3 @@ export async function getDashboardClubStats(db: DB = defaultDb): Promise<Dashboa
 	return inflight;
 }
 
-/** Clears the in-memory cache (e.g. after tests). Not used in production paths. */
-export function __resetDashboardClubStatsCacheForTests(): void {
-	cache = null;
-	inflight = null;
-}

@@ -78,6 +78,7 @@
 		"eslint": "^9.29.0",
 		"eslint-config-prettier": "^10.1.5",
 		"eslint-plugin-svelte": "^3.9.3",
+		"fallow": "^2.63.0",
 		"globals": "^16.2.0",
 		"jsdom": "^26.1.0",
 		"layerchart": "2.0.0-next.48",
@@ -120,6 +121,9 @@
 		"uploadthing": "^7.7.4",
 		"zod": "^3.25.67"
 	},
+	"optionalDependencies": {
+		"@fallow-cli/darwin-arm64": "2.63.0"
+	},
 	"engines": {
 		"node": "22.x"
 	},
@@ -128,6 +132,7 @@
 			"@tailwindcss/oxide",
 			"argon2",
 			"esbuild",
+			"fallow",
 			"msgpackr-extract"
 		]
 	}

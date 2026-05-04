@@ -7,10 +7,6 @@
 export const hubHeroActionBtnClass =
 	"gap-1.5 shadow-md transition-all duration-150 hover:shadow-lg hover:brightness-105 active:translate-y-px active:brightness-95 focus-visible:ring-2 focus-visible:ring-amber-200/90 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent min-h-9 px-2.5 sm:px-3";
 
-/** Vertical rule between faux table columns. */
-export const hubTableColSepClass =
-	"!h-5 w-px shrink-0 bg-white/25 data-[orientation=vertical]:!h-5 dark:bg-border";
-
 export const inviteRowIdleClass = "bg-transparent hover:bg-white/[0.04] dark:hover:bg-white/[0.05]";
 
 export const inviteRowHighlightClass =
