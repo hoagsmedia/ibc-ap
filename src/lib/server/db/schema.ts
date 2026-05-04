@@ -1,4 +1,12 @@
-import { pgTable, integer, text, timestamp, date, boolean, doublePrecision } from "drizzle-orm/pg-core";
+import {
+	pgTable,
+	integer,
+	text,
+	timestamp,
+	date,
+	boolean,
+	doublePrecision
+} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -84,6 +92,25 @@ export type Session = typeof session.$inferSelect;
 export type User = typeof users.$inferSelect;
 
 export type InvitationToken = typeof invitationTokens.$inferSelect;
+
+/** One-time link to set a new password (self-service or admin-initiated). */
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+	id: text("id").primaryKey(),
+	user_id: text("user_id")
+		.notNull()
+		.references(() => users.id, { onDelete: "cascade" }),
+	token: text("token").notNull().unique(),
+	expires_at: timestamp("expires_at", { withTimezone: true, mode: "date" }).notNull(),
+	used_at: timestamp("used_at", { withTimezone: true, mode: "date" }),
+	created_at: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+	/** `user` = forgot-password flow; `admin` = admin sent reset from member edit. */
+	source: text("source", { enum: ["user", "admin"] }).notNull(),
+	created_by_admin_id: text("created_by_admin_id").references(() => users.id, {
+		onDelete: "set null"
+	})
+});
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 
 export type Event = typeof events.$inferSelect;
 
