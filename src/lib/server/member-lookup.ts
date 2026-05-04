@@ -26,15 +26,3 @@ export async function getMemberById(id: string) {
 	return member ?? null;
 }
 
-/**
- * Resolve by UUID or legacy username (e.g. scripts, old bookmarks).
- * Prefer {@link getMemberById} for route handlers.
- */
-export async function getMemberByUsernameOrId(identifier: string) {
-	if (!identifier) return null;
-	const byId = UUID_REGEX.test(identifier);
-	const member = await db.query.users.findFirst({
-		where: byId ? eq(users.id, identifier) : eq(users.username, identifier)
-	});
-	return member ?? null;
-}

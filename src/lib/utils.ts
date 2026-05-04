@@ -35,7 +35,9 @@ export function formatDateTime(date: Date): string {
 	return `${day}-${month}-${year}-${hours}:${minutes}:${seconds}`;
 }
 
-export const { createUploader, createUploadThing } = generateSvelteHelpers<OurFileRouter>();
+const { createUploadThing } = generateSvelteHelpers<OurFileRouter>();
+export { createUploadThing };
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type WithoutChild<T> = T extends { child?: any } ? Omit<T, 'child'> : T;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

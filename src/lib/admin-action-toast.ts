@@ -6,10 +6,6 @@ export const adminActionToastDefaults: ExternalToast = {
 	position: "bottom-right"
 };
 
-export function toastAdminActionError(message: string, options?: ExternalToast): void {
-	toast.error(message, { ...adminActionToastDefaults, ...options });
-}
-
 /**
  * Shows `result.data.message` from a SvelteKit `fail(..., { message })`, or `fallbackMessage`.
  */

@@ -130,5 +130,3 @@ export const testQuestions: TestQuestion[] = [
 	}
 ];
 
-export const PASSING_SCORE = 100; // 100% passing rate (must get all questions correct)
-export const TOTAL_QUESTIONS = testQuestions.length;

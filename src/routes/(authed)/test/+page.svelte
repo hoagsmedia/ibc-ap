@@ -1,13 +1,7 @@
 <script lang="ts">
 	import { enhance } from "$app/forms";
 	import { Button } from "$lib/components/ui/button";
-	import {
-		Dialog,
-		DialogContent,
-		DialogHeader,
-		DialogTitle,
-		DialogFooter
-	} from "$lib/components/ui/dialog";
+	import * as Dialog from "$lib/components/ui/dialog";
 	import { Label } from "$lib/components/ui/label";
 	import {
 		Card,
@@ -248,11 +242,11 @@
 		</Card>
 	{/if}
 
-	<Dialog open={showPassDialog}>
-		<DialogContent>
-			<DialogHeader>
-				<DialogTitle>🎉 You passed the test!</DialogTitle>
-			</DialogHeader>
+	<Dialog.Root open={showPassDialog}>
+		<Dialog.Content>
+			<Dialog.Header>
+				<Dialog.Title>🎉 You passed the test!</Dialog.Title>
+			</Dialog.Header>
 			<div class="space-y-4">
 				<p class="text-muted-foreground">
 					Congratulations! You have successfully passed the Island Beer Club test.
@@ -264,9 +258,9 @@
 					</p>
 				</div>
 			</div>
-			<DialogFooter>
+			<Dialog.Footer>
 				<Button onclick={navigateToDashboard}>Continue to Dashboard</Button>
-			</DialogFooter>
-		</DialogContent>
-	</Dialog>
+			</Dialog.Footer>
+		</Dialog.Content>
+	</Dialog.Root>
 </div>
