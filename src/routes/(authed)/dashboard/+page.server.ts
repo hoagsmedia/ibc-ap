@@ -18,6 +18,23 @@ import { db } from "$lib/server/db";
 import { getDashboardClubStats } from "$lib/server/dashboard-club-stats-cache";
 import { events, users, type Event } from "$lib/server/db/schema";
 import { ibcDebugEnabled } from "$lib/server/ibc-debug";
+import { canAccessPlatform } from "$lib/server/account-access";
+import {
+	canUserSendMemberRolloutInvites,
+	countMemberRolloutTokensCreatedInWindow,
+	createMemberRolloutToken,
+	deleteUnusedMemberRolloutTokenForOwner,
+	getMemberRolloutTargetById,
+	getOldestMemberRolloutInWindow,
+	hasUnusedMemberRolloutTokenForPair,
+	MEMBER_ROLLOUT_MAX_PER_ROLLING_WINDOW,
+	MEMBER_ROLLOUT_WINDOW_DAYS,
+	nextRolloutSlotAvailableAt
+} from "$lib/server/member-rollout";
+import {
+	isMemberRolloutEmailConfigured,
+	sendMemberRolloutActivationEmail
+} from "$lib/server/send-member-rollout-activation-email";
 import {
 	canAccessMemberDirectoryAndStats,
 	canTakeIbcTest,
@@ -30,7 +47,8 @@ import {
 	clearProspectMeetingDateSchema,
 	createInvitationSchema,
 	emailInvitationSchema,
-	saveProspectMeetingDateSchema
+	saveProspectMeetingDateSchema,
+	sendMemberRolloutActivationSchema
 } from "./action-schemas";
 
 /** Matches dashboard upcoming-events query (explicit so `[]` branch doesn’t erase fields). */
@@ -236,6 +254,44 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 				.limit(8)
 		: [];
 
+	let memberRollout:
+		| {
+				showCard: boolean;
+				canSend: boolean;
+				usedInWindow: number;
+				remaining: number;
+				maxPerWindow: number;
+				windowDays: number;
+				nextSlotAt: string | null;
+				resendConfigured: boolean;
+				eligibleInviter: boolean;
+		  }
+		| undefined;
+
+	if (canAccessPlatform(locals.user) && (locals.user.role === "admin" || locals.user.mbr != null)) {
+		const eligibleInviter = canUserSendMemberRolloutInvites(locals.user);
+		const usedInWindow = await countMemberRolloutTokensCreatedInWindow(locals.user.id);
+		const remaining = Math.max(0, MEMBER_ROLLOUT_MAX_PER_ROLLING_WINDOW - usedInWindow);
+		let nextSlotAt: string | null = null;
+		if (usedInWindow >= MEMBER_ROLLOUT_MAX_PER_ROLLING_WINDOW) {
+			const oldest = await getOldestMemberRolloutInWindow(locals.user.id);
+			if (oldest) {
+				nextSlotAt = nextRolloutSlotAvailableAt(oldest).toISOString();
+			}
+		}
+		memberRollout = {
+			showCard: true,
+			canSend: eligibleInviter && remaining > 0,
+			usedInWindow,
+			remaining,
+			maxPerWindow: MEMBER_ROLLOUT_MAX_PER_ROLLING_WINDOW,
+			windowDays: MEMBER_ROLLOUT_WINDOW_DAYS,
+			nextSlotAt,
+			resendConfigured: isMemberRolloutEmailConfigured(),
+			eligibleInviter
+		};
+	}
+
 	return {
 		user: locals.user,
 		invitations,
@@ -255,7 +311,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			kegsConsumed: cached?.kegsConsumed ?? 0,
 			membersJoinedThisMonth: cached?.membersJoinedThisMonth ?? 0,
 			kegsAddedThisMonth: cached?.kegsAddedThisMonth ?? 0
-		}
+		},
+		memberRollout
 	};
 };
 
@@ -469,5 +526,82 @@ export const actions: Actions = {
 		}
 
 		return { success: true, emailSent: true };
+	},
+
+	sendMemberRolloutActivation: async ({ locals, request, url }) => {
+		if (!locals.user) {
+			return fail(401, { message: "Must be logged in." });
+		}
+		if (!canAccessPlatform(locals.user)) {
+			return fail(403, { message: "Your website account isn’t active yet." });
+		}
+		if (!canUserSendMemberRolloutInvites(locals.user)) {
+			return fail(403, {
+				message:
+					"After your first successful website login you’ll be able to send member rollout invitations (admins can send immediately)."
+			});
+		}
+
+		const formData = await request.formData();
+		const parsed = sendMemberRolloutActivationSchema.safeParse({
+			targetUserId: formData.get("targetUserId")
+		});
+		if (!parsed.success) {
+			return fail(400, {
+				message: parsed.error.issues[0]?.message ?? "Invalid request."
+			});
+		}
+
+		const usedInWindow = await countMemberRolloutTokensCreatedInWindow(locals.user.id);
+		if (usedInWindow >= MEMBER_ROLLOUT_MAX_PER_ROLLING_WINDOW) {
+			return fail(429, {
+				message: `You’ve reached the member rollout limit (${MEMBER_ROLLOUT_MAX_PER_ROLLING_WINDOW} sends per ${MEMBER_ROLLOUT_WINDOW_DAYS} days).`
+			});
+		}
+
+		const target = await getMemberRolloutTargetById(parsed.data.targetUserId, locals.user.id);
+		if (!target?.email?.trim()) {
+			return fail(400, {
+				message:
+					"That member isn’t eligible for a rollout email (needs member number, no first login yet, not deceased, with email on file)."
+			});
+		}
+
+		if (await hasUnusedMemberRolloutTokenForPair(locals.user.id, target.id)) {
+			return fail(400, {
+				message: "You already have an unused rollout activation link for this member."
+			});
+		}
+
+		if (!isMemberRolloutEmailConfigured()) {
+			return fail(503, {
+				message:
+					"Email isn’t configured. Set RESEND_API_KEY and RESEND_FROM_EMAIL for this environment."
+			});
+		}
+
+		try {
+			const row = await createMemberRolloutToken(locals.user.id, target.id, target.email);
+			const activationUrl = `${url.origin}/member-rollout/activate/${row.token}`;
+			const sent = await sendMemberRolloutActivationEmail({
+				memberRolloutRowId: row.id,
+				to: target.email.trim(),
+				recipientName: target.name,
+				invitingMemberName: locals.user.name,
+				activationUrl
+			});
+
+			if (!sent.ok) {
+				await deleteUnusedMemberRolloutTokenForOwner(row.token, locals.user.id);
+				return fail(502, {
+					message: sent.message ?? "The rollout email could not be sent."
+				});
+			}
+
+			return { success: true };
+		} catch (error) {
+			console.error("sendMemberRolloutActivation", error);
+			return fail(500, { message: "Could not send rollout email right now." });
+		}
 	}
 };

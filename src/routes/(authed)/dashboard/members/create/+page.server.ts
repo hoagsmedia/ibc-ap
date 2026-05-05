@@ -90,7 +90,8 @@ export const actions: Actions = {
 				img: null,
 				dops: false,
 				dops_date: null,
-				test_passed: null
+				test_passed: null,
+				account_active: false
 			});
 		} catch (e) {
 			console.error("admin create member:", e);

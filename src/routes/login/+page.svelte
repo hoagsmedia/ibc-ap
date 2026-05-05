@@ -18,7 +18,15 @@
 		<h2 class="text-foreground mt-6 text-center text-3xl font-extrabold">Island Beer Club</h2>
 		<p class="text-muted-foreground mt-2 text-center text-sm">Sign in to your account</p>
 
-		{#if data.registered}
+		{#if data.memberRolloutActivated}
+			<div class="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-4">
+				<div class="text-center">
+					<p class="text-sm font-medium text-emerald-700 dark:text-emerald-300">
+						Member website access activated. Sign in with your new password.
+					</p>
+				</div>
+			</div>
+		{:else if data.registered}
 			<div class="mt-4 rounded-md border border-emerald-500/30 bg-emerald-500/10 p-4">
 				<div class="text-center">
 					<p class="text-sm font-medium text-emerald-700 dark:text-emerald-300">

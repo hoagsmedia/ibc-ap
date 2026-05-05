@@ -28,3 +28,8 @@ export const emailInvitationSchema = z.object({
 	token: z.string().trim().min(1, "Missing invitation."),
 	recipientEmail: z.string().trim().email("Enter a valid email address.")
 });
+
+/** Existing-member website rollout only — separate from prospect `invitation_tokens`. */
+export const sendMemberRolloutActivationSchema = z.object({
+	targetUserId: z.string().uuid("Invalid member selection.")
+});

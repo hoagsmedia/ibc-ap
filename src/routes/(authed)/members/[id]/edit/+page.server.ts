@@ -151,6 +151,9 @@ export const actions: Actions = {
 				updated_at: new Date()
 			};
 			if (setUsername != null) updatePayload.username = setUsername;
+			if (resolvedRole === "admin") {
+				updatePayload.account_active = true;
+			}
 
 			const updated = await db.update(users).set(updatePayload).where(eq(users.id, id)).returning();
 

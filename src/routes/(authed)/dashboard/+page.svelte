@@ -28,6 +28,7 @@
 		LayoutGrid,
 		LinkIcon,
 		Loader2,
+		Mail,
 		Package,
 		Plus,
 		Sparkles,
@@ -55,6 +56,20 @@
 	let { data }: { data: PageData } = $props();
 
 	let creating = $state(false);
+	let memberRolloutQuery = $state("");
+	let memberRolloutResults = $state<
+		Array<{ id: string; name: string; email: string; mbr: number }>
+	>([]);
+	let memberRolloutSearchLoading = $state(false);
+	let memberRolloutConfirmOpen = $state(false);
+	let memberRolloutTarget = $state<{
+		id: string;
+		name: string;
+		email: string;
+		mbr: number;
+	} | null>(null);
+	let memberRolloutSending = $state(false);
+	let memberRolloutSearchTimer: ReturnType<typeof setTimeout> | undefined;
 	let highlightInviteToken = $state<string | null>(null);
 	let inviteErrorOpen = $state(false);
 	let inviteErrorMessage = $state("");
@@ -88,6 +103,26 @@
 	/** Bits UI Calendar already applies min/max as disabled days; use this only for “not a Wednesday”. */
 	function disableIfNotWednesdayUtc(date: DateValue) {
 		return new Date(Date.UTC(date.year, date.month - 1, date.day)).getUTCDay() !== 3;
+	}
+
+	function scheduleMemberRolloutSearch(q: string) {
+		clearTimeout(memberRolloutSearchTimer);
+		if (q.trim().length < 2) {
+			memberRolloutResults = [];
+			return;
+		}
+		memberRolloutSearchTimer = setTimeout(async () => {
+			memberRolloutSearchLoading = true;
+			try {
+				const res = await fetch(`/api/member-rollout-search?q=${encodeURIComponent(q.trim())}`);
+				const json = (await res.json()) as {
+					results?: Array<{ id: string; name: string; email: string; mbr: number }>;
+				};
+				memberRolloutResults = json.results ?? [];
+			} finally {
+				memberRolloutSearchLoading = false;
+			}
+		}, 280);
 	}
 
 	function offsetDateString(value: string, days: number) {
@@ -476,6 +511,195 @@
 					</Card.Root>
 				</div>
 			{/if}
+
+			{#if data.memberRollout?.showCard}
+				<div class="col-span-1 min-w-0 lg:col-span-3" aria-labelledby="member-rollout-heading">
+					<Card.Root class="bg-card rounded-2xl border border-emerald-500/25 shadow-sm">
+						<Card.Header class="gap-1 px-4 pb-2 sm:px-6">
+							<div class="flex flex-wrap items-center gap-2">
+								<span
+									class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+								>
+									<Mail class="size-4" aria-hidden="true" />
+								</span>
+								<Card.Title id="member-rollout-heading" class="text-base font-semibold sm:text-lg">
+									Existing member rollout
+								</Card.Title>
+							</div>
+							<Card.Description class="text-sm">
+								Onboard <strong class="text-foreground font-medium">current members</strong> who
+								already have a member number onto this website. Separate from
+								<strong class="text-foreground font-medium">Prospect</strong> invitation links.
+							</Card.Description>
+						</Card.Header>
+						<Card.Content class="space-y-4 px-4 sm:px-6">
+							{#if !data.memberRollout.eligibleInviter}
+								<Alert.Root>
+									<Alert.Description>
+										After your <strong>first website login</strong> (or use an admin account), you can
+										send rollout activation emails. This keeps the chain to members who are already on
+										the site.
+									</Alert.Description>
+								</Alert.Root>
+							{:else if !data.memberRollout.resendConfigured}
+								<Alert.Root variant="destructive">
+									<Alert.Description>
+										Configure <code class="text-xs">RESEND_API_KEY</code> and
+										<code class="text-xs">RESEND_FROM_EMAIL</code> to email activation links.
+									</Alert.Description>
+								</Alert.Root>
+							{:else}
+								<div
+									class="text-muted-foreground flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm"
+								>
+									<span>
+										Member rollout sends this period:
+										<strong class="text-foreground"
+											>{data.memberRollout.usedInWindow} / {data.memberRollout.maxPerWindow}</strong
+										>
+										sent ·
+										<strong class="text-foreground">{data.memberRollout.remaining}</strong> remaining
+									</span>
+									<span class="text-xs">
+										(Rolling {data.memberRollout.windowDays}-day window · only member rollout emails
+										count · Prospect invites use their own limits.)
+									</span>
+								</div>
+								{#if data.memberRollout.remaining === 0 && data.memberRollout.nextSlotAt}
+									<p class="text-sm text-amber-700 dark:text-amber-400/90">
+										Limit reached. Next rollout send available after {formatDate(
+											new Date(data.memberRollout.nextSlotAt)
+										)}.
+									</p>
+								{/if}
+
+								<div class="space-y-2">
+									<Label for="member-rollout-search">Find member (name, email, or #)</Label>
+									<Input
+										id="member-rollout-search"
+										type="search"
+										autocomplete="off"
+										placeholder="Start typing… (min. 2 characters)"
+										bind:value={memberRolloutQuery}
+										oninput={() => scheduleMemberRolloutSearch(memberRolloutQuery)}
+										disabled={data.memberRollout.remaining === 0}
+										class="max-w-xl"
+									/>
+								</div>
+
+								{#if memberRolloutSearchLoading}
+									<p class="text-muted-foreground text-sm">Searching…</p>
+								{:else if memberRolloutQuery.trim().length >= 2 && memberRolloutResults.length === 0}
+									<p class="text-muted-foreground text-sm">No eligible members match.</p>
+								{:else if memberRolloutResults.length > 0}
+									<ul class="divide-border max-w-2xl divide-y rounded-lg border">
+										{#each memberRolloutResults as m (m.id)}
+											<li
+												class="flex flex-col gap-2 px-3 py-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4"
+											>
+												<div class="min-w-0">
+													<p class="text-foreground truncate font-medium">{m.name}</p>
+													<p class="text-muted-foreground truncate text-sm">
+														#{m.mbr} · {m.email}
+													</p>
+												</div>
+												<Button
+													type="button"
+													size="sm"
+													variant="secondary"
+													disabled={data.memberRollout.remaining === 0 ||
+														!data.memberRollout.canSend ||
+														!data.memberRollout.resendConfigured}
+													class="shrink-0"
+													onclick={() => {
+														memberRolloutTarget = m;
+														memberRolloutConfirmOpen = true;
+													}}
+												>
+													<Mail class="mr-1.5 size-3.5" aria-hidden="true" />
+													Send activation
+												</Button>
+											</li>
+										{/each}
+									</ul>
+								{/if}
+							{/if}
+						</Card.Content>
+					</Card.Root>
+
+					<Dialog.Root bind:open={memberRolloutConfirmOpen}>
+						<Dialog.Content class="sm:max-w-md">
+							<Dialog.Header>
+								<Dialog.Title>Send activation email?</Dialog.Title>
+								<Dialog.Description class="space-y-3 text-left">
+									{#if memberRolloutTarget}
+										<span>
+											Send a website activation link to <strong class="text-foreground"
+												>{memberRolloutTarget.name}</strong
+											>
+											({memberRolloutTarget.email}).
+										</span>
+									{/if}
+									<span class="block">
+										Member rollout limit: <strong class="text-foreground"
+											>{data.memberRollout?.remaining ?? 0}</strong
+										>
+										send{data.memberRollout?.remaining === 1 ? "" : "s"} left in your rolling
+										<strong class="text-foreground"
+											>{data.memberRollout?.windowDays ?? 4}-day</strong
+										>
+										window (only rollout emails count toward this limit).
+									</span>
+								</Dialog.Description>
+							</Dialog.Header>
+							<form
+								method="post"
+								action="?/sendMemberRolloutActivation"
+								use:enhance={() => {
+									memberRolloutSending = true;
+									return async ({ result, update }) => {
+										await update();
+										memberRolloutSending = false;
+										if (result.type === "success") {
+											memberRolloutConfirmOpen = false;
+											memberRolloutTarget = null;
+											memberRolloutQuery = "";
+											memberRolloutResults = [];
+											toast.success("Rollout activation email sent.");
+										} else if (result.type === "failure") {
+											const msg = result.data?.message;
+											toast.error(typeof msg === "string" ? msg : "Could not send email.");
+										}
+									};
+								}}
+								class="flex flex-col gap-4"
+							>
+								<input type="hidden" name="targetUserId" value={memberRolloutTarget?.id ?? ""} />
+								<Dialog.Footer class="gap-2 sm:justify-end">
+									<Button
+										type="button"
+										variant="outline"
+										disabled={memberRolloutSending}
+										onclick={() => {
+											memberRolloutConfirmOpen = false;
+											memberRolloutTarget = null;
+										}}>Cancel</Button
+									>
+									<Button type="submit" disabled={memberRolloutSending || !memberRolloutTarget}>
+										{#if memberRolloutSending}
+											<Loader2 class="mr-2 size-4 animate-spin" aria-hidden="true" />
+											Sending…
+										{:else}
+											Confirm send
+										{/if}
+									</Button>
+								</Dialog.Footer>
+							</form>
+						</Dialog.Content>
+					</Dialog.Root>
+				</div>
+			{/if}
+
 			{#if data.user.role === "admin" || showInvitationLinksCard}
 				<div
 					class="col-span-1 grid grid-cols-1 gap-8 lg:col-span-3 lg:items-stretch {data.user

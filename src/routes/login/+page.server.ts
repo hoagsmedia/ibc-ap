@@ -3,28 +3,34 @@ import { encodeBase32LowerCase } from "@oslojs/encoding";
 import { fail, redirect } from "@sveltejs/kit";
 import { eq, or } from "drizzle-orm";
 import * as auth from "$lib/server/auth";
+import { canAccessPlatform } from "$lib/server/account-access";
+import { ensureWebsiteAccessUserColumns } from "$lib/server/ensure-website-access-columns";
 import { db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
-	if (event.locals.user) {
+	if (event.locals.user && canAccessPlatform(event.locals.user)) {
 		return redirect(302, "/dashboard");
 	}
 
 	const registered = event.url.searchParams.get("registered") === "1";
 	const passwordResetDone = event.url.searchParams.get("reset") === "1";
+	const memberRolloutActivated = event.url.searchParams.get("memberRolloutActivated") === "1";
 	const email = event.url.searchParams.get("email")?.trim() ?? "";
 
 	return {
 		registered,
 		passwordResetDone,
+		memberRolloutActivated,
 		email
 	};
 };
 
 export const actions: Actions = {
 	login: async (event) => {
+		await ensureWebsiteAccessUserColumns();
+
 		const formData = await event.request.formData();
 		const emailOrUsername = formData.get("email");
 		const password = formData.get("password");
@@ -84,15 +90,31 @@ export const actions: Actions = {
 			return fail(400, { message: "Incorrect email or password" });
 		}
 
+		if (!canAccessPlatform(existingUser)) {
+			return fail(403, {
+				message:
+					"Your account isn’t activated for the website yet. Use the member rollout link from your email, or ask an admin to resend it."
+			});
+		}
+
 		const sessionToken = auth.generateSessionToken();
 
 		const session = await auth.createSession(sessionToken, existingUser.id);
+
+		if (existingUser.website_first_login_at == null) {
+			await db
+				.update(table.users)
+				.set({ website_first_login_at: new Date(), updated_at: new Date() })
+				.where(eq(table.users.id, existingUser.id));
+		}
 
 		auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
 
 		throw redirect(302, "/dashboard");
 	},
 	register: async (event) => {
+		await ensureWebsiteAccessUserColumns();
+
 		const formData = await event.request.formData();
 		const name = formData.get("name");
 		const email = formData.get("email");
@@ -117,7 +139,9 @@ export const actions: Actions = {
 				name: name as string,
 				email: email as string,
 				password_hash,
-				role: "guest"
+				role: "guest",
+				/** Public self-registration is unrelated to member rollout (prospects path). */
+				account_active: true
 			});
 
 			const sessionToken = auth.generateSessionToken();

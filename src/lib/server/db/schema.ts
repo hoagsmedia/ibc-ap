@@ -49,8 +49,36 @@ export const users = pgTable("users", {
 	hobbies: text("hobbies"),
 	likes: text("likes"),
 	test_passed: timestamp("test_passed", { withTimezone: true, mode: "date" }),
+	/**
+	 * Website / dashboard access. Admins are always treated as active in auth.
+	 * Rolled-out members: true after they complete a member rollout activation link.
+	 */
+	account_active: boolean("account_active").notNull().default(false),
+	/** First successful website login; used for “eligible to send member rollout” (non-admins). */
+	website_first_login_at: timestamp("website_first_login_at", {
+		withTimezone: true,
+		mode: "date"
+	}),
 	created_at: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 	updated_at: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow()
+});
+
+/**
+ * Existing-member rollout (website onboarding only). Separate from prospect `invitation_tokens`.
+ */
+export const memberRolloutTokens = pgTable("member_rollout_tokens", {
+	id: text("id").primaryKey(),
+	token: text("token").notNull().unique(),
+	created_by_id: text("created_by_id")
+		.notNull()
+		.references(() => users.id, { onDelete: "cascade" }),
+	target_user_id: text("target_user_id")
+		.notNull()
+		.references(() => users.id, { onDelete: "cascade" }),
+	recipient_email_snapshot: text("recipient_email_snapshot"),
+	created_at: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+	expires_at: timestamp("expires_at", { withTimezone: true, mode: "date" }).notNull(),
+	used_at: timestamp("used_at", { withTimezone: true, mode: "date" })
 });
 
 export const invitationTokens = pgTable("invitation_tokens", {
@@ -92,6 +120,8 @@ export type Session = typeof session.$inferSelect;
 export type User = typeof users.$inferSelect;
 
 export type InvitationToken = typeof invitationTokens.$inferSelect;
+
+export type MemberRolloutToken = typeof memberRolloutTokens.$inferSelect;
 
 /** One-time link to set a new password (self-service or admin-initiated). */
 export const passwordResetTokens = pgTable("password_reset_tokens", {

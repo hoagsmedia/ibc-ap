@@ -5,16 +5,16 @@
  * Safe to run on every Vercel build (no prompts, no truncation).
  * Run with: tsx scripts/ensure-users-schema.ts
  */
-import dotenv from 'dotenv';
-import path from 'path';
-import postgres from 'postgres';
+import dotenv from "dotenv";
+import path from "path";
+import postgres from "postgres";
 
-dotenv.config({ path: path.resolve(process.cwd(), '.env') });
-dotenv.config({ path: path.resolve(process.cwd(), '.env.local') });
+dotenv.config({ path: path.resolve(process.cwd(), ".env") });
+dotenv.config({ path: path.resolve(process.cwd(), ".env.local") });
 
 const url = process.env.DATABASE_URL;
 if (!url) {
-	console.error('DATABASE_URL is not set. Skipping schema ensure.');
+	console.error("DATABASE_URL is not set. Skipping schema ensure.");
 	process.exit(0);
 }
 
@@ -52,7 +52,11 @@ BEGIN
   END IF;
 END $$`,
 	// Make email nullable (no-op if already nullable)
-	`ALTER TABLE public.users ALTER COLUMN email DROP NOT NULL`
+	`ALTER TABLE public.users ALTER COLUMN email DROP NOT NULL`,
+	// Member rollout / website access (see src/lib/server/member-rollout.ts)
+	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS account_active boolean NOT NULL DEFAULT false`,
+	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS website_first_login_at timestamptz`,
+	`UPDATE public.users SET account_active = true WHERE role = 'admin'`
 ];
 
 async function main() {
@@ -62,25 +66,25 @@ async function main() {
 		} catch (err: unknown) {
 			const msg = err instanceof Error ? err.message : String(err);
 			// Skip if users table does not exist (e.g. fresh DB)
-			if (msg.includes('does not exist') && msg.includes('users')) {
-				console.log('Users table not found; skipping schema ensure.');
+			if (msg.includes("does not exist") && msg.includes("users")) {
+				console.log("Users table not found; skipping schema ensure.");
 				await sql.end();
 				process.exit(0);
 			}
 			// Ignore "column already exists" / "constraint already exists" / "column is already nullable"
 			if (
-				msg.includes('already exists') ||
-				msg.includes('duplicate key value') ||
-				msg.includes('already nullable')
+				msg.includes("already exists") ||
+				msg.includes("duplicate key value") ||
+				msg.includes("already nullable")
 			) {
 				// no-op
 			} else {
-				console.error('Schema ensure failed:', msg);
+				console.error("Schema ensure failed:", msg);
 				process.exit(1);
 			}
 		}
 	}
-	console.log('Users table schema ensured.');
+	console.log("Users table schema ensured.");
 }
 
 main()
