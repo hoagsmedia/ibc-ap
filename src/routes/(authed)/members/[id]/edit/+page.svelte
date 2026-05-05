@@ -424,7 +424,7 @@
 							<Form.Control>
 								{#snippet children({ props })}
 									<Form.Label>Member Number *</Form.Label>
-									<Input type="number" {...props} bind:value={$formData.mbr} />
+									<Input type="number" step="0.1" {...props} bind:value={$formData.mbr} />
 								{/snippet}
 							</Form.Control>
 							<Form.Description>Unique member identifier.</Form.Description>

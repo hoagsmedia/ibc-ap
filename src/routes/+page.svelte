@@ -133,9 +133,9 @@
 				Coronado · Since the beginning
 			</p>
 			<h1 class="text-balance text-4xl font-semibold tracking-tight text-white drop-shadow-md md:text-6xl md:leading-[1.05]">
-				Rule #1
+				We have more time than money
 				<span class="mt-3 block text-2xl font-normal tracking-normal text-white/95 md:mt-4 md:text-4xl"
-					>There are no rules</span
+					>Island Beer Club</span
 				>
 			</h1>
 		</div>
@@ -244,7 +244,7 @@
 					often and please enjoy your visits.
 				</p>
 				<p class="text-foreground text-base font-medium">
-					Remember, Rule #1: there are no rules.
+					We have more time than money.
 				</p>
 				<p class="text-muted-foreground">
 					How does one become a member?

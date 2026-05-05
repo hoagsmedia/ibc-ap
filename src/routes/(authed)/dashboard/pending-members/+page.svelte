@@ -129,6 +129,7 @@
 									name="mbr"
 									type="number"
 									min="1"
+									step="0.1"
 									placeholder="MBR"
 									class="h-9 w-24"
 									required

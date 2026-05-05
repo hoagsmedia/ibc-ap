@@ -35,7 +35,7 @@ export const users = pgTable("users", {
 	role: text("role", { enum: ["guest", "member", "admin"] })
 		.notNull()
 		.default("guest"),
-	mbr: integer("mbr"),
+	mbr: doublePrecision("mbr"),
 	/** Member since — stored as `timestamptz` (calendar day = UTC midnight). */
 	msd: timestamp("msd", { withTimezone: true, mode: "date" }),
 	sponsor: text("sponsor"),
