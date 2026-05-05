@@ -50,14 +50,17 @@ export const actions: Actions = {
 		const formData = await request.formData();
 		const parsed = assignMemberSchema.safeParse({
 			userId: formData.get("userId"),
-			mbr: formData.get("mbr")
+			mbr: formData.get("mbr"),
+			rungInDate: formData.get("rungInDate")
 		});
 		if (!parsed.success) {
 			return fail(400, {
-				message: parsed.error.issues[0]?.message ?? "Enter a valid member number (1 or higher)"
+				message:
+					parsed.error.issues[0]?.message ??
+					"Enter a valid member number (1 or higher) and rung-in date"
 			});
 		}
-		const { userId, mbr } = parsed.data;
+		const { userId, mbr, rungInDate } = parsed.data;
 
 		const [member] = await db.select().from(users).where(eq(users.id, userId));
 		if (!member) return fail(404, { message: "Member not found" });
@@ -72,6 +75,7 @@ export const actions: Actions = {
 			.set({
 				mbr,
 				role: "member",
+				rung_in_date: rungInDate,
 				username,
 				updated_at: new Date()
 			})

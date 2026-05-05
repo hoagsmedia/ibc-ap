@@ -21,6 +21,19 @@ if (!url) {
 const sql = postgres(url, { max: 1, onnotice: () => {} });
 
 const statements = [
+	// MBR: allow decimal values (e.g. 1.1) for sub-member numbering.
+	`DO $$
+BEGIN
+  IF EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = 'public' AND table_name = 'users' AND column_name = 'mbr'
+      AND udt_name = 'int4'
+  ) THEN
+    ALTER TABLE public.users
+      ALTER COLUMN mbr TYPE double precision
+      USING (mbr::double precision);
+  END IF;
+END $$`,
 	// MSD: legacy `date` → `timestamptz` at UTC midnight for that calendar day
 	`DO $$
 BEGIN
@@ -37,6 +50,8 @@ END $$`,
 	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS username text`,
 	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS dops boolean NOT NULL DEFAULT false`,
 	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS dops_date date`,
+	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS rung_in_date date`,
+	`ALTER TABLE public.users DROP COLUMN IF EXISTS has_rung_in`,
 	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS meeting_1_date date`,
 	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS meeting_2_date date`,
 	`ALTER TABLE public.users ADD COLUMN IF NOT EXISTS meeting_3_date date`,

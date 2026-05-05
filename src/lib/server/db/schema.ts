@@ -35,13 +35,15 @@ export const users = pgTable("users", {
 	role: text("role", { enum: ["guest", "member", "admin"] })
 		.notNull()
 		.default("guest"),
-	mbr: integer("mbr"),
+	mbr: doublePrecision("mbr"),
 	/** Member since — stored as `timestamptz` (calendar day = UTC midnight). */
 	msd: timestamp("msd", { withTimezone: true, mode: "date" }),
 	sponsor: text("sponsor"),
 	/** When true, member is deceased (memorial) — excluded from keg buying duty on /stats. */
 	dops: boolean("dops").notNull().default(false),
 	dops_date: date("dops_date"),
+	/** Date the member officially rang in. */
+	rung_in_date: date("rung_in_date"),
 	meeting_1_date: date("meeting_1_date", { mode: "date" }),
 	meeting_2_date: date("meeting_2_date", { mode: "date" }),
 	meeting_3_date: date("meeting_3_date", { mode: "date" }),

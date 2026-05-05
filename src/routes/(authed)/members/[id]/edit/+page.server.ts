@@ -54,6 +54,7 @@ export const load: PageServerLoad = async ({ locals, params, url, request }) => 
 		msd: msdToDateInputValue(member.msd),
 		dops: member.dops ?? false,
 		dops_date: member.dops_date ?? "",
+		rung_in_date: member.rung_in_date ?? "",
 		sponsor: member.sponsor ?? "",
 		test_passed: member.test_passed?.toISOString() ?? "",
 		created_at: member.created_at?.toISOString(),
@@ -107,6 +108,7 @@ export const actions: Actions = {
 				msd,
 				dops,
 				dops_date,
+				rung_in_date,
 				sponsor,
 				test_passed
 			} = form.data;
@@ -146,6 +148,7 @@ export const actions: Actions = {
 				msd: msdFromDateInput(msd),
 				dops: dops,
 				dops_date: dops_date ? new Date(dops_date).toISOString().split("T")[0] : null,
+				rung_in_date: rung_in_date ? new Date(rung_in_date).toISOString().split("T")[0] : null,
 				sponsor: sponsor || null,
 				test_passed: testPassedValue,
 				updated_at: new Date()
