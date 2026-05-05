@@ -72,7 +72,7 @@ export const actions: Actions = {
 		if (!canAccessPlatform(existingUser)) {
 			return fail(403, {
 				message:
-					"Your account isn’t activated for the website yet. Use the member rollout link from your email, or ask an admin to resend it."
+					"Your account isn't activated for the website yet. Use the member rollout link from your email, or ask an admin to resend it."
 			});
 		}
 

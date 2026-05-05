@@ -8,7 +8,7 @@ import { ibcDebugEnabled } from "$lib/server/ibc-debug";
 const log = dev && ibcDebugEnabled();
 
 const handleAuth: Handle = async ({ event, resolve }) => {
-	// Prerender/static generation (CI sets DATABASE_URL empty) — skip DB migrations here.
+	// Prerender/static generation (CI sets DATABASE_URL empty) - skip DB migrations here.
 	if (!building && process.env.DATABASE_URL?.trim()) {
 		await ensureWebsiteAccessUserColumns();
 	}

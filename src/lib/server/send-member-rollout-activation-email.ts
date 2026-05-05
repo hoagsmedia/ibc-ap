@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { env } from "$env/dynamic/private";
+import { escapeHtml } from "$lib/server/escape-html.js";
 import { Resend } from "resend";
 import { isResendInviteConfigured } from "$lib/server/send-invitation-email";
 
@@ -18,7 +19,7 @@ export function isMemberRolloutEmailConfigured(): boolean {
 	return isResendInviteConfigured();
 }
 
-/** Separate from prospect invitation emails — Resend template (default alias `island-beer-club-invite`; override via env). */
+/** Separate from prospect invitation emails - Resend template (default alias `island-beer-club-invite`; override via env). */
 export async function sendMemberRolloutActivationEmail(input: {
 	memberRolloutRowId: string;
 	to: string;
@@ -99,12 +100,4 @@ export async function sendMemberRolloutActivationEmail(input: {
 	}
 	if (!data?.id) return { ok: false, message: "Email did not send (no message id)." };
 	return { ok: true };
-}
-
-function escapeHtml(s: string): string {
-	return s
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;");
 }

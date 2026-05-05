@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { env } from "$env/dynamic/private";
+import { escapeHtml } from "$lib/server/escape-html.js";
 import { Resend } from "resend";
 
 /** Published template id: a7b68c45-a3ba-4e63-b90d-8d3f1506c0ec */
@@ -31,7 +32,7 @@ export async function sendProspectPromotedToMemberEmail(input: {
 	const mbr = input.memberNumber;
 	const subject =
 		env.RESEND_PROSPECT_PROMOTED_SUBJECT?.trim() ??
-		`Welcome to Island Beer Club — you're member #${mbr}`;
+		`Welcome to Island Beer Club - you're member #${mbr}`;
 
 	const rawTemplate = env.RESEND_PROSPECT_PROMOTED_TEMPLATE_ID;
 	const templateId =
@@ -94,12 +95,4 @@ export async function sendProspectPromotedToMemberEmail(input: {
 	}
 	if (!data?.id) return { ok: false, message: "Email did not send (no message id)." };
 	return { ok: true };
-}
-
-function escapeHtml(s: string): string {
-	return s
-		.replace(/&/g, "&amp;")
-		.replace(/</g, "&lt;")
-		.replace(/>/g, "&gt;")
-		.replace(/"/g, "&quot;");
 }

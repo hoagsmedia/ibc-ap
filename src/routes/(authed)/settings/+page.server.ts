@@ -184,7 +184,6 @@ export const actions: Actions = {
 				})
 				.where(eq(table.users.id, event.locals.user.id));
 
-			// return message(form, 'Password updated successfully!');
 			return message(form, "Password updated successfully!");
 		} catch (error) {
 			console.error("Error updating password:", error);
