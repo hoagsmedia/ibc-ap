@@ -56,6 +56,7 @@
 		msd: string;
 		dops: boolean;
 		dops_date: string;
+		rung_in_date: string;
 		sponsor: string;
 	};
 
@@ -74,6 +75,7 @@
 			msd: member.msd ?? "",
 			dops: Boolean(member.dops),
 			dops_date: member.dops_date ?? "",
+			rung_in_date: member.rung_in_date ?? "",
 			sponsor: member.sponsor ?? ""
 		};
 	}
@@ -503,6 +505,23 @@
 								{/snippet}
 							</Form.Control>
 							<Form.Description>Date of Permanent Sobriety.</Form.Description>
+							<Form.FieldErrors />
+						</Form.Field>
+
+						<Form.Field {form} name="rung_in_date" class="min-w-0">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Label>Had Rung In Date</Form.Label>
+									<DatePickerField
+										id={props.id}
+										name={props.name}
+										aria-invalid={props["aria-invalid"]}
+										bind:value={$formData.rung_in_date}
+										class="max-w-full min-w-0"
+									/>
+								{/snippet}
+							</Form.Control>
+							<Form.Description>Date this member officially rang in.</Form.Description>
 							<Form.FieldErrors />
 						</Form.Field>
 

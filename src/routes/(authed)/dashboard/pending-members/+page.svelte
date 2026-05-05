@@ -6,6 +6,7 @@
 	import HubBackLink from "$lib/components/HubBackLink.svelte";
 	import { Button } from "$lib/components/ui/button";
 	import { Input } from "$lib/components/ui/input";
+	import DatePickerField from "$lib/components/DatePickerField.svelte";
 	import { UserPlusIcon, UserCogIcon, CheckIcon, ArrowLeftIcon } from "@lucide/svelte/icons";
 	import { toastAdminActionFailure } from "$lib/admin-action-toast";
 	import { formatDate } from "$lib/utils";
@@ -19,7 +20,7 @@
 	<meta name="description" content="Manage Prospects who passed the test" />
 </svelte:head>
 
-<div class="w-full min-w-0">
+<div class="w-full min-w-0 overflow-x-hidden">
 	<Card.Root class="ibc-hub-surface bg-card/50 dark:bg-card/35">
 		<Card.Header>
 			<div class="flex flex-wrap items-center justify-between gap-3">
@@ -63,7 +64,7 @@
 						>
 							<a
 								href="/members/{pending.id}/edit"
-								class="text-primary hover:bg-muted/50 flex min-w-0 flex-1 items-start gap-3 rounded transition-colors sm:items-center"
+								class="text-primary hover:bg-muted/50 relative z-0 flex min-w-0 flex-1 items-start gap-3 rounded transition-colors sm:items-center"
 							>
 								<div
 									class="bg-muted flex size-10 shrink-0 items-center justify-center rounded-full"
@@ -120,7 +121,7 @@
 										}
 									};
 								}}
-								class="flex w-full shrink-0 flex-wrap items-center justify-end gap-2 sm:w-auto sm:flex-nowrap"
+								class="relative z-10 flex w-full shrink-0 flex-wrap items-center justify-start gap-2 sm:w-auto sm:flex-nowrap sm:justify-end"
 							>
 								<input type="hidden" name="userId" value={pending.id} />
 								<label for="mbr-{pending.id}" class="sr-only">Member number</label>
@@ -133,6 +134,14 @@
 									placeholder="MBR"
 									class="h-9 w-24"
 									required
+								/>
+								<label for="rungInDate-{pending.id}" class="sr-only">Had rung in date</label>
+								<DatePickerField
+									id="rungInDate-{pending.id}"
+									name="rungInDate"
+									value=""
+									placeholder="Had rung in"
+									class="h-9 w-40"
 								/>
 								<Button type="submit" size="sm">Assign</Button>
 							</form>

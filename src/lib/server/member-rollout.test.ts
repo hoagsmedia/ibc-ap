@@ -24,6 +24,7 @@ function baseUser(overrides: Partial<User> = {}): User {
 		sponsor: null,
 		dops: false,
 		dops_date: null,
+		rung_in_date: null,
 		meeting_1_date: null,
 		meeting_2_date: null,
 		meeting_3_date: null,
