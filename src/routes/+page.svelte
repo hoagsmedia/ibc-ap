@@ -91,11 +91,11 @@
 	<meta name="twitter:card" content="summary_large_image" />
 </svelte:head>
 
-<div class="home-root overflow-x-clip text-foreground">
+<div class="home-root text-foreground overflow-x-clip">
 	{#snippet founderTile(founder: Founder)}
 		<div class="flex w-full max-w-[7.5rem] min-w-0 flex-col items-center text-center">
 			<div
-				class="ring-border mb-3 aspect-square w-full shrink-0 overflow-hidden rounded-2xl ring-1 shadow-md"
+				class="ring-border mb-3 aspect-square w-full shrink-0 overflow-hidden rounded-2xl shadow-md ring-1"
 			>
 				<img
 					src={founder.photo}
@@ -104,20 +104,20 @@
 					loading="lazy"
 				/>
 			</div>
-			<p class="text-foreground w-full text-sm font-medium leading-snug text-balance break-words">
+			<p class="text-foreground w-full text-sm leading-snug font-medium text-balance break-words">
 				{founder.name}
 			</p>
 		</div>
 	{/snippet}
-	<!-- Hero: 16:9 frame; image is cover-cropped, never stretched -->
+	<!-- Hero: capped height on large screens; image stays cover-cropped, never stretched -->
 	<section
-		class="home-bleed relative flex aspect-video w-full items-center justify-center overflow-hidden"
+		class="home-bleed relative flex h-[clamp(18rem,42vw,34rem)] w-full items-center justify-center overflow-hidden"
 	>
 		<div class="absolute inset-0 z-0">
 			<img
 				src="/the-founders.png"
 				alt="Island Beer Club founders"
-				class="h-full w-full object-cover object-[center_22%] brightness-[0.72] md:object-[center_center]"
+				class="h-full w-full object-cover object-[center_22%] brightness-[0.72] md:object-[center_12%] xl:object-contain"
 				loading="eager"
 				draggable="false"
 			/>
@@ -126,15 +126,18 @@
 				aria-hidden="true"
 			></div>
 		</div>
-		<div class="relative z-10 mx-auto max-w-4xl px-4 py-8 text-center md:px-6 md:py-10">
+		<div class="relative z-10 mx-auto w-full max-w-6xl px-4 py-8 text-center md:px-6 md:py-10">
 			<p
 				class="mb-3 text-xs font-semibold tracking-[0.22em] text-white/90 drop-shadow-md md:text-sm"
 			>
 				Coronado · Since the beginning
 			</p>
-			<h1 class="text-balance text-4xl font-semibold tracking-tight text-white drop-shadow-md md:text-6xl md:leading-[1.05]">
+			<h1
+				class="text-4xl font-semibold tracking-tight text-balance text-white drop-shadow-md md:text-6xl md:leading-[1.05]"
+			>
 				We have more time than money
-				<span class="mt-3 block text-2xl font-normal tracking-normal text-white/95 md:mt-4 md:text-4xl"
+				<span
+					class="mt-3 block text-2xl font-normal tracking-normal text-white/95 md:mt-4 md:text-4xl"
 					>Island Beer Club</span
 				>
 			</h1>
@@ -148,10 +151,10 @@
 				Why Island Beer Club?
 			</h2>
 			<p class="text-muted-foreground leading-relaxed">
-				We are a bunch of guys who grew up together and love beer. We’ve all gone off to school, have
-				had successful careers and, in our later life, returned to our home town to reunite and share
-				experiences. We’re posting this site to communicate and coordinate with our numerous members
-				worldwide and with prospects wherever they may be. This is for our amusement and
+				We are a bunch of guys who grew up together and love beer. We’ve all gone off to school,
+				have had successful careers and, in our later life, returned to our home town to reunite and
+				share experiences. We’re posting this site to communicate and coordinate with our numerous
+				members worldwide and with prospects wherever they may be. This is for our amusement and
 				entertainment. If you like it please return.
 			</p>
 		</div>
@@ -159,10 +162,12 @@
 
 	<section class="py-14 md:py-20">
 		<div class="mx-auto max-w-xl px-4 md:px-6">
-			<h2 class="text-foreground mb-6 text-center text-2xl font-semibold tracking-tight md:text-3xl">
+			<h2
+				class="text-foreground mb-6 text-center text-2xl font-semibold tracking-tight md:text-3xl"
+			>
 				We are Island Beer Club
 			</h2>
-			<figure class="overflow-hidden rounded-2xl border border-border/60 shadow-lg shadow-black/10">
+			<figure class="border-border/60 overflow-hidden rounded-2xl border shadow-lg shadow-black/10">
 				<img
 					src="/videoImage.jpg"
 					alt="IBC group"
@@ -171,9 +176,9 @@
 				/>
 			</figure>
 			<p class="text-muted-foreground mt-8 leading-relaxed">
-				We believe that one of the best ways to enjoy craft beer is with good company. IBC meets every
-				Wednesday at 4 pm. Guests, especially ladies are always welcome when accompanied by a Beer
-				Club member.
+				We believe that one of the best ways to enjoy craft beer is with good company. IBC meets
+				every Wednesday at 4 pm. Guests, especially ladies are always welcome when accompanied by a
+				Beer Club member.
 			</p>
 		</div>
 	</section>
@@ -184,10 +189,12 @@
 		`-mx-4 w-[calc(100%+2rem)]` only cancels the layout wrapper’s horizontal padding.
 	-->
 	<section
-		class="-mx-4 w-[calc(100%+2rem)] border-border/50 from-muted/40 to-muted/15 bg-gradient-to-b border-y py-14 md:py-20"
+		class="border-border/50 from-muted/40 to-muted/15 -mx-4 w-[calc(100%+2rem)] border-y bg-gradient-to-b py-14 md:py-20"
 	>
 		<div class="px-4 md:px-6">
-			<h2 class="text-foreground mb-10 text-center text-2xl font-semibold tracking-tight md:text-3xl">
+			<h2
+				class="text-foreground mb-10 text-center text-2xl font-semibold tracking-tight md:text-3xl"
+			>
 				Meet the founders
 			</h2>
 
@@ -212,12 +219,12 @@
 		class="home-bleed relative flex min-h-[min(52vh,440px)] flex-col justify-end bg-black bg-[url('/mug-table-ibc-logo.svg')] bg-cover bg-center bg-no-repeat pb-10 md:min-h-[420px] md:pb-14"
 	>
 		<div
-			class="from-background/15 absolute inset-0 bg-gradient-to-t to-transparent md:bg-gradient-to-r md:from-transparent md:via-background/25 md:to-background/70"
+			class="from-background/15 md:via-background/25 md:to-background/70 absolute inset-0 bg-gradient-to-t to-transparent md:bg-gradient-to-r md:from-transparent"
 			aria-hidden="true"
 		></div>
 		<div class="relative z-10 mx-auto w-full max-w-5xl px-5 pb-1 sm:px-8 sm:pb-0 md:px-10">
 			<div
-				class="border-border/30 bg-background/75 supports-[backdrop-filter]:bg-background/55 mx-auto w-full min-w-0 max-w-md rounded-2xl border p-6 shadow-xl backdrop-blur-md md:max-w-lg md:p-8"
+				class="border-border/30 bg-background/75 supports-[backdrop-filter]:bg-background/55 mx-auto w-full max-w-md min-w-0 rounded-2xl border p-6 shadow-xl backdrop-blur-md md:max-w-lg md:p-8"
 			>
 				<h2 class="text-foreground mb-2 text-xl font-semibold md:text-2xl">
 					How does one become a member?
@@ -237,15 +244,14 @@
 					Welcome & site tips
 				</h2>
 				<p class="text-muted-foreground leading-relaxed">
-					While you are exploring the site, be mindful that there are pages embedded throughout that are
-					not accessible through the normal navigation buttons. Drag your cursor over pictures; if it
-					changes to a pointing hand, you have found a hyperlink and you will find other hidden jewels.
-					Also the <span class="text-foreground font-medium">“Fun” page changes daily</span> — come back
-					often and please enjoy your visits.
+					While you are exploring the site, be mindful that there are pages embedded throughout that
+					are not accessible through the normal navigation buttons. Drag your cursor over pictures;
+					if it changes to a pointing hand, you have found a hyperlink and you will find other
+					hidden jewels. Also the <span class="text-foreground font-medium"
+						>“Fun” page changes daily</span
+					> — come back often and please enjoy your visits.
 				</p>
-				<p class="text-foreground text-base font-medium">
-					We have more time than money.
-				</p>
+				<p class="text-foreground text-base font-medium">We have more time than money.</p>
 				<p class="text-muted-foreground">
 					How does one become a member?
 					<span class="text-foreground font-semibold">Buy a keg of hand-crafted beer.</span>
@@ -254,12 +260,14 @@
 
 			<div class="border-border/60 space-y-3 border-t pt-10">
 				<h3 class="text-foreground text-lg font-semibold">Site navigation</h3>
-				<ul class="text-muted-foreground list-inside list-disc space-y-2 leading-relaxed marker:text-primary/70">
+				<ul
+					class="text-muted-foreground marker:text-primary/70 list-inside list-disc space-y-2 leading-relaxed"
+				>
 					<li>Use the navigation along the top or bottom of the page for subject grouping.</li>
 					<li>Follow hyperlinks for another way to move between pages.</li>
 					<li>
-						Any time you see <span class="text-primary font-medium">accent-colored text</span>, click it
-						and see where it takes you.
+						Any time you see <span class="text-primary font-medium">accent-colored text</span>,
+						click it and see where it takes you.
 					</li>
 					<li>
 						Hovering over pictures where the cursor becomes a pointer can also lead somewhere good.
@@ -270,7 +278,9 @@
 
 			<div class="border-border/60 space-y-3 border-t pt-10">
 				<h3 class="text-foreground text-lg font-semibold">IBC quick links & fun facts</h3>
-				<ul class="text-muted-foreground list-inside list-disc space-y-2.5 leading-relaxed marker:text-primary/70">
+				<ul
+					class="text-muted-foreground marker:text-primary/70 list-inside list-disc space-y-2.5 leading-relaxed"
+				>
 					<li>
 						<a
 							href="https://www.kegworks.com/blog/guide-to-beer-keg-sizes/"
@@ -293,7 +303,9 @@
 						</a>
 					</li>
 					<li>
-						<a href="/contact" class={linkClass}>We care about your safety — get in touch anytime.</a>
+						<a href="/contact" class={linkClass}
+							>We care about your safety — get in touch anytime.</a
+						>
 					</li>
 					<li>
 						<a
@@ -307,18 +319,31 @@
 					</li>
 					<li><a href="/members" class={linkClass}>Meet our members. Watch our growth.</a></li>
 					<li>
-						<a href="/history" class={linkClass}>Know anything about Coronado and Some Like It Hot?</a>
+						<a href="/history" class={linkClass}
+							>Know anything about Coronado and Some Like It Hot?</a
+						>
 					</li>
-					<li><a href="/founders-day/knox-poem" class={linkClass}>The Poem Stranger has blessed us with a poem.</a></li>
+					<li>
+						<a href="/founders-day/knox-poem" class={linkClass}
+							>The Poem Stranger has blessed us with a poem.</a
+						>
+					</li>
 					<li><a href="/styles" class={linkClass}>Know anything about beer styles?</a></li>
 					<li>
-						<a href="http://www.pintprice.com/" target="_blank" rel="noopener noreferrer" class={linkClass}>
+						<a
+							href="http://www.pintprice.com/"
+							target="_blank"
+							rel="noopener noreferrer"
+							class={linkClass}
+						>
 							How much does beer cost world-wide?
 						</a>
 					</li>
 					<li><a href="/stats" class={linkClass}>How much beer has the IBC consumed?</a></li>
 					<li><a href="/foodog" class={linkClass}>Do you know anything about Foo Dogs?</a></li>
-					<li><a href="/science" class={linkClass}>IBC science corner — learn the physics of life.</a></li>
+					<li>
+						<a href="/science" class={linkClass}>IBC science corner — learn the physics of life.</a>
+					</li>
 					<li>
 						<a
 							href="https://www.biorhythm-calculator.net/"
@@ -329,7 +354,9 @@
 							Check your biorhythms.
 						</a>
 					</li>
-					<li><a href="/fun" class={linkClass}>How long has it been since you've played Hangman?</a></li>
+					<li>
+						<a href="/fun" class={linkClass}>How long has it been since you've played Hangman?</a>
+					</li>
 					<li><a href="/links" class={linkClass}>What's the oldest brewery in the U. S.?</a></li>
 					<li><a href="/gallery" class={linkClass}>Gallery & moments from the club.</a></li>
 				</ul>
@@ -345,7 +372,7 @@
 		<div class="mx-auto max-w-5xl px-4 md:px-6">
 			<div class="mx-auto mb-10 max-w-2xl text-center md:mb-12">
 				<p
-					class="text-muted-foreground mb-2 text-[0.65rem] font-semibold uppercase tracking-[0.2em] sm:text-xs"
+					class="text-muted-foreground mb-2 text-[0.65rem] font-semibold tracking-[0.2em] uppercase sm:text-xs"
 				>
 					From the club
 				</p>
@@ -364,11 +391,11 @@
 				{#each quoteCards as { quote, displayName, displayDate }, i (quote.text.slice(0, 32) + i)}
 					<li class="min-h-0">
 						<article
-							class="border-border/80 from-card/90 to-card/60 text-card-foreground relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border bg-gradient-to-br p-5 shadow-sm outline-offset-2 transition-[border-color,box-shadow] supports-[backdrop-filter]:backdrop-blur-sm sm:p-6 hover:border-primary/35 hover:shadow-md focus-within:ring-2 focus-within:ring-ring"
+							class="border-border/80 from-card/90 to-card/60 text-card-foreground hover:border-primary/35 focus-within:ring-ring relative flex h-full min-h-0 flex-col overflow-hidden rounded-2xl border bg-gradient-to-br p-5 shadow-sm outline-offset-2 transition-[border-color,box-shadow] focus-within:ring-2 hover:shadow-md supports-[backdrop-filter]:backdrop-blur-sm sm:p-6"
 						>
 							<blockquote class="flex flex-1 flex-col gap-4">
 								<p
-									class="text-foreground text-[0.95rem] leading-relaxed sm:text-base sm:leading-relaxed whitespace-pre-line"
+									class="text-foreground text-[0.95rem] leading-relaxed whitespace-pre-line sm:text-base sm:leading-relaxed"
 								>
 									{quote.text}
 								</p>
@@ -379,7 +406,7 @@
 										class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-4"
 									>
 										<cite
-											class="text-foreground not-italic text-sm font-semibold tracking-tight sm:text-base"
+											class="text-foreground text-sm font-semibold tracking-tight not-italic sm:text-base"
 										>
 											— {displayName}
 										</cite>
@@ -388,12 +415,12 @@
 										>
 											{#if quote.submitter}
 												<span
-													class="bg-muted/80 text-muted-foreground inline-flex max-w-full rounded-md border border-border/50 px-2 py-0.5 font-medium"
+													class="bg-muted/80 text-muted-foreground border-border/50 inline-flex max-w-full rounded-md border px-2 py-0.5 font-medium"
 												>
 													Via {quote.submitter}
 												</span>
 											{/if}
-											<time class="tabular-nums text-[0.7rem] uppercase tracking-wide sm:text-xs">
+											<time class="text-[0.7rem] tracking-wide uppercase tabular-nums sm:text-xs">
 												{displayDate}
 											</time>
 										</div>
