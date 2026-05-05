@@ -6,6 +6,7 @@ import { getMbrConflictMessage } from "$lib/server/mbr-uniqueness";
 import { getUsernameForMemberWithMbr } from "$lib/server/username";
 import { and, asc, eq, isNotNull, isNull } from "drizzle-orm";
 import { assignMemberSchema } from "./assign-member-schema";
+import { sendProspectPromotedToMemberEmail } from "$lib/server/send-prospect-promoted-email";
 
 export const load: PageServerLoad = async ({ locals }) => {
 	if (!locals.user) {
@@ -42,7 +43,7 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	assignMember: async ({ request, locals }) => {
+	assignMember: async ({ request, locals, url }) => {
 		if (!locals.user) throw redirect(302, "/login");
 		if (locals.user.role !== "admin") return fail(403, { message: "Admin required" });
 
@@ -76,9 +77,25 @@ export const actions: Actions = {
 			})
 			.where(eq(users.id, userId));
 
+		let message = `${member.name} is now member #${mbr}.`;
+		const email = member.email?.trim();
+		if (email) {
+			const profileUrl = `${url.origin}/members/${userId}`;
+			const sent = await sendProspectPromotedToMemberEmail({
+				userId,
+				to: email,
+				memberName: member.name,
+				memberNumber: mbr,
+				profileUrl
+			});
+			if (!sent.ok) {
+				message += ` Welcome email was not sent (${sent.message})`;
+			}
+		}
+
 		return {
 			success: true,
-			message: `${member.name} is now member #${mbr}.`,
+			message,
 			assignedId: userId,
 			memberId: userId
 		};
