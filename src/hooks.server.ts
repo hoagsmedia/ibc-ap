@@ -1,5 +1,5 @@
 import type { Handle } from "@sveltejs/kit";
-import { dev } from "$app/environment";
+import { building, dev } from "$app/environment";
 import * as auth from "$lib/server/auth.js";
 import { canAccessPlatform } from "$lib/server/account-access";
 import { ensureWebsiteAccessUserColumns } from "$lib/server/ensure-website-access-columns";
@@ -8,7 +8,10 @@ import { ibcDebugEnabled } from "$lib/server/ibc-debug";
 const log = dev && ibcDebugEnabled();
 
 const handleAuth: Handle = async ({ event, resolve }) => {
-	await ensureWebsiteAccessUserColumns();
+	// Prerender/static generation (CI sets DATABASE_URL empty) — skip DB migrations here.
+	if (!building && process.env.DATABASE_URL?.trim()) {
+		await ensureWebsiteAccessUserColumns();
+	}
 
 	const sessionToken = event.cookies.get(auth.sessionCookieName);
 
