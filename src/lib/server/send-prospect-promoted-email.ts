@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
 import { env } from "$env/dynamic/private";
 import { Resend } from "resend";
-import { isResendInviteConfigured } from "$lib/server/send-invitation-email";
 
 /** Published template id: a7b68c45-a3ba-4e63-b90d-8d3f1506c0ec */
 const DEFAULT_PROSPECT_PROMOTED_TEMPLATE_ID = "island-beer-club-number";
@@ -13,10 +12,6 @@ function idempotencyKey(userId: string, mbr: number, to: string): string {
 }
 
 export type SendProspectPromotedEmailResult = { ok: true } | { ok: false; message: string };
-
-export function isProspectPromotedEmailConfigured(): boolean {
-	return isResendInviteConfigured();
-}
 
 /** Sent when an admin assigns an MBR on Prospects (`/dashboard/pending-members`). */
 export async function sendProspectPromotedToMemberEmail(input: {
@@ -46,7 +41,7 @@ export async function sendProspectPromotedToMemberEmail(input: {
 
 	const htmlBody = `
 <p>Hi ${escapeHtml(name)},</p>
-<p>Your member number is <strong>#${escapeHtml(String(mbr))}</strong>. You’re now an official Island Beer Club member.</p>
+<p>Your member number is <strong>#${escapeHtml(String(mbr))}</strong>. You're now an official Island Beer Club member.</p>
 <p><a href="${escapeHtml(input.profileUrl)}">View your member profile</a></p>
 `.trim();
 

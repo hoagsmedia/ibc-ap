@@ -59,27 +59,6 @@ export const actions: Actions = {
 			return fail(400, { message: "Incorrect email or password" });
 		}
 
-		// Handle users with dev-hash (first-time login)
-		// if (existingUser.password_hash === 'dev-hash') {
-		// 	const newpassword_hash = await hash(password, {
-		// 		memoryCost: 19456,
-		// 		timeCost: 2,
-		// 		parallelism: 1
-		// 	});
-
-		// 	// Update the user's password hash
-		// 	await db
-		// 		.update(table.users)
-		// 		.set({ password_hash: newpassword_hash })
-		// 		.where(eq(table.users.id, existingUser.id));
-
-		// 	const sessionToken = auth.generateSessionToken();
-		// 	const session = await auth.createSession(sessionToken, existingUser.id);
-		// 	auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
-
-		// 	return redirect(302, '/dashboard');
-		// }
-
 		// Argon2 hashes are in PHC format and must start with $
 		const hash = existingUser.password_hash?.trim() ?? "";
 		if (!hash.startsWith("$")) {
