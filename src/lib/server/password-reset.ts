@@ -72,10 +72,3 @@ export async function getActivePasswordResetByToken(
 		.limit(1);
 	return row ?? null;
 }
-
-export async function markPasswordResetTokenUsed(tokenId: string): Promise<void> {
-	await db
-		.update(table.passwordResetTokens)
-		.set({ used_at: new Date() })
-		.where(eq(table.passwordResetTokens.id, tokenId));
-}
