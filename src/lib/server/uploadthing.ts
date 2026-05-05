@@ -9,6 +9,18 @@ import { fileKeyFromUploadThingUrl } from "./uploadthing-files";
 const utapi = new UTApi();
 const PROFILE_IMAGE_MAX_FILE_SIZE = "8MB";
 
+async function deleteOldUploadThingFileIfPresent(
+	fileKey: string | null | undefined
+): Promise<void> {
+	if (!fileKey) return;
+	try {
+		await utapi.deleteFiles(fileKey);
+	} catch (error) {
+		// Old-file cleanup should not fail the UploadThing callback path.
+		console.warn("UploadThing cleanup failed for old file", { fileKey, error });
+	}
+}
+
 function sanitizeForKey(value: string | null | undefined, separator: "-" | "_" = "_"): string {
 	const normalized = (value ?? "")
 		.trim()
@@ -30,11 +42,17 @@ function formatMmddyyyy(date: Date | null | undefined): string {
 	return `${month}${day}${year}`;
 }
 
-function profileImageFileBase(name: string | null | undefined, mbr: number | null | undefined): string {
+function profileImageFileBase(
+	name: string | null | undefined,
+	mbr: number | null | undefined
+): string {
 	return `profile-images-${sanitizeForKey(name, "_")}_${mbr ?? "unknown"}`;
 }
 
-function eventImageFileBase(title: string | null | undefined, eventDate: Date | null | undefined): string {
+function eventImageFileBase(
+	title: string | null | undefined,
+	eventDate: Date | null | undefined
+): string {
 	return `event__${sanitizeForKey(title, "_")}_${formatMmddyyyy(eventDate)}`;
 }
 
@@ -71,7 +89,13 @@ const f = createUploadthing({
 // Helper function to get user from session using our custom auth
 const getUserFromRequest = async (
 	req: Request
-): Promise<{ id: string; name: string; mbr: number | null; img: string | null; role: string } | null> => {
+): Promise<{
+	id: string;
+	name: string;
+	mbr: number | null;
+	img: string | null;
+	role: string;
+} | null> => {
 	try {
 		const cookies = req.headers.get("cookie");
 		if (!cookies) return null;
@@ -140,10 +164,7 @@ export const ourFileRouter = {
 					})
 					.where(eq(users.id, metadata.userId))
 					.returning({ id: users.id, img: users.img });
-				//Delete the old image if it exists
-				if (metadata.currentImageKey) {
-					await utapi.deleteFiles(metadata.currentImageKey);
-				}
+				await deleteOldUploadThingFileIfPresent(metadata.currentImageKey);
 			} catch (error) {
 				console.error("Failed to update user profile image:", error);
 				throw error;
@@ -169,11 +190,14 @@ export const ourFileRouter = {
 			const eventId = eventIdMatch?.[1] ?? null;
 			const eventRecord = eventId
 				? await db.query.events.findFirst({
-					where: eq(events.id, eventId),
-					columns: { title: true, event_date: true }
-				})
+						where: eq(events.id, eventId),
+						columns: { title: true, event_date: true }
+					})
 				: null;
-			const fileBase = eventImageFileBase(eventRecord?.title ?? "draft", eventRecord?.event_date ?? null);
+			const fileBase = eventImageFileBase(
+				eventRecord?.title ?? "draft",
+				eventRecord?.event_date ?? null
+			);
 
 			return {
 				userId: user.id,
@@ -237,11 +261,13 @@ export const ourFileRouter = {
 				memberId: memberToUpdate.id, // Member being updated
 				uploadType: "member-image" as const,
 				currentImageKey: currentImageKey,
-				[UTFiles]: [{
-					...file,
-					name: `${uniqueBaseName}${fileExtension(file.name)}`,
-					customId: `member-${memberToUpdate.id}-${memberToUpdate.mbr ?? "unknown"}-${uniqueUploadSuffix()}`
-				}]
+				[UTFiles]: [
+					{
+						...file,
+						name: `${uniqueBaseName}${fileExtension(file.name)}`,
+						customId: `member-${memberToUpdate.id}-${memberToUpdate.mbr ?? "unknown"}-${uniqueUploadSuffix()}`
+					}
+				]
 			};
 		})
 		.onUploadComplete(async ({ metadata, file }) => {
@@ -255,10 +281,7 @@ export const ourFileRouter = {
 					.where(eq(users.id, metadata.memberId)) // Use memberId instead of userId
 					.returning({ id: users.id, img: users.img });
 
-				// Delete the old image if it exists
-				if (metadata.currentImageKey) {
-					await utapi.deleteFiles(metadata.currentImageKey);
-				}
+				await deleteOldUploadThingFileIfPresent(metadata.currentImageKey);
 			} catch (error) {
 				console.error("Failed to update member image:", error);
 				throw error;
@@ -300,7 +323,10 @@ export const ourFileRouter = {
 			const currentImageKey = fileKeyFromUploadThingUrl(eventToUpdate?.img);
 
 			// Label file with custom identifier for better organization
-			const fileBase = eventImageFileBase(eventToUpdate?.title ?? eventId, eventToUpdate?.event_date ?? null);
+			const fileBase = eventImageFileBase(
+				eventToUpdate?.title ?? eventId,
+				eventToUpdate?.event_date ?? null
+			);
 			return {
 				userId: user.id,
 				uploadType: "event-image" as const,
@@ -327,10 +353,7 @@ export const ourFileRouter = {
 					})
 					.where(eq(events.id, metadata.eventId))
 					.returning({ id: events.id, img: events.img });
-				if (metadata.currentImageKey) {
-					// Delete the old image if it exists
-					await utapi.deleteFiles(metadata.currentImageKey);
-				}
+				await deleteOldUploadThingFileIfPresent(metadata.currentImageKey);
 			} catch (error) {
 				console.error("Failed to update event image:", error);
 				throw error;
