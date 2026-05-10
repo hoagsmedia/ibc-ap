@@ -14,9 +14,21 @@ jobs:
   quality:
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # src/lib/server/redis.local.test.ts connects in beforeAll; without Redis the hook hangs until Vitest times out.
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping || exit 1"
+          --health-interval 5s
+          --health-timeout 3s
+          --health-retries 10
     env:
       # GitHub Actions: use Node 24 for JS actions (avoids Node 20 deprecation on runner)
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      REDIS_URL: redis://127.0.0.1:6379
     steps:
       - uses: actions/checkout@v4
 
