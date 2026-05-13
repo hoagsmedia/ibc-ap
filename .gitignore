@@ -35,3 +35,4 @@ vite.config.ts.timestamp-*
 *.log
 *.tmp
 .env*.local
+dump.rdb

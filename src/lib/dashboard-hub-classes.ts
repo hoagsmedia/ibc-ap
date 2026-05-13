@@ -7,10 +7,6 @@
 export const hubHeroActionBtnClass =
 	"gap-1.5 shadow-md transition-all duration-150 hover:shadow-lg hover:brightness-105 active:translate-y-px active:brightness-95 focus-visible:ring-2 focus-visible:ring-amber-200/90 focus-visible:ring-offset-2 focus-visible:ring-offset-transparent min-h-9 px-2.5 sm:px-3";
 
-/** Vertical rule between faux table columns. */
-export const hubTableColSepClass =
-	"!h-5 w-px shrink-0 bg-white/25 data-[orientation=vertical]:!h-5 dark:bg-border";
-
 export const inviteRowIdleClass = "bg-transparent hover:bg-white/[0.04] dark:hover:bg-white/[0.05]";
 
 export const inviteRowHighlightClass =
@@ -31,7 +27,7 @@ export const upcomingEventsRowGridClass =
  * Requires `@container/invite-widget` on the wrapping `<ul>`. Below ~500px container width the token column hides.
  */
 export const inviteDashboardRowGridClass =
-	"grid w-full min-w-0 min-h-10 grid-cols-[minmax(0,1fr)_7.25rem_130px_130px] @max-[500px]/invite-widget:grid-cols-[minmax(0,1fr)_130px_130px] items-center divide-x divide-white/15 dark:divide-border/40";
+	"grid w-full min-w-0 min-h-10 grid-cols-[minmax(0,1fr)_7.25rem_130px_minmax(9.25rem,1fr)] @max-[500px]/invite-widget:grid-cols-[minmax(0,1fr)_130px_minmax(9.25rem,1fr)] items-center divide-x divide-white/15 dark:divide-border/40";
 
 /** Token preview column — hidden when invite-widget container is narrow */
 export const inviteDashboardTokenColClass =

@@ -1,10 +1,10 @@
-import { db } from '../src/lib/server/db';
-import { users } from '../src/lib/server/db/schema';
-import fs from 'fs';
-import path from 'path';
-const profilesPath = path.resolve('static/ibc-users.json');
-const profiles = JSON.parse(fs.readFileSync(profilesPath, 'utf-8'));
-import readline from 'readline';
+import { db } from "../src/lib/server/db";
+import { users } from "../src/lib/server/db/schema";
+import fs from "fs";
+import path from "path";
+const profilesPath = path.resolve("static/ibc-users.json");
+const profiles = JSON.parse(fs.readFileSync(profilesPath, "utf-8"));
+import readline from "readline";
 
 const maxUsers = 30;
 
@@ -24,15 +24,15 @@ function confirmPrompt(prompt: string): Promise<boolean> {
 	return new Promise((resolve) => {
 		rl.question(`${prompt} (y/n): `, (answer) => {
 			rl.close();
-			resolve(answer.toLowerCase() === 'y');
+			resolve(answer.toLowerCase() === "y");
 		});
 	});
 }
 
 async function seedUsers() {
-	console.log('🧹 Clearing users table...');
+	console.log("🧹 Clearing users table...");
 	await db.delete(users); // ← this clears all rows
-	console.log('✅ Users table cleared.');
+	console.log("✅ Users table cleared.");
 	console.log(`📥 Seeding users from ${profilesPath}...`);
 
 	let count = 0;
@@ -45,7 +45,7 @@ async function seedUsers() {
 				name: profile.name,
 				email: profile.email,
 				password_hash: profile.password_hash, // Use the provided password hash
-				role: profile.role || 'member', // Default to 'member' if no role is provided
+				role: profile.role || "member", // Default to 'member' if no role is provided
 				bio: profile.bio || null,
 				hobbies: profile.hobbies || null,
 				img: profile.img || null,
@@ -53,7 +53,9 @@ async function seedUsers() {
 				mbr: profile.mbr || null,
 				msd: msdUtcDate(profile.msd),
 				sponsor: profile.sponsor || null,
-				test_passed: profile.msd ? new Date(profile.msd) : null
+				test_passed: profile.msd ? new Date(profile.msd) : null,
+				account_active: true,
+				website_first_login_at: new Date()
 			})
 			.onConflictDoUpdate({
 				target: users.id,
@@ -61,7 +63,7 @@ async function seedUsers() {
 					name: profile.name,
 					email: profile.email,
 					password_hash: profile.password_hash,
-					role: profile.role || 'member',
+					role: profile.role || "member",
 					bio: profile.bio || null,
 					hobbies: profile.hobbies || null,
 					img: profile.img || null,
@@ -70,6 +72,8 @@ async function seedUsers() {
 					msd: msdUtcDate(profile.msd),
 					sponsor: profile.sponsor || null,
 					test_passed: profile.msd ? new Date(profile.msd) : null,
+					account_active: true,
+					website_first_login_at: new Date(),
 					updated_at: new Date()
 				}
 			});
@@ -78,23 +82,23 @@ async function seedUsers() {
 	console.log(`Seeded ${count} users from ${profilesPath}`);
 }
 
-const environment = process.env.NODE_ENV || 'development';
+const environment = process.env.NODE_ENV || "development";
 
 console.log(`⚠️  You are about to seed ${maxUsers} users into the "${environment}" environment.`);
 
-confirmPrompt('Do you want to continue?').then((confirmed) => {
+confirmPrompt("Do you want to continue?").then((confirmed) => {
 	if (!confirmed) {
-		console.log('❌ Operation cancelled.');
+		console.log("❌ Operation cancelled.");
 		process.exit(0);
 	}
 
 	seedUsers()
 		.then(() => {
-			console.log('✅ Users seeded successfully!');
+			console.log("✅ Users seeded successfully!");
 			process.exit(0);
 		})
 		.catch((error) => {
-			console.error('❌ Error seeding users:', error);
+			console.error("❌ Error seeding users:", error);
 			process.exit(1);
 		});
 });

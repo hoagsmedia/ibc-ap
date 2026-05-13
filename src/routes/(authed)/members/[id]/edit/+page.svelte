@@ -12,7 +12,15 @@
 	import { Input } from "$lib/components/ui/input/index.js";
 	import DatePickerField from "$lib/components/DatePickerField.svelte";
 	import { Textarea } from "$lib/components/ui/textarea/index.js";
-	import { ArrowLeft, Check, Trash2, KeyRound, Copy, ShieldCheck, UserRound, NotebookPen } from "@lucide/svelte";
+	import {
+		ArrowLeft,
+		Check,
+		Trash2,
+		KeyRound,
+		ShieldCheck,
+		UserRound,
+		NotebookPen
+	} from "@lucide/svelte";
 	import { toast } from "svelte-sonner";
 	import { toastAdminActionFailure } from "$lib/admin-action-toast";
 	import { memberSchema } from "./edit-member-schema";
@@ -28,7 +36,6 @@
 	let deleteDialogOpen = $state(false);
 	let deleteConfirmText = $state("");
 	let resetPasswordDialogOpen = $state(false);
-	let tempPassword = $state("");
 	let deleteProfileImageDialogOpen = $state(false);
 	let deletingProfileImage = $state(false);
 	let unsavedDialogOpen = $state(false);
@@ -49,6 +56,7 @@
 		msd: string;
 		dops: boolean;
 		dops_date: string;
+		rung_in_date: string;
 		sponsor: string;
 	};
 
@@ -67,6 +75,7 @@
 			msd: member.msd ?? "",
 			dops: Boolean(member.dops),
 			dops_date: member.dops_date ?? "",
+			rung_in_date: member.rung_in_date ?? "",
 			sponsor: member.sponsor ?? ""
 		};
 	}
@@ -104,18 +113,18 @@
 					void goto(targetHref, { noScroll: true });
 				}
 			} else if (result.type === "failure") {
-				toastAdminActionFailure(
-					result.data,
-					"Could not save changes. Check the form for errors.",
-					{ duration: 8000 }
-				);
+				toastAdminActionFailure(result.data, "Could not save changes. Check the form for errors.", {
+					duration: 8000
+				});
 			}
 		}
 	});
 
 	const { form: formData, enhance, submitting, message } = form;
 	let baselineSnapshot = $state(getEditableSnapshot(data.form.data));
-	const hasUnsavedChanges = $derived(!isEqualSnapshot(getEditableSnapshot($formData), baselineSnapshot));
+	const hasUnsavedChanges = $derived(
+		!isEqualSnapshot(getEditableSnapshot($formData), baselineSnapshot)
+	);
 	let suppressUnsavedPrompt = $state(false);
 
 	// Delete form
@@ -152,22 +161,19 @@
 		id: "member-edit-reset-password",
 		resetForm: false,
 		onResult: ({ result }) => {
-			if (result.type === "success" && result.data?.tempPassword) {
-				tempPassword = result.data.tempPassword;
-				resetPasswordDialogOpen = true;
-				toast.success(`Password reset for ${result.data.memberName}`, {
+			if (result.type === "success" && result.data?.success) {
+				resetPasswordDialogOpen = false;
+				toast.success(result.data.message ?? "Reset link sent.", {
 					icon: Check,
-					duration: 5000,
+					duration: 6000,
 					position: "bottom-right"
 				});
 			} else if (result.type === "failure") {
-				toastAdminActionFailure(
-					result.data,
-					"Failed to reset password. Please try again.",
-					{ duration: 5000 }
-				);
+				toastAdminActionFailure(result.data, "Failed to send password reset. Please try again.", {
+					duration: 5000
+				});
 			} else if (result.type === "error") {
-				toast.error("Failed to reset password. Please try again.", {
+				toast.error("Failed to send password reset. Please try again.", {
 					duration: 5000,
 					position: "bottom-right"
 				});
@@ -252,30 +258,15 @@
 
 	function closeResetPasswordDialog() {
 		resetPasswordDialogOpen = false;
-		tempPassword = "";
-	}
-
-	async function copyToClipboard(text: string) {
-		try {
-			await navigator.clipboard.writeText(text);
-			toast.success("Password copied to clipboard!", {
-				duration: 2000,
-				position: "bottom-right"
-			});
-		} catch (err) {
-			console.error("Failed to copy to clipboard:", err);
-			toast.error("Failed to copy to clipboard", {
-				duration: 3000,
-				position: "bottom-right"
-			});
-		}
 	}
 
 	beforeNavigate((nav) => {
 		if (!hasUnsavedChanges || suppressUnsavedPrompt) return;
 		if (nav.willUnload) return;
 		nav.cancel();
-		pendingNavigationHref = nav.to?.url ? `${nav.to.url.pathname}${nav.to.url.search}${nav.to.url.hash}` : null;
+		pendingNavigationHref = nav.to?.url
+			? `${nav.to.url.pathname}${nav.to.url.search}${nav.to.url.hash}`
+			: null;
 		unsavedDialogOpen = true;
 	});
 
@@ -321,8 +312,10 @@
 			<p class="text-muted-foreground text-sm">Update member information and account details.</p>
 		</div>
 		<div class="flex items-center gap-2">
-			<Button href={`/members/${data.member.id}?back=${data.backLink.key}`} variant="outline" size="sm"
-				>View Member Profile</Button
+			<Button
+				href={`/members/${data.member.id}?back=${data.backLink.key}`}
+				variant="outline"
+				size="sm">View Member Profile</Button
 			>
 			<HubBackLink href={data.backLink.href} size="sm" class="shrink-0 gap-2">
 				<ArrowLeft class="size-4" />
@@ -331,352 +324,398 @@
 		</div>
 	</div>
 
-<!-- Profile Image Section -->
-<Card.Root class="mb-6">
-	<Card.Header>
-		<Card.Title>Profile Image</Card.Title>
-		<Card.Description>Update the member's profile picture</Card.Description>
-	</Card.Header>
-	<Card.Content>
-		<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
-			<!-- Current member image -->
-			<Avatar
-				class="size-24"
-				name={data.member?.name}
-				img={data.member?.img || $formData.img}
-				dops={$formData.dops}
-			/>
+	<!-- Profile Image Section -->
+	<Card.Root class="mb-6">
+		<Card.Header>
+			<Card.Title>Profile Image</Card.Title>
+			<Card.Description>Update the member's profile picture</Card.Description>
+		</Card.Header>
+		<Card.Content>
+			<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:gap-6">
+				<!-- Current member image -->
+				<Avatar
+					class="size-24"
+					name={data.member?.name}
+					img={data.member?.img || $formData.img}
+					dops={$formData.dops}
+				/>
 
-			<Field.Set class="flex-1">
-				<Field.Group>
-					<Field.Field>
-						<Field.Label for="profile-image-upload">Upload new profile image</Field.Label>
-						<div
-							class="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-gray-400"
-						>
-							{#if uploading}
-								<div class="flex items-center justify-center">
-									<div class="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
-									<span class="text-muted-foreground ml-3 text-sm">Uploading...</span>
-								</div>
-							{:else}
-								<input
-									bind:this={fileInput}
-									id="profile-image-upload"
-									type="file"
-									accept="image/*"
-									onchange={handleFileChange}
-									class="hidden"
-								/>
-								<div class="flex flex-wrap justify-center gap-2">
-									<Button variant="outline" onclick={handleUploadClick} type="button">
-										Choose Image
-									</Button>
-									{#if data.member?.img || $formData.img}
-										<Button variant="destructive" onclick={() => (deleteProfileImageDialogOpen = true)} type="button">
-											<Trash2 class="size-4" />
-											Delete Image
-										</Button>
-									{/if}
-								</div>
-							{/if}
-						</div>
-						<Field.Description>PNG, JPG, GIF up to 8MB</Field.Description>
-					</Field.Field>
-				</Field.Group>
-			</Field.Set>
-		</div>
-	</Card.Content>
-</Card.Root>
-
-<!-- Member Details Form -->
-<form bind:this={memberEditFormEl} method="POST" action="?/update" use:enhance class="space-y-6">
-	<input type="hidden" name="id" value={$formData.id} />
-
-	<div class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
-		<Card.Root>
-			<Card.Header>
-				<Card.Title class="flex items-center gap-2">
-					<UserRound class="text-muted-foreground size-4" />
-					Member Information
-				</Card.Title>
-			</Card.Header>
-			<Card.Content class="space-y-6">
-				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-					<Form.Field {form} name="name">
-						<Form.Control>
-							{#snippet children({ props })}
-								<Form.Label>Name *</Form.Label>
-								<Input {...props} bind:value={$formData.name} />
-							{/snippet}
-						</Form.Control>
-						<Form.Description>The member's full name.</Form.Description>
-						<Form.FieldErrors />
-					</Form.Field>
-
-					<Form.Field {form} name="email">
-						<Form.Control>
-							{#snippet children({ props })}
-								<Form.Label>Email *</Form.Label>
-								<Input type="email" {...props} bind:value={$formData.email} />
-							{/snippet}
-						</Form.Control>
-						<Form.Description>Primary email address.</Form.Description>
-						<Form.FieldErrors />
-					</Form.Field>
-
-					<Form.Field {form} name="mbr">
-						<Form.Control>
-							{#snippet children({ props })}
-								<Form.Label>Member Number *</Form.Label>
-								<Input type="number" {...props} bind:value={$formData.mbr} />
-							{/snippet}
-						</Form.Control>
-						<Form.Description>Unique member identifier.</Form.Description>
-						<Form.FieldErrors />
-					</Form.Field>
-
-					<Form.Field {form} name="msd" class="min-w-0">
-						<Form.Control>
-							{#snippet children({ props })}
-								<Form.Label>Member Since *</Form.Label>
-								<DatePickerField
-									id={props.id}
-									name={props.name}
-									aria-invalid={props["aria-invalid"]}
-									bind:value={$formData.msd}
-									class="min-w-0 max-w-full"
-								/>
-							{/snippet}
-						</Form.Control>
-						<Form.Description>Date when membership started.</Form.Description>
-						<Form.FieldErrors />
-					</Form.Field>
-
-					<Form.Field {form} name="phone">
-						<Form.Control>
-							{#snippet children({ props })}
-								<Form.Label>Phone</Form.Label>
-								<Input type="tel" {...props} bind:value={$formData.phone} />
-							{/snippet}
-						</Form.Control>
-						<Form.Description>Contact phone number.</Form.Description>
-						<Form.FieldErrors />
-					</Form.Field>
-
-					<Form.Field {form} name="role">
-						<Form.Control>
-							{#snippet children({ props })}
-								<Form.Label>Role *</Form.Label>
-								<Select.Root type="single" bind:value={$formData.role} name={props.name}>
-									<Select.Trigger class="w-40" {...props}>
-										{$formData.role
-											? $formData.role.charAt(0).toUpperCase() + $formData.role.slice(1)
-											: "Select Role"}
-									</Select.Trigger>
-									<Select.Content>
-										<Select.Group>
-											<Select.Item value="guest" label="Guest">Guest</Select.Item>
-											<Select.Item value="member" label="Member">Member</Select.Item>
-											<Select.Item value="admin" label="Admin">Admin</Select.Item>
-										</Select.Group>
-									</Select.Content>
-								</Select.Root>
-							{/snippet}
-						</Form.Control>
-						<Form.Description
-							>Changing this status updates member site privileges.</Form.Description
-						>
-						<Form.FieldErrors />
-					</Form.Field>
-
-					<Form.Field {form} name="dops_date" class="min-w-0">
-						<Form.Control>
-							{#snippet children({ props })}
-								<Form.Label>DOPS</Form.Label>
-								<Input
-									type="text"
-									{...props}
-									bind:value={$formData.dops_date}
-									placeholder="YYYY-MM-DD"
-									inputmode="numeric"
-									pattern="\\d{4}-\\d{2}-\\d{2}"
-									autocomplete="off"
-									spellcheck={false}
-									class="h-8 w-full min-w-0 max-w-full text-sm"
-								/>
-							{/snippet}
-						</Form.Control>
-						<Form.Description>Date of Permanent Sobriety.</Form.Description>
-						<Form.FieldErrors />
-					</Form.Field>
-
-					<Form.Field {form} name="dops">
-						<Form.Control>
-							{#snippet children({ props })}
-								<Form.Label>Passed away (DOPS)</Form.Label>
-								<Checkbox {...props} bind:checked={$formData.dops} />
-							{/snippet}
-						</Form.Control>
-						<Form.Description>
-							Deceased members are excluded from keg duty on public stats.
-						</Form.Description>
-						<Form.FieldErrors />
-					</Form.Field>
-				</div>
-
-				<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
-					<Form.Field {form} name="address">
-						<Form.Control>
-							{#snippet children({ props })}
-								<Form.Label>Address</Form.Label>
-								<Input {...props} bind:value={$formData.address} />
-							{/snippet}
-						</Form.Control>
-						<Form.Description>Mailing address.</Form.Description>
-						<Form.FieldErrors />
-					</Form.Field>
-
-					<Form.Field {form} name="sponsor">
-						<Form.Control>
-							{#snippet children({ props })}
-								<Form.Label>Sponsor</Form.Label>
-								<Input {...props} bind:value={$formData.sponsor} />
-							{/snippet}
-						</Form.Control>
-						<Form.Description>Member's sponsor (if applicable).</Form.Description>
-						<Form.FieldErrors />
-					</Form.Field>
-				</div>
-			</Card.Content>
-		</Card.Root>
-
-		<Card.Root>
-			<Card.Header>
-				<Card.Title class="flex items-center gap-2">
-					<ShieldCheck class="text-muted-foreground size-4" />
-					Account &amp; Status
-				</Card.Title>
-			</Card.Header>
-			<Card.Content>
-				<Field.Set>
+				<Field.Set class="flex-1">
 					<Field.Group>
-						<Field.Field class="bg-muted/40 rounded-lg border p-3">
-							<Field.Label class="text-xs">Account status</Field.Label>
-							<Field.Description class="mt-1 text-sm font-semibold capitalize text-foreground">
-								{$formData.role}
-							</Field.Description>
-						</Field.Field>
-
 						<Field.Field>
-							<Field.Label class="text-xs">Username</Field.Label>
-							<Field.Description class="text-sm text-foreground">
-								{data.member.username || "Not set"}
-							</Field.Description>
-						</Field.Field>
-
-						<Field.Field>
-							<Field.Label class="text-xs">Password</Field.Label>
-							<Button
-								type="button"
-								variant="outline"
-								onclick={openResetPasswordDialog}
-								class="mt-1 flex w-full items-center justify-center gap-2"
+							<Field.Label for="profile-image-upload">Upload new profile image</Field.Label>
+							<div
+								class="rounded-lg border-2 border-dashed border-gray-300 p-6 text-center transition-colors hover:border-gray-400"
 							>
-								<KeyRound class="size-4" />
-								Reset Password
-							</Button>
-						</Field.Field>
-					</Field.Group>
-
-					<Field.Separator />
-
-					<Field.Group>
-						<Field.Field>
-							<Field.Label class="text-xs">Last login</Field.Label>
-							<Field.Description class="text-sm text-foreground">
-								{data.member.updated_at?.toLocaleString?.() ?? "Unknown"}
-							</Field.Description>
-						</Field.Field>
-						<Field.Field>
-							<Field.Label class="text-xs">Created</Field.Label>
-							<Field.Description class="text-sm text-foreground">
-								{data.member.created_at?.toLocaleString?.() ?? "Unknown"}
-							</Field.Description>
-						</Field.Field>
-						<Field.Field>
-							<Field.Label class="text-xs">Updated</Field.Label>
-							<Field.Description class="text-sm text-foreground">
-								{data.member.updated_at?.toLocaleString?.() ?? "Unknown"}
-							</Field.Description>
+								{#if uploading}
+									<div class="flex items-center justify-center">
+										<div class="border-primary h-8 w-8 animate-spin rounded-full border-b-2"></div>
+										<span class="text-muted-foreground ml-3 text-sm">Uploading...</span>
+									</div>
+								{:else}
+									<input
+										bind:this={fileInput}
+										id="profile-image-upload"
+										type="file"
+										accept="image/*"
+										onchange={handleFileChange}
+										class="hidden"
+									/>
+									<div class="flex flex-wrap justify-center gap-2">
+										<Button variant="outline" onclick={handleUploadClick} type="button">
+											Choose Image
+										</Button>
+										{#if data.member?.img || $formData.img}
+											<Button
+												variant="destructive"
+												onclick={() => (deleteProfileImageDialogOpen = true)}
+												type="button"
+											>
+												<Trash2 class="size-4" />
+												Delete Image
+											</Button>
+										{/if}
+									</div>
+								{/if}
+							</div>
+							<Field.Description>PNG, JPG, GIF up to 8MB</Field.Description>
 						</Field.Field>
 					</Field.Group>
 				</Field.Set>
-			</Card.Content>
-		</Card.Root>
-	</div>
-
-	<Card.Root>
-		<Card.Header>
-			<Card.Title class="flex items-center gap-2">
-				<NotebookPen class="text-muted-foreground size-4" />
-				About the Member
-			</Card.Title>
-		</Card.Header>
-		<Card.Content class="grid grid-cols-1 gap-6 lg:grid-cols-3">
-			<Form.Field {form} name="bio">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>Bio</Form.Label>
-						<Textarea {...props} bind:value={$formData.bio} rows={6} maxlength={300} class="min-h-36" />
-					{/snippet}
-				</Form.Control>
-				<Form.Description>Member biography — up to 300 characters.</Form.Description>
-				<Form.FieldErrors />
-			</Form.Field>
-
-			<Form.Field {form} name="hobbies">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>Hobbies</Form.Label>
-						<Textarea {...props} bind:value={$formData.hobbies} rows={6} maxlength={300} class="min-h-36" />
-					{/snippet}
-				</Form.Control>
-				<Form.Description>Hobbies and interests — up to 300 characters.</Form.Description>
-				<Form.FieldErrors />
-			</Form.Field>
-
-			<Form.Field {form} name="likes">
-				<Form.Control>
-					{#snippet children({ props })}
-						<Form.Label>Likes</Form.Label>
-						<Textarea {...props} bind:value={$formData.likes} rows={6} maxlength={300} class="min-h-36" />
-					{/snippet}
-				</Form.Control>
-				<Form.Description>Things the member likes — up to 300 characters.</Form.Description>
-				<Form.FieldErrors />
-			</Form.Field>
+			</div>
 		</Card.Content>
 	</Card.Root>
 
-	{#if isAdmin}
-		<div class="flex flex-col gap-4 md:flex-row md:justify-between">
-			<div class="flex flex-col gap-3 sm:flex-row">
-				<Button type="submit" disabled={$submitting}>{$submitting ? "Updating..." : "Update Member"}</Button>
-				<Button type="button" variant="outline" onclick={() => history.back()}
-					>{$message ? "Close" : "Cancel"}</Button
-				>
-			</div>
+	<!-- Member Details Form -->
+	<form bind:this={memberEditFormEl} method="POST" action="?/update" use:enhance class="space-y-6">
+		<input type="hidden" name="id" value={$formData.id} />
 
-			<div class="flex gap-2">
-				<Button type="button" variant="destructive" onclick={openDeleteDialog} class="flex items-center gap-2">
-					<Trash2 class="size-4" />
-					Delete Member
-				</Button>
-			</div>
+		<div class="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(18rem,1fr)]">
+			<Card.Root>
+				<Card.Header>
+					<Card.Title class="flex items-center gap-2">
+						<UserRound class="text-muted-foreground size-4" />
+						Member Information
+					</Card.Title>
+				</Card.Header>
+				<Card.Content class="space-y-6">
+					<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+						<Form.Field {form} name="name">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Label>Name *</Form.Label>
+									<Input {...props} bind:value={$formData.name} />
+								{/snippet}
+							</Form.Control>
+							<Form.Description>The member's full name.</Form.Description>
+							<Form.FieldErrors />
+						</Form.Field>
+
+						<Form.Field {form} name="email">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Label>Email *</Form.Label>
+									<Input type="email" {...props} bind:value={$formData.email} />
+								{/snippet}
+							</Form.Control>
+							<Form.Description>Primary email address.</Form.Description>
+							<Form.FieldErrors />
+						</Form.Field>
+
+						<Form.Field {form} name="mbr">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Label>Member Number *</Form.Label>
+									<Input type="number" step="0.1" {...props} bind:value={$formData.mbr} />
+								{/snippet}
+							</Form.Control>
+							<Form.Description>Unique member identifier.</Form.Description>
+							<Form.FieldErrors />
+						</Form.Field>
+
+						<Form.Field {form} name="msd" class="min-w-0">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Label>Member Since *</Form.Label>
+									<DatePickerField
+										id={props.id}
+										name={props.name}
+										aria-invalid={props["aria-invalid"]}
+										bind:value={$formData.msd}
+										class="max-w-full min-w-0"
+									/>
+								{/snippet}
+							</Form.Control>
+							<Form.Description>Date when membership started.</Form.Description>
+							<Form.FieldErrors />
+						</Form.Field>
+
+						<Form.Field {form} name="phone">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Label>Phone</Form.Label>
+									<Input type="tel" {...props} bind:value={$formData.phone} />
+								{/snippet}
+							</Form.Control>
+							<Form.Description>Contact phone number.</Form.Description>
+							<Form.FieldErrors />
+						</Form.Field>
+
+						<Form.Field {form} name="role">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Label>Role *</Form.Label>
+									<Select.Root type="single" bind:value={$formData.role} name={props.name}>
+										<Select.Trigger class="w-40" {...props}>
+											{$formData.role
+												? $formData.role.charAt(0).toUpperCase() + $formData.role.slice(1)
+												: "Select Role"}
+										</Select.Trigger>
+										<Select.Content>
+											<Select.Group>
+												<Select.Item value="guest" label="Guest">Guest</Select.Item>
+												<Select.Item value="member" label="Member">Member</Select.Item>
+												<Select.Item value="admin" label="Admin">Admin</Select.Item>
+											</Select.Group>
+										</Select.Content>
+									</Select.Root>
+								{/snippet}
+							</Form.Control>
+							<Form.Description
+								>Changing this status updates member site privileges.</Form.Description
+							>
+							<Form.FieldErrors />
+						</Form.Field>
+
+						<Form.Field {form} name="dops_date" class="min-w-0">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Label>DOPS</Form.Label>
+									<Input
+										type="text"
+										{...props}
+										bind:value={$formData.dops_date}
+										placeholder="YYYY-MM-DD"
+										inputmode="numeric"
+										pattern="\\d{4}-\\d{2}-\\d{2}"
+										autocomplete="off"
+										spellcheck={false}
+										class="h-8 w-full max-w-full min-w-0 text-sm"
+									/>
+								{/snippet}
+							</Form.Control>
+							<Form.Description>Date of Permanent Sobriety.</Form.Description>
+							<Form.FieldErrors />
+						</Form.Field>
+
+						<Form.Field {form} name="rung_in_date" class="min-w-0">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Label>Had Rung In Date</Form.Label>
+									<DatePickerField
+										id={props.id}
+										name={props.name}
+										aria-invalid={props["aria-invalid"]}
+										bind:value={$formData.rung_in_date}
+										class="max-w-full min-w-0"
+									/>
+								{/snippet}
+							</Form.Control>
+							<Form.Description>Date this member officially rang in.</Form.Description>
+							<Form.FieldErrors />
+						</Form.Field>
+
+						<Form.Field {form} name="dops">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Label>Passed away (DOPS)</Form.Label>
+									<Checkbox {...props} bind:checked={$formData.dops} />
+								{/snippet}
+							</Form.Control>
+							<Form.Description>
+								Deceased members are excluded from keg duty on public stats.
+							</Form.Description>
+							<Form.FieldErrors />
+						</Form.Field>
+					</div>
+
+					<div class="grid grid-cols-1 gap-6 md:grid-cols-2">
+						<Form.Field {form} name="address">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Label>Address</Form.Label>
+									<Input {...props} bind:value={$formData.address} />
+								{/snippet}
+							</Form.Control>
+							<Form.Description>Mailing address.</Form.Description>
+							<Form.FieldErrors />
+						</Form.Field>
+
+						<Form.Field {form} name="sponsor">
+							<Form.Control>
+								{#snippet children({ props })}
+									<Form.Label>Sponsor</Form.Label>
+									<Input {...props} bind:value={$formData.sponsor} />
+								{/snippet}
+							</Form.Control>
+							<Form.Description>Member's sponsor (if applicable).</Form.Description>
+							<Form.FieldErrors />
+						</Form.Field>
+					</div>
+				</Card.Content>
+			</Card.Root>
+
+			<Card.Root>
+				<Card.Header>
+					<Card.Title class="flex items-center gap-2">
+						<ShieldCheck class="text-muted-foreground size-4" />
+						Account &amp; Status
+					</Card.Title>
+				</Card.Header>
+				<Card.Content>
+					<Field.Set>
+						<Field.Group>
+							<Field.Field class="bg-muted/40 rounded-lg border p-3">
+								<Field.Label class="text-xs">Account status</Field.Label>
+								<Field.Description class="text-foreground mt-1 text-sm font-semibold capitalize">
+									{$formData.role}
+								</Field.Description>
+							</Field.Field>
+
+							<Field.Field>
+								<Field.Label class="text-xs">Username</Field.Label>
+								<Field.Description class="text-foreground text-sm">
+									{data.member.username || "Not set"}
+								</Field.Description>
+							</Field.Field>
+
+							<Field.Field>
+								<Field.Label class="text-xs">Password</Field.Label>
+								<Button
+									type="button"
+									variant="outline"
+									onclick={openResetPasswordDialog}
+									class="mt-1 flex w-full items-center justify-center gap-2"
+								>
+									<KeyRound class="size-4" />
+									Reset Password
+								</Button>
+							</Field.Field>
+						</Field.Group>
+
+						<Field.Separator />
+
+						<Field.Group>
+							<Field.Field>
+								<Field.Label class="text-xs">Last login</Field.Label>
+								<Field.Description class="text-foreground text-sm">
+									{data.member.updated_at?.toLocaleString?.() ?? "Unknown"}
+								</Field.Description>
+							</Field.Field>
+							<Field.Field>
+								<Field.Label class="text-xs">Created</Field.Label>
+								<Field.Description class="text-foreground text-sm">
+									{data.member.created_at?.toLocaleString?.() ?? "Unknown"}
+								</Field.Description>
+							</Field.Field>
+							<Field.Field>
+								<Field.Label class="text-xs">Updated</Field.Label>
+								<Field.Description class="text-foreground text-sm">
+									{data.member.updated_at?.toLocaleString?.() ?? "Unknown"}
+								</Field.Description>
+							</Field.Field>
+						</Field.Group>
+					</Field.Set>
+				</Card.Content>
+			</Card.Root>
 		</div>
-	{/if}
-</form>
+
+		<Card.Root>
+			<Card.Header>
+				<Card.Title class="flex items-center gap-2">
+					<NotebookPen class="text-muted-foreground size-4" />
+					About the Member
+				</Card.Title>
+			</Card.Header>
+			<Card.Content class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+				<Form.Field {form} name="bio">
+					<Form.Control>
+						{#snippet children({ props })}
+							<Form.Label>Bio</Form.Label>
+							<Textarea
+								{...props}
+								bind:value={$formData.bio}
+								rows={6}
+								maxlength={300}
+								class="min-h-36"
+							/>
+						{/snippet}
+					</Form.Control>
+					<Form.Description>Member biography — up to 300 characters.</Form.Description>
+					<Form.FieldErrors />
+				</Form.Field>
+
+				<Form.Field {form} name="hobbies">
+					<Form.Control>
+						{#snippet children({ props })}
+							<Form.Label>Hobbies</Form.Label>
+							<Textarea
+								{...props}
+								bind:value={$formData.hobbies}
+								rows={6}
+								maxlength={300}
+								class="min-h-36"
+							/>
+						{/snippet}
+					</Form.Control>
+					<Form.Description>Hobbies and interests — up to 300 characters.</Form.Description>
+					<Form.FieldErrors />
+				</Form.Field>
+
+				<Form.Field {form} name="likes">
+					<Form.Control>
+						{#snippet children({ props })}
+							<Form.Label>Likes</Form.Label>
+							<Textarea
+								{...props}
+								bind:value={$formData.likes}
+								rows={6}
+								maxlength={300}
+								class="min-h-36"
+							/>
+						{/snippet}
+					</Form.Control>
+					<Form.Description>Things the member likes — up to 300 characters.</Form.Description>
+					<Form.FieldErrors />
+				</Form.Field>
+			</Card.Content>
+		</Card.Root>
+
+		{#if isAdmin}
+			<div class="flex flex-col gap-4 md:flex-row md:justify-between">
+				<div class="flex flex-col gap-3 sm:flex-row">
+					<Button type="submit" disabled={$submitting}
+						>{$submitting ? "Updating..." : "Update Member"}</Button
+					>
+					<Button type="button" variant="outline" onclick={() => history.back()}
+						>{$message ? "Close" : "Cancel"}</Button
+					>
+				</div>
+
+				<div class="flex gap-2">
+					<Button
+						type="button"
+						variant="destructive"
+						onclick={openDeleteDialog}
+						class="flex items-center gap-2"
+					>
+						<Trash2 class="size-4" />
+						Delete Member
+					</Button>
+				</div>
+			</div>
+		{/if}
+	</form>
 </div>
 
 <Dialog.Root bind:open={deleteProfileImageDialogOpen}>
@@ -687,15 +726,26 @@
 				Delete profile image?
 			</Dialog.Title>
 			<Dialog.Description>
-				This will remove {data.member.name}'s current profile image. You can upload a new one anytime.
+				This will remove {data.member.name}'s current profile image. You can upload a new one
+				anytime.
 			</Dialog.Description>
 		</Dialog.Header>
 
 		<Dialog.Footer class="mt-4 flex gap-2">
-			<Button type="button" variant="outline" onclick={() => (deleteProfileImageDialogOpen = false)} disabled={deletingProfileImage}>
+			<Button
+				type="button"
+				variant="outline"
+				onclick={() => (deleteProfileImageDialogOpen = false)}
+				disabled={deletingProfileImage}
+			>
 				No
 			</Button>
-			<Button type="button" variant="destructive" onclick={confirmDeleteProfileImage} disabled={deletingProfileImage}>
+			<Button
+				type="button"
+				variant="destructive"
+				onclick={confirmDeleteProfileImage}
+				disabled={deletingProfileImage}
+			>
 				{deletingProfileImage ? "Deleting..." : "Yes, delete it"}
 			</Button>
 		</Dialog.Footer>
@@ -783,7 +833,9 @@
 
 		<Dialog.Footer class="mt-4 flex flex-col gap-2 sm:flex-row sm:justify-end">
 			<Button type="button" variant="outline" onclick={stayOnPage}>Stay on page</Button>
-			<Button type="button" variant="destructive" onclick={discardAndLeave}>Discard and leave</Button>
+			<Button type="button" variant="destructive" onclick={discardAndLeave}
+				>Discard and leave</Button
+			>
 			<Button type="button" onclick={saveAndLeave} disabled={$submitting}>
 				{$submitting ? "Saving..." : "Save and leave"}
 			</Button>
@@ -791,105 +843,61 @@
 	</Dialog.Content>
 </Dialog.Root>
 
-<!-- Password Reset Dialog -->
+<!-- Password Reset Dialog — sends member a one-time email link (Resend) -->
 <Dialog.Root bind:open={resetPasswordDialogOpen}>
 	<Dialog.Content class="sm:max-w-md">
 		<Dialog.Header>
 			<Dialog.Title class="flex items-center gap-2">
 				<KeyRound class="size-5" />
-				Reset Password
+				Send password reset
 			</Dialog.Title>
 			<Dialog.Description>
-				{#if tempPassword}
-					Password has been reset successfully for {data.member.name}.
-				{:else}
-					This will generate a new temporary password for {data.member.name}. The user will need to
-					change it upon next login.
-				{/if}
+				We will email {data.member.name} a one-time link to choose a new password. The link expires in
+				one hour. Their current password keeps working until they complete the reset.
 			</Dialog.Description>
 		</Dialog.Header>
 
-		{#if tempPassword}
-			<!-- Show generated password -->
+		<form method="POST" action="?/resetPassword" use:enhanceResetPassword>
+			<input type="hidden" name="userId" value={data.member.id} />
 			<div class="space-y-4">
-				<div class="rounded-md bg-green-50 p-4 dark:bg-green-950">
-					<div class="flex items-center justify-between">
-						<div>
-							<h4 class="text-sm font-medium text-green-800 dark:text-green-200">
-								New Temporary Password
-							</h4>
-							<div class="mt-2 flex items-center gap-2">
-								<code
-									class="rounded bg-green-100 px-2 py-1 font-mono text-sm text-green-800 dark:bg-green-900 dark:text-green-200"
-								>
-									{tempPassword}
-								</code>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									onclick={() => copyToClipboard(tempPassword)}
-									class="flex items-center gap-1"
-								>
-									<Copy class="size-3" />
-									Copy
-								</Button>
-							</div>
-						</div>
+				{#if !data.member.email?.trim()}
+					<div class="bg-destructive/10 text-destructive rounded-md p-4 text-sm">
+						This member has no email on file. Add an email to the profile before sending a reset.
 					</div>
-				</div>
-
-				<div class="rounded-md bg-amber-50 p-4 dark:bg-amber-950">
-					<div class="text-sm text-amber-800 dark:text-amber-200">
-						<strong>Important:</strong>
-						<ul class="mt-2 list-inside list-disc space-y-1">
-							<li>Share this password securely with the member</li>
-							<li>The member should change this password immediately after logging in</li>
-							<li>This password will not be shown again</li>
-						</ul>
+				{:else}
+					<div class="bg-muted/50 rounded-md p-4 text-sm">
+						<strong class="text-foreground">To:</strong>
+						<span class="text-muted-foreground ml-1">{data.member.email}</span>
 					</div>
-				</div>
+				{/if}
 			</div>
 
-			<Dialog.Footer class="mt-4">
-				<Button type="button" onclick={closeResetPasswordDialog}>Close</Button>
+			<Dialog.Footer class="mt-4 flex gap-2">
+				<Button
+					type="button"
+					variant="outline"
+					onclick={closeResetPasswordDialog}
+					disabled={$isResettingPassword}
+				>
+					Cancel
+				</Button>
+				<Button
+					type="submit"
+					disabled={$isResettingPassword || !data.member.email?.trim()}
+					class="flex items-center gap-2"
+				>
+					{#if $isResettingPassword}
+						<div
+							class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
+						></div>
+						Sending…
+					{:else}
+						<KeyRound class="size-4" />
+						Send reset email
+					{/if}
+				</Button>
 			</Dialog.Footer>
-		{:else}
-			<!-- Confirmation before reset -->
-			<form method="POST" action="?/resetPassword" use:enhanceResetPassword>
-				<input type="hidden" name="userId" value={data.member.id} />
-				<div class="space-y-4">
-					<div class="rounded-md bg-amber-50 p-4 dark:bg-amber-950">
-						<div class="text-sm text-amber-800 dark:text-amber-200">
-							<strong>Warning:</strong> This will immediately invalidate the current password for {data
-								.member.name}.
-						</div>
-					</div>
-				</div>
-
-				<Dialog.Footer class="mt-4 flex gap-2">
-					<Button
-						type="button"
-						variant="outline"
-						onclick={closeResetPasswordDialog}
-						disabled={$isResettingPassword}
-					>
-						Cancel
-					</Button>
-					<Button type="submit" disabled={$isResettingPassword} class="flex items-center gap-2">
-						{#if $isResettingPassword}
-							<div
-								class="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"
-							></div>
-							Resetting...
-						{:else}
-							<KeyRound class="size-4" />
-							Reset Password
-						{/if}
-					</Button>
-				</Dialog.Footer>
-			</form>
-		{/if}
+		</form>
 	</Dialog.Content>
 </Dialog.Root>
 

@@ -64,7 +64,9 @@ export async function validateSessionToken(token: string) {
 					test_passed: table.users.test_passed,
 					meeting_1_date: table.users.meeting_1_date,
 					meeting_2_date: table.users.meeting_2_date,
-					meeting_3_date: table.users.meeting_3_date
+					meeting_3_date: table.users.meeting_3_date,
+					account_active: table.users.account_active,
+					website_first_login_at: table.users.website_first_login_at
 				},
 				session: table.session
 			})

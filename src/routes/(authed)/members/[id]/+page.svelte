@@ -176,6 +176,12 @@
 								{data.member.msd ? formatDate(data.member.msd) : "Not set"}
 							</p>
 						</div>
+						<div>
+							<h4 class="mb-2 font-medium">Had Rung In</h4>
+							<p class="text-muted-foreground text-sm">
+								{data.member.rung_in_date ? formatDate(data.member.rung_in_date) : "Not set"}
+							</p>
+						</div>
 					</div>
 				</Card.Content>
 			</Card.Root>

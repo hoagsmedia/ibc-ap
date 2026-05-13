@@ -1,6 +1,6 @@
 import { client, db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
-import { and, count, desc, eq, gte, lt } from "drizzle-orm";
+import { and, count, desc, eq, gte, isNull, lt } from "drizzle-orm";
 import { encodeBase64url } from "@oslojs/encoding";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
@@ -161,6 +161,43 @@ export async function getInvitationsByUser(
 			: null,
 		redeemerMbr: usedByUser?.mbr ?? null
 	}));
+}
+
+/** Active, unused invite owned by this user (for email / resend flows). */
+export async function getSendableInvitationForUser(
+	token: string,
+	userId: string
+): Promise<table.InvitationToken | null> {
+	await ensureInvitationTokenColumns();
+	const [row] = await db
+		.select()
+		.from(table.invitationTokens)
+		.where(eq(table.invitationTokens.token, token))
+		.limit(1);
+	if (!row || row.created_by_id !== userId) return null;
+	if (row.used_at) return null;
+	if (Date.now() >= row.expires_at.getTime()) return null;
+	return row;
+}
+
+/** Removes an unused invite owned by `userId` (e.g. rollback after email send failure). */
+export async function deleteUnusedInvitationForOwner(
+	token: string,
+	userId: string
+): Promise<boolean> {
+	await ensureInvitationTokenColumns();
+	const deleted = await db
+		.delete(table.invitationTokens)
+		.where(
+			and(
+				eq(table.invitationTokens.token, token),
+				eq(table.invitationTokens.created_by_id, userId),
+				isNull(table.invitationTokens.used_at)
+			)
+		)
+		.returning({ id: table.invitationTokens.id });
+
+	return deleted.length > 0;
 }
 
 export async function deleteExpiredInvitationByUser(

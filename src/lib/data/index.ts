@@ -1,6 +1,2 @@
-import { founders } from './founders';
-import { wordOfTheDayList } from './word-of-the-day';
-import { dailyQuotes } from './daily-quotes';
-import { quotes } from './quotes';
-
-export { founders, wordOfTheDayList, dailyQuotes, quotes };
+export { wordOfTheDayList } from './word-of-the-day';
+export { dailyQuotes } from './daily-quotes';

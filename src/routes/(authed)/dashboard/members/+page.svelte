@@ -16,55 +16,15 @@
 	import { Input } from "$lib/components/ui/input/index.js";
 	import { Search } from "@lucide/svelte";
 	import { goto } from "$app/navigation";
-	import { untrack } from "svelte";
 	import type { PageProps } from "./$types";
-	import { LocalStorage } from "$lib/utils/local-storage.svelte";
 
 	let { data }: PageProps = $props();
 
 	type MemberRow = PageProps["data"]["members"][number];
+	type PaginationData = PageProps["data"]["pagination"];
 
-	interface CachedMemberData {
-		members: PageProps["data"]["members"];
-		searchTerm: string;
-		timestamp: number;
-		totalCount: number;
-	}
-
-	interface PaginationData {
-		page: number;
-		perPage: number;
-		totalCount: number;
-		totalPages: number;
-	}
-
-	const memberCache = new LocalStorage<Record<string, CachedMemberData>>("member-search-cache", {});
-	const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes
-	const MAX_CACHE_KEYS = 24;
-
-	let cacheHit = $state<{
-		members: PageProps["data"]["members"];
-		pagination: PaginationData;
-	} | null>(null);
-	let rosterFallback = $state<{
-		members: PageProps["data"]["members"];
-		pagination: PaginationData;
-	} | null>(null);
-
-	const isStubLoad = $derived(Boolean("cached" in data && data.cached === true));
-
-	const members = $derived.by((): MemberRow[] => {
-		if (cacheHit) return cacheHit.members;
-		if (isStubLoad && rosterFallback) return rosterFallback.members;
-		return data.members;
-	});
-
-	const pagination = $derived.by((): PaginationData => {
-		if (cacheHit) return cacheHit.pagination;
-		if (isStubLoad && rosterFallback) return rosterFallback.pagination;
-		return data.pagination;
-	});
-
+	const members = $derived.by((): MemberRow[] => data.members);
+	const pagination = $derived.by((): PaginationData => data.pagination);
 	const urlSearchTerm = $derived(data.searchTerm ?? "");
 
 	// eslint-disable-next-line svelte/prefer-writable-derived -- draft must reset from URL on navigation; writable $derived fights intentional typing vs server search param.
@@ -92,83 +52,12 @@
 		}
 	}
 
-	let lastServerFingerprint = "";
-
-	function isCacheValid(timestamp: number): boolean {
-		return Date.now() - timestamp < CACHE_EXPIRY;
-	}
-
-	function getCachedResults(searchKey: string): CachedMemberData | null {
-		const cache = memberCache.value || {};
-		const cached = cache[searchKey];
-		if (cached && isCacheValid(cached.timestamp)) {
-			return cached;
-		}
-		return null;
-	}
-
-	function cacheResults(
-		searchKey: string,
-		membersList: CachedMemberData["members"],
-		term: string,
-		totalCount: number
-	): void {
-		const cache = memberCache.value || {};
-		const next: Record<string, CachedMemberData> = {
-			...cache,
-			[searchKey]: {
-				members: membersList,
-				searchTerm: term,
-				timestamp: Date.now(),
-				totalCount
-			}
-		};
-		const keys = Object.keys(next);
-		if (keys.length > MAX_CACHE_KEYS) {
-			const drop = keys
-				.map((k) => ({ k, t: next[k]!.timestamp }))
-				.sort((a, b) => a.t - b.t)
-				.slice(0, keys.length - MAX_CACHE_KEYS);
-			for (const { k } of drop) delete next[k];
-		}
-		memberCache.value = next;
-	}
-
-	async function performSearch(term: string, pageNum: number = 1): Promise<void> {
-		const perPage = pagination.perPage;
-		const searchKey = `${term}-${pageNum}-${perPage}`;
-
-		const cached = getCachedResults(searchKey);
-		if (cached && cached.members.length > 0) {
-			cacheHit = {
-				members: cached.members,
-				pagination: {
-					page: pageNum,
-					perPage,
-					totalCount: cached.totalCount,
-					totalPages: Math.ceil(cached.totalCount / perPage)
-				}
-			};
-			return;
-		}
-
-		navigateToServer(pageNum);
-	}
-
 	function navigateToServer(pageNum: number): void {
 		const params = new URLSearchParams();
 		params.set("page", pageNum.toString());
 		params.set("perPage", pagination.perPage.toString());
-		if (searchTerm) {
-			params.set("search", searchTerm);
-			const cacheKeys = Object.keys(memberCache.value || {});
-			const hasCache = cacheKeys.some((key) => {
-				const cacheData = memberCache.value![key];
-				return key.startsWith(searchTerm) && cacheData && isCacheValid(cacheData.timestamp);
-			});
-			if (hasCache) {
-				params.set("useCache", "true");
-			}
+		if (searchTerm.trim()) {
+			params.set("search", searchTerm.trim());
 		}
 		const nextQuery = params.toString();
 		const currentQuery = page.url.searchParams.toString();
@@ -182,14 +71,14 @@
 	}
 
 	function handlePageChange(newPage: number): void {
-		performSearch(searchTerm, newPage);
+		navigateToServer(newPage);
 	}
 
 	function handleSearch(): void {
 		if (searchTimeout) clearTimeout(searchTimeout);
 
 		searchTimeout = setTimeout(() => {
-			performSearch(searchTerm, 1);
+			navigateToServer(1);
 		}, 300);
 	}
 
@@ -197,26 +86,6 @@
 		return () => {
 			if (searchTimeout) clearTimeout(searchTimeout);
 		};
-	});
-
-	$effect(() => {
-		if (isStubLoad) return;
-
-		const serverMembers = data.members;
-		const serverPagination = data.pagination;
-		const serverSearchTerm = data.searchTerm ?? "";
-		const nextSearchKey = `${serverSearchTerm}-${serverPagination.page}-${serverPagination.perPage}`;
-		const fingerprint = `${nextSearchKey}|${serverPagination.totalCount}|${serverMembers.map((m) => m.id).join(",")}`;
-
-		untrack(() => {
-			rosterFallback = { members: serverMembers, pagination: serverPagination };
-			cacheHit = null;
-
-			if (fingerprint !== lastServerFingerprint) {
-				lastServerFingerprint = fingerprint;
-				cacheResults(nextSearchKey, serverMembers, serverSearchTerm, serverPagination.totalCount);
-			}
-		});
 	});
 </script>
 

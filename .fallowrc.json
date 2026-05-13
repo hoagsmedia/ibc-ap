@@ -1,0 +1,22 @@
+{
+  "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+  "entry": [
+    "scripts/*.ts",
+    "vite.config.ts",
+    "drizzle.config.ts",
+    "vitest-setup-client.ts"
+  ],
+  "ignorePatterns": [
+    "**/*.d.ts"
+  ],
+  "ignoreDependencies": [
+    "@fallow-cli/darwin-arm64"
+  ],
+  "ignoreExportsUsedInFile": true,
+  "rules": {
+    "unused-files": "error",
+    "unused-exports": "warn",
+    "unused-types": "off",
+    "unresolved-imports": "error"
+  }
+}

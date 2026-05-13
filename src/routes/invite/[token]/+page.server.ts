@@ -115,6 +115,7 @@ export const actions: Actions = {
 				meeting_2_date: null,
 				meeting_3_date: null,
 				test_passed: null,
+				account_active: true,
 				created_at: new Date(),
 				updated_at: new Date()
 			};

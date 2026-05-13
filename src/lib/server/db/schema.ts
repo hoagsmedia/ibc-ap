@@ -1,4 +1,12 @@
-import { pgTable, integer, text, timestamp, date, boolean, doublePrecision } from "drizzle-orm/pg-core";
+import {
+	pgTable,
+	integer,
+	text,
+	timestamp,
+	date,
+	boolean,
+	doublePrecision
+} from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
 	id: text("id").primaryKey(),
@@ -27,13 +35,15 @@ export const users = pgTable("users", {
 	role: text("role", { enum: ["guest", "member", "admin"] })
 		.notNull()
 		.default("guest"),
-	mbr: integer("mbr"),
+	mbr: doublePrecision("mbr"),
 	/** Member since — stored as `timestamptz` (calendar day = UTC midnight). */
 	msd: timestamp("msd", { withTimezone: true, mode: "date" }),
 	sponsor: text("sponsor"),
 	/** When true, member is deceased (memorial) — excluded from keg buying duty on /stats. */
 	dops: boolean("dops").notNull().default(false),
 	dops_date: date("dops_date"),
+	/** Date the member officially rang in. */
+	rung_in_date: date("rung_in_date"),
 	meeting_1_date: date("meeting_1_date", { mode: "date" }),
 	meeting_2_date: date("meeting_2_date", { mode: "date" }),
 	meeting_3_date: date("meeting_3_date", { mode: "date" }),
@@ -41,8 +51,36 @@ export const users = pgTable("users", {
 	hobbies: text("hobbies"),
 	likes: text("likes"),
 	test_passed: timestamp("test_passed", { withTimezone: true, mode: "date" }),
+	/**
+	 * Website / dashboard access. Admins are always treated as active in auth.
+	 * Rolled-out members: true after they complete a member rollout activation link.
+	 */
+	account_active: boolean("account_active").notNull().default(false),
+	/** First successful website login; used for “eligible to send member rollout” (non-admins). */
+	website_first_login_at: timestamp("website_first_login_at", {
+		withTimezone: true,
+		mode: "date"
+	}),
 	created_at: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
 	updated_at: timestamp("updated_at", { withTimezone: true, mode: "date" }).notNull().defaultNow()
+});
+
+/**
+ * Existing-member rollout (website onboarding only). Separate from prospect `invitation_tokens`.
+ */
+export const memberRolloutTokens = pgTable("member_rollout_tokens", {
+	id: text("id").primaryKey(),
+	token: text("token").notNull().unique(),
+	created_by_id: text("created_by_id")
+		.notNull()
+		.references(() => users.id, { onDelete: "cascade" }),
+	target_user_id: text("target_user_id")
+		.notNull()
+		.references(() => users.id, { onDelete: "cascade" }),
+	recipient_email_snapshot: text("recipient_email_snapshot"),
+	created_at: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+	expires_at: timestamp("expires_at", { withTimezone: true, mode: "date" }).notNull(),
+	used_at: timestamp("used_at", { withTimezone: true, mode: "date" })
 });
 
 export const invitationTokens = pgTable("invitation_tokens", {
@@ -84,6 +122,27 @@ export type Session = typeof session.$inferSelect;
 export type User = typeof users.$inferSelect;
 
 export type InvitationToken = typeof invitationTokens.$inferSelect;
+
+export type MemberRolloutToken = typeof memberRolloutTokens.$inferSelect;
+
+/** One-time link to set a new password (self-service or admin-initiated). */
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+	id: text("id").primaryKey(),
+	user_id: text("user_id")
+		.notNull()
+		.references(() => users.id, { onDelete: "cascade" }),
+	token: text("token").notNull().unique(),
+	expires_at: timestamp("expires_at", { withTimezone: true, mode: "date" }).notNull(),
+	used_at: timestamp("used_at", { withTimezone: true, mode: "date" }),
+	created_at: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow(),
+	/** `user` = forgot-password flow; `admin` = admin sent reset from member edit. */
+	source: text("source", { enum: ["user", "admin"] }).notNull(),
+	created_by_admin_id: text("created_by_admin_id").references(() => users.id, {
+		onDelete: "set null"
+	})
+});
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
 
 export type Event = typeof events.$inferSelect;
 

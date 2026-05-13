@@ -78,7 +78,7 @@
 				</div>
 				<div class="space-y-2">
 					<Label for="mbr">Member number</Label>
-					<Input id="mbr" name="mbr" type="number" min="1" bind:value={$form.mbr} />
+					<Input id="mbr" name="mbr" type="number" min="1" step="0.1" bind:value={$form.mbr} />
 					{#if $errors.mbr}
 						<p class="text-destructive text-sm">{$errors.mbr}</p>
 					{/if}
