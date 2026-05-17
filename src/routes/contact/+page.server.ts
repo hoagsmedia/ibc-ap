@@ -3,6 +3,10 @@ import { fail } from "@sveltejs/kit";
 import { message, superValidate } from "sveltekit-superforms";
 import { zod } from "sveltekit-superforms/adapters";
 import {
+	CONTACT_FORM_REJECT_MESSAGE,
+	isContactHoneypotTripped
+} from "$lib/server/contact-form-abuse";
+import {
 	isResendContactFormConfigured,
 	sendContactFormEmail
 } from "$lib/server/send-contact-form-email";
@@ -18,7 +22,14 @@ export const load: PageServerLoad = async () => {
 
 export const actions: Actions = {
 	default: async ({ request }) => {
-		const form = await superValidate(request, zod(contactSchema));
+		const formData = await request.formData();
+
+		if (isContactHoneypotTripped(formData)) {
+			const form = await superValidate(formData, zod(contactSchema));
+			return message(form, CONTACT_FORM_REJECT_MESSAGE, { status: 400 });
+		}
+
+		const form = await superValidate(formData, zod(contactSchema));
 
 		if (!form.valid) {
 			return fail(400, { form });
