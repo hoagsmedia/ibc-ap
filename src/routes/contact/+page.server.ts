@@ -36,11 +36,7 @@ export const actions: Actions = {
 		}
 
 		if (!isResendContactFormConfigured()) {
-			return message(
-				form,
-				"The contact form is not available right now. Please email us directly at info@islandbeerclub.com.",
-				{ status: 503 }
-			);
+			return message(form, "The contact form is not available right now.", { status: 503 });
 		}
 
 		const sent = await sendContactFormEmail({
@@ -51,11 +47,7 @@ export const actions: Actions = {
 
 		if (!sent.ok) {
 			console.error("[contact] send failed", sent.message);
-			return message(
-				form,
-				"We could not send your message. Please try again in a few minutes or email info@islandbeerclub.com.",
-				{ status: 502 }
-			);
+			return message(form, "We could not send your message.", { status: 502 });
 		}
 
 		return message(form, "Thank you for your message! We will get back to you soon.");
