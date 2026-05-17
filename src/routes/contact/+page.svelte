@@ -7,6 +7,7 @@
 	import { toast } from "svelte-sonner";
 	import { zodClient } from "sveltekit-superforms/adapters";
 	import { superForm } from "sveltekit-superforms";
+	import { CONTACT_HONEYPOT_FIELD } from "$lib/contact-honeypot";
 	import { contactSchema } from "./contact-schema";
 	import IbcLogo from "$lib/components/IbcLogo.svelte";
 	import { cn } from "$lib/utils.js";
@@ -167,7 +168,23 @@
 					<h2 class="text-foreground text-2xl font-semibold tracking-tight md:text-[1.35rem]">
 						Send us a message
 					</h2>
-					<form method="POST" use:enhance class="mt-8 space-y-6">
+					<form method="POST" use:enhance class="relative mt-8 space-y-6" autocomplete="off">
+						<!-- Honeypot: leave empty. readonly + off-screen reduces autofill on production. -->
+						<div
+							class="pointer-events-none absolute -left-[10000px] h-px w-px overflow-hidden opacity-0"
+							aria-hidden="true"
+						>
+							<input
+								type="text"
+								name={CONTACT_HONEYPOT_FIELD}
+								value=""
+								tabindex={-1}
+								autocomplete="off"
+								readonly
+								data-1p-ignore
+								data-lpignore="true"
+							/>
+						</div>
 						<Field {form} name="name">
 							<Control>
 								{#snippet children({ props })}
