@@ -4,7 +4,8 @@ import { message, superValidate } from "sveltekit-superforms";
 import { zod } from "sveltekit-superforms/adapters";
 import {
 	CONTACT_FORM_REJECT_MESSAGE,
-	isContactHoneypotTripped
+	isContactHoneypotTripped,
+	passesContactMinSubmitTime
 } from "$lib/server/contact-form-abuse";
 import {
 	isResendContactFormConfigured,
@@ -25,6 +26,11 @@ export const actions: Actions = {
 		const formData = await request.formData();
 
 		if (isContactHoneypotTripped(formData)) {
+			const form = await superValidate(formData, zod(contactSchema));
+			return message(form, CONTACT_FORM_REJECT_MESSAGE, { status: 400 });
+		}
+
+		if (!passesContactMinSubmitTime(formData)) {
 			const form = await superValidate(formData, zod(contactSchema));
 			return message(form, CONTACT_FORM_REJECT_MESSAGE, { status: 400 });
 		}
