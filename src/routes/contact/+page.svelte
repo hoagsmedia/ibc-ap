@@ -7,7 +7,8 @@
 	import { toast } from "svelte-sonner";
 	import { zodClient } from "sveltekit-superforms/adapters";
 	import { superForm } from "sveltekit-superforms";
-	import { CONTACT_HONEYPOT_FIELD } from "$lib/contact-honeypot";
+	import { CONTACT_HONEYPOT_FIELD, CONTACT_LOADED_AT_FIELD } from "$lib/contact-honeypot";
+	import { onMount } from "svelte";
 	import { contactSchema } from "./contact-schema";
 	import IbcLogo from "$lib/components/IbcLogo.svelte";
 	import { cn } from "$lib/utils.js";
@@ -33,6 +34,7 @@
 		onUpdated: ({ form: f }) => {
 			if (!f.message) return;
 			if (f.message.startsWith("Thank you")) {
+				resetFormLoadedAt();
 				toast.success(f.message);
 			} else {
 				toast.error(f.message);
@@ -44,6 +46,16 @@
 	});
 
 	const { form: formData, enhance } = form;
+
+	let formLoadedAtMs = $state(Date.now());
+
+	onMount(() => {
+		formLoadedAtMs = Date.now();
+	});
+
+	function resetFormLoadedAt() {
+		formLoadedAtMs = Date.now();
+	}
 
 	const contactInfo = {
 		address: "Coronado, California",
@@ -169,6 +181,7 @@
 						Send us a message
 					</h2>
 					<form method="POST" use:enhance class="relative mt-8 space-y-6" autocomplete="off">
+						<input type="hidden" name={CONTACT_LOADED_AT_FIELD} value={formLoadedAtMs} />
 						<!-- Honeypot: leave empty. readonly + off-screen reduces autofill on production. -->
 						<div
 							class="pointer-events-none absolute -left-[10000px] h-px w-px overflow-hidden opacity-0"
