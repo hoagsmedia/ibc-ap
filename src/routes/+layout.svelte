@@ -10,6 +10,7 @@
 	import { ModeWatcher } from "mode-watcher";
 	import { Toaster } from "$lib/components/ui/sonner";
 	import { injectAnalytics } from "@vercel/analytics/sveltekit";
+	import { injectSpeedInsights } from "@vercel/speed-insights/sveltekit";
 
 	let { children } = $props();
 
@@ -29,9 +30,10 @@
 	/** Contact page includes its own footer to match the full-page design. */
 	const hidePublicFooter = $derived(page.url.pathname === "/contact");
 
-	// Skip in dev: avoids loading va.vercel-scripts.com debug script + page subscription overhead.
+	// Skip in dev: avoids loading Vercel analytics/speed-insights scripts locally.
 	if (!dev) {
 		injectAnalytics();
+		injectSpeedInsights();
 	}
 </script>
 
