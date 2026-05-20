@@ -1,19 +1,22 @@
 import type { Handle } from "@sveltejs/kit";
 import { building, dev } from "$app/environment";
-import * as auth from "$lib/server/auth.js";
 import { canAccessPlatform } from "$lib/server/account-access";
-import { ensureWebsiteAccessUserColumns } from "$lib/server/ensure-website-access-columns";
 import { ibcDebugEnabled } from "$lib/server/ibc-debug";
 
 const log = dev && ibcDebugEnabled();
+const sessionCookieName = "auth-session";
 
 const handleAuth: Handle = async ({ event, resolve }) => {
-	// Prerender/static generation (CI sets DATABASE_URL empty) - skip DB migrations here.
-	if (!building && process.env.DATABASE_URL?.trim()) {
+	// Local dev convenience only. Vercel build already runs the schema ensure scripts; doing
+	// this during production requests adds cold-start database work to public marketing pages.
+	if (dev && !building && process.env.DATABASE_URL?.trim()) {
+		const { ensureWebsiteAccessUserColumns } = await import(
+			"$lib/server/ensure-website-access-columns"
+		);
 		await ensureWebsiteAccessUserColumns();
 	}
 
-	const sessionToken = event.cookies.get(auth.sessionCookieName);
+	const sessionToken = event.cookies.get(sessionCookieName);
 
 	if (log) {
 		console.log("[IBC-LOG] [hooks.server] Incoming request", {
@@ -28,6 +31,7 @@ const handleAuth: Handle = async ({ event, resolve }) => {
 		return resolve(event);
 	}
 
+	const auth = await import("$lib/server/auth.js");
 	const { session, user } = await auth.validateSessionToken(sessionToken);
 
 	let effectiveUser = user;
