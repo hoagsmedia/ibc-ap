@@ -195,10 +195,9 @@
 					Clubhouse next door at 857 J Ave, Rod Neilson's (Mbr #169) house.
 				</p>
 				<p class="text-base leading-relaxed">
-					On 18 Mar 2020, because of COVID-19 precautions, Beer Club halted weekly meetings until
-					further notice. As of 23 Jun 2020, no IBC full-membership meeting has been conducted at
-					the Clubhouse. Our first order of business when we resume alley-socializing is to
-					celebrate Founder's Day 2020.
+					On March 18, 2020, because of COVID-19 precautions, Beer Club halted weekly in-person
+					meetings in the J Avenue alley. Zoom meetings continued until weekly meetings resumed at
+					125 G Avenue.
 				</p>
 			</div>
 		</div>
@@ -337,7 +336,9 @@
 					</div>
 					<div>
 						<h3 class="text-foreground font-semibold">March 18, 2020</h3>
-						<p class="text-muted-foreground text-sm">COVID-19 precautions halt weekly meetings</p>
+						<p class="text-muted-foreground text-sm">
+							COVID-19 precautions halt weekly in-person meetings; Zoom meetings begin
+						</p>
 					</div>
 				</div>
 
@@ -375,8 +376,8 @@
 					The IBC meets every <strong class="text-foreground">Wednesday</strong> from
 					<strong class="text-foreground">4 PM to 6 PM (Standard Time)</strong>;
 					<strong class="text-foreground">4:30 PM to 6:30 PM (Daylight Savings Time)</strong> in the alley
-					(<strong class="text-foreground">Beer Belly Blvd</strong>) on
-					<strong class="text-foreground">J Avenue</strong> in Coronado as well as our "satellite"
+					(<strong class="text-foreground">Beer Belly Blvd</strong>) at
+					<strong class="text-foreground">125 G Avenue</strong> in Coronado, as well as our "satellite"
 					locations. Guests, especially ladies, are always welcome when accompanied by a Beer Club
 					member. Please join us.
 				</p>
