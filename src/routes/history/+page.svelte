@@ -337,7 +337,7 @@
 					<div>
 						<h3 class="text-foreground font-semibold">March 18, 2020</h3>
 						<p class="text-muted-foreground text-sm">
-							COVID-19 precautions halt weekly in-person meetings; Zoom meetings begin
+							COVID-19 precautions halt weekly in-person meetings; Zoom meetings continue
 						</p>
 					</div>
 				</div>
