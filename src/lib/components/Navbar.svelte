@@ -27,7 +27,6 @@
 	import Dog from "@lucide/svelte/icons/dog";
 	import FlaskConical from "@lucide/svelte/icons/flask-conical";
 	import Beer from "@lucide/svelte/icons/beer";
-	import IbcLogo from "$lib/components/IbcLogo.svelte";
 	import { navLinks, dropdownLinks } from "$lib/config/navigation";
 
 	// --- Reactive State ---
@@ -99,7 +98,15 @@
 		<div class="hidden h-full w-full grid-cols-[1fr_auto_1fr] items-center gap-2 sm:gap-4 md:grid">
 			<div class="flex min-w-0 items-center justify-self-start">
 				<a href="/" class="flex shrink-0 items-center" aria-label="Island Beer Club home">
-					<IbcLogo class="w-[90px] px-2 [&>svg]:h-auto [&>svg]:w-full" decorative />
+					<img
+						src="/logo-ibc.webp"
+						alt=""
+						width="340"
+						height="186"
+						class="w-[90px] px-2"
+						loading="eager"
+						decoding="async"
+					/>
 				</a>
 			</div>
 
@@ -204,7 +211,15 @@
 		<!-- Mobile Navigation -->
 		<div class="flex w-full items-center md:hidden">
 			<a href="/" class="flex items-center" aria-label="Island Beer Club home">
-				<IbcLogo class="w-[90px] px-2 [&>svg]:h-auto [&>svg]:w-full" decorative />
+				<img
+					src="/logo-ibc.webp"
+					alt=""
+					width="340"
+					height="186"
+					class="w-[90px] px-2"
+					loading="eager"
+					decoding="async"
+				/>
 			</a>
 			<div class="ml-auto">
 				<Sheet.Root bind:open={isOpen}>

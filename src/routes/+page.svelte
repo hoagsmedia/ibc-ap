@@ -73,7 +73,7 @@
 		title: "Island Beer Club",
 		description:
 			"The official site of Island Beer Club. Learn about our members, events, and the spirit of craft beer on Coronado Island.",
-		image: "/the-founders.png",
+		image: "/images/optimized/the-founders-1140.webp",
 		url: "https://islandbeerclub.com/"
 	};
 
@@ -89,6 +89,14 @@
 	<meta property="og:image" content={meta.image} />
 	<meta property="og:url" content={meta.url} />
 	<meta name="twitter:card" content="summary_large_image" />
+	<link
+		rel="preload"
+		as="image"
+		href="/images/optimized/the-founders-1140.webp"
+		imagesrcset="/images/optimized/the-founders-760.webp 760w, /images/optimized/the-founders-1140.webp 1140w"
+		imagesizes="100vw"
+		fetchpriority="high"
+	/>
 </svelte:head>
 
 <div class="home-root text-foreground overflow-x-clip">
@@ -115,10 +123,16 @@
 	>
 		<div class="absolute inset-0 z-0">
 			<img
-				src="/the-founders.png"
+				src="/images/optimized/the-founders-1140.webp"
+				srcset="/images/optimized/the-founders-760.webp 760w, /images/optimized/the-founders-1140.webp 1140w"
+				sizes="100vw"
 				alt="Island Beer Club founders"
+				width="1140"
+				height="600"
 				class="h-full w-full object-cover object-[center_22%] brightness-[0.72] md:object-[center_12%] xl:object-contain"
 				loading="eager"
+				fetchpriority="high"
+				decoding="sync"
 				draggable="false"
 			/>
 			<div
