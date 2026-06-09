@@ -11,5 +11,6 @@ dotenv.config({ path: path.join(_root, ".env") });
 // Local overrides; also wins over a stale DATABASE_URL exported in the shell.
 dotenv.config({ path: path.join(_root, ".env.local"), override: true });
 
-export const client = postgres(process.env.DATABASE_URL!);
+// Neon pooled URLs (Vercel/serverless) require prepare: false; max: 1 limits connections per instance.
+export const client = postgres(process.env.DATABASE_URL!, { prepare: false, max: 1 });
 export const db = drizzle(client, { schema });
