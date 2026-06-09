@@ -1,3 +1,4 @@
+import { invalidateAllSessionsForUser } from "$lib/server/auth";
 import { client, db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
 import type { User } from "$lib/server/db/schema";
@@ -266,8 +267,9 @@ export async function completeMemberRolloutActivation(
 			.set({ used_at: new Date() })
 			.where(eq(table.memberRolloutTokens.token, token));
 
-		await tx.delete(table.session).where(eq(table.session.userId, targetUser.id));
 	});
+
+	await invalidateAllSessionsForUser(targetUser.id);
 
 	return { ok: true };
 }

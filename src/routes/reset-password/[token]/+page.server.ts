@@ -2,6 +2,7 @@ import { fail, redirect } from "@sveltejs/kit";
 import { eq } from "drizzle-orm";
 import { hash } from "argon2";
 import { z } from "zod";
+import { invalidateAllSessionsForUser } from "$lib/server/auth";
 import { db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
 import { getActivePasswordResetByToken } from "$lib/server/password-reset";
@@ -67,8 +68,8 @@ export const actions: Actions = {
 					.update(table.passwordResetTokens)
 					.set({ used_at: new Date() })
 					.where(eq(table.passwordResetTokens.id, row.id));
-				await tx.delete(table.session).where(eq(table.session.userId, row.user_id));
 			});
+			await invalidateAllSessionsForUser(row.user_id);
 		} catch (err) {
 			console.error("[reset-password] transaction failed", err);
 			return fail(500, { message: "Could not update your password. Please try again." });

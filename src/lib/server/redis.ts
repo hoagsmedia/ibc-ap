@@ -7,7 +7,8 @@ export type SearchCacheNamespace =
 	| "member-search"
 	| "admin-member-search"
 	| "prospect-search"
-	| "rollout-eligible-member-search";
+	| "rollout-eligible-member-search"
+	| "session-validation";
 
 type CacheBackend = "upstash-rest" | "redis-url" | "disabled";
 
@@ -179,4 +180,45 @@ export async function readThroughJson<T>(options: ReadThroughJsonOptions<T>): Pr
 	}
 
 	return fresh;
+}
+
+export async function deleteCachedJson(
+	namespace: SearchCacheNamespace,
+	keyParts: Record<string, KeyPart>
+): Promise<void> {
+	const backend = getBackend();
+	if (backend === "disabled") return;
+
+	const key = buildSearchCacheKey(namespace, keyParts);
+	try {
+		if (backend === "upstash-rest") {
+			const client = getUpstashClient();
+			if (client) await client.del(key);
+			return;
+		}
+		if (backend === "redis-url") {
+			const client = await getLocalRedisClient();
+			if (client) await client.del(key);
+		}
+	} catch (error) {
+		console.error(`[IBC-LOG] [redis] delete failed (${namespace})`, error);
+	}
+}
+
+export async function getCachedJson<T>(
+	namespace: SearchCacheNamespace,
+	keyParts: Record<string, KeyPart>
+): Promise<T | null> {
+	if (getBackend() === "disabled") return null;
+	return getJson<T>(buildSearchCacheKey(namespace, keyParts));
+}
+
+export async function setCachedJson<T>(
+	namespace: SearchCacheNamespace,
+	keyParts: Record<string, KeyPart>,
+	value: T,
+	ttlSeconds: number
+): Promise<void> {
+	if (getBackend() === "disabled") return;
+	await setJson(buildSearchCacheKey(namespace, keyParts), value, ttlSeconds);
 }
