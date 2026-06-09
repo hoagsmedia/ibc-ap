@@ -1,11 +1,11 @@
 import { db as defaultDb } from "$lib/server/db";
 import { events, statsBeerConsumed, users } from "$lib/server/db/schema";
+import { readThroughJson } from "$lib/server/redis";
 import { and, count, eq, gte, inArray, isNotNull, lt } from "drizzle-orm";
 
 type DB = typeof defaultDb;
 
-/** How long aggregated dashboard stats are reused before refreshing (per server instance). */
-const TTL_MS = 5 * 60 * 1000;
+const TTL_SECONDS = 5 * 60;
 
 export type DashboardClubStatsCached = {
 	totalMembers: number;
@@ -25,7 +25,6 @@ export type DashboardClubStatsCached = {
 	eventsThisMonthMember: number;
 };
 
-let cache: { expiresAt: number; data: DashboardClubStatsCached } | null = null;
 let inflight: Promise<DashboardClubStatsCached> | null = null;
 
 function num(rows: { n: number | bigint }[]): number {
@@ -104,28 +103,29 @@ async function loadClubStats(db: DB): Promise<DashboardClubStatsCached> {
 	};
 }
 
+function utcYearMonth(): { year: number; month: number } {
+	const u = new Date();
+	return { year: u.getUTCFullYear(), month: u.getUTCMonth() };
+}
+
 /**
  * Returns cached club-wide aggregates for the dashboard “Club stats” card.
- * Refreshes at most every {@link TTL_MS}; concurrent requests share one DB round-trip.
+ * Shared via Redis when configured; concurrent misses on one instance share one DB round-trip.
  */
 export async function getDashboardClubStats(db: DB = defaultDb): Promise<DashboardClubStatsCached> {
-	const now = Date.now();
-	if (cache && cache.expiresAt > now) {
-		return cache.data;
-	}
-	if (inflight) {
-		return inflight;
-	}
-
-	inflight = loadClubStats(db)
-		.then((data) => {
-			cache = { expiresAt: Date.now() + TTL_MS, data };
-			return data;
-		})
-		.finally(() => {
-			inflight = null;
-		});
-
-	return inflight;
+	const { year, month } = utcYearMonth();
+	return readThroughJson({
+		namespace: "dashboard-club-stats",
+		keyParts: { year, month },
+		ttlSeconds: TTL_SECONDS,
+		label: "dashboard-club-stats",
+		loader: () => {
+			if (inflight) return inflight;
+			inflight = loadClubStats(db).finally(() => {
+				inflight = null;
+			});
+			return inflight;
+		}
+	});
 }
 
