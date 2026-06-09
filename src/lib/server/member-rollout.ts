@@ -1,5 +1,5 @@
 import { invalidateAllSessionsForUser } from "$lib/server/auth";
-import { client, db } from "$lib/server/db";
+import { db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
 import type { User } from "$lib/server/db/schema";
 import { generateInvitationToken } from "$lib/server/invitations";
@@ -14,39 +14,6 @@ export const MEMBER_ROLLOUT_WINDOW_DAYS = 4;
 export const MEMBER_ROLLOUT_WINDOW_MS = MEMBER_ROLLOUT_WINDOW_DAYS * DAY_IN_MS;
 
 const TOKEN_EXPIRATION_DAYS = 14;
-
-let memberRolloutTableEnsured = false;
-
-async function ensureMemberRolloutTokensTable(): Promise<void> {
-	if (memberRolloutTableEnsured) return;
-	try {
-		await client.unsafe(`
-CREATE TABLE IF NOT EXISTS public.member_rollout_tokens (
-	id text PRIMARY KEY NOT NULL,
-	token text NOT NULL UNIQUE,
-	created_by_id text NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-	target_user_id text NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
-	recipient_email_snapshot text,
-	created_at timestamptz NOT NULL DEFAULT now(),
-	expires_at timestamptz NOT NULL,
-	used_at timestamptz
-)`);
-		await client.unsafe(
-			`CREATE INDEX IF NOT EXISTS member_rollout_tokens_created_by_idx ON public.member_rollout_tokens(created_by_id)`
-		);
-		await client.unsafe(
-			`CREATE INDEX IF NOT EXISTS member_rollout_tokens_created_at_idx ON public.member_rollout_tokens(created_at)`
-		);
-		memberRolloutTableEnsured = true;
-	} catch (err) {
-		const msg = err instanceof Error ? err.message : String(err);
-		if (msg.includes("does not exist") && msg.includes("users")) {
-			memberRolloutTableEnsured = true;
-			return;
-		}
-		throw err;
-	}
-}
 
 /** Admins always; members after their own first website login. */
 export function canUserSendMemberRolloutInvites(
@@ -68,7 +35,6 @@ export function isEligibleMemberRolloutRecipient(u: User): boolean {
 }
 
 export async function countMemberRolloutTokensCreatedInWindow(inviterId: string): Promise<number> {
-	await ensureMemberRolloutTokensTable();
 	const windowStart = new Date(Date.now() - MEMBER_ROLLOUT_WINDOW_MS);
 	const [row] = await db
 		.select({ n: count() })
@@ -84,7 +50,6 @@ export async function countMemberRolloutTokensCreatedInWindow(inviterId: string)
 
 /** When at limit: earliest creation time in the current window (for “next send after” UI). */
 export async function getOldestMemberRolloutInWindow(inviterId: string): Promise<Date | null> {
-	await ensureMemberRolloutTokensTable();
 	const windowStart = new Date(Date.now() - MEMBER_ROLLOUT_WINDOW_MS);
 	const [row] = await db
 		.select({ t: min(table.memberRolloutTokens.created_at) })
@@ -108,7 +73,6 @@ export async function hasUnusedMemberRolloutTokenForPair(
 	inviterId: string,
 	targetUserId: string
 ): Promise<boolean> {
-	await ensureMemberRolloutTokensTable();
 	const now = new Date();
 	const [row] = await db
 		.select({ n: count() })
@@ -132,7 +96,6 @@ export async function searchMemberRolloutRecipients(params: {
 	const q = params.query.trim();
 	if (q.length < 2) return [];
 
-	await ensureMemberRolloutTokensTable();
 
 	const needle = `%${q}%`;
 	const mbrDigits = q.replace(/\D/g, "");
@@ -196,7 +159,6 @@ export async function createMemberRolloutToken(
 	targetUserId: string,
 	recipientEmail: string
 ): Promise<table.MemberRolloutToken> {
-	await ensureMemberRolloutTokensTable();
 	const token = generateInvitationToken();
 	const id = crypto.randomUUID();
 	const row: table.MemberRolloutToken = {
@@ -218,7 +180,6 @@ export async function validateMemberRolloutToken(token: string): Promise<{
 	row?: table.MemberRolloutToken;
 	target?: User;
 }> {
-	await ensureMemberRolloutTokensTable();
 	const [row] = await db
 		.select()
 		.from(table.memberRolloutTokens)
@@ -278,7 +239,6 @@ export async function deleteUnusedMemberRolloutTokenForOwner(
 	token: string,
 	createdById: string
 ): Promise<void> {
-	await ensureMemberRolloutTokensTable();
 	await db
 		.delete(table.memberRolloutTokens)
 		.where(
