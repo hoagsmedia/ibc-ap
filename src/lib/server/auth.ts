@@ -60,7 +60,37 @@ type CachedSessionValidation = {
 };
 
 function toDate(value: string | null): Date | null {
-	return value ? new Date(value) : null;
+	if (!value) return null;
+	return new Date(value.includes("T") ? value : `${value}T00:00:00.000Z`);
+}
+
+/** Drizzle `date` columns return YYYY-MM-DD strings; timestamps return Date. */
+function toCacheDate(value: Date | string | null | undefined): string | null {
+	if (value == null) return null;
+	if (typeof value === "string") return value;
+	return value.toISOString();
+}
+
+function normalizeMeetingDate(value: Date | string | null | undefined): Date | null {
+	if (value == null) return null;
+	if (value instanceof Date) return value;
+	return toDate(value);
+}
+
+/** DB rows may return `date` columns as strings; cache and locals always use Date. */
+function normalizeSessionUser(
+	user: SessionUser & {
+		meeting_1_date?: Date | string | null;
+		meeting_2_date?: Date | string | null;
+		meeting_3_date?: Date | string | null;
+	}
+): SessionUser {
+	return {
+		...user,
+		meeting_1_date: normalizeMeetingDate(user.meeting_1_date),
+		meeting_2_date: normalizeMeetingDate(user.meeting_2_date),
+		meeting_3_date: normalizeMeetingDate(user.meeting_3_date)
+	};
 }
 
 function serializeSessionValidation(session: table.Session, user: SessionUser): CachedSessionValidation {
@@ -80,9 +110,9 @@ function serializeSessionValidation(session: table.Session, user: SessionUser): 
 			mbr: user.mbr,
 			msd: user.msd?.toISOString() ?? null,
 			test_passed: user.test_passed?.toISOString() ?? null,
-			meeting_1_date: user.meeting_1_date?.toISOString() ?? null,
-			meeting_2_date: user.meeting_2_date?.toISOString() ?? null,
-			meeting_3_date: user.meeting_3_date?.toISOString() ?? null,
+			meeting_1_date: toCacheDate(user.meeting_1_date),
+			meeting_2_date: toCacheDate(user.meeting_2_date),
+			meeting_3_date: toCacheDate(user.meeting_3_date),
 			account_active: user.account_active,
 			website_first_login_at: user.website_first_login_at?.toISOString() ?? null
 		}
@@ -180,7 +210,7 @@ export async function validateSessionToken(token: string) {
 						sessionId: sessionId.slice(0, 5) + "..."
 					});
 				}
-				return { session, user };
+				return { session, user: normalizeSessionUser(user) };
 			}
 			if (logAuth) {
 				console.log("[IBC-LOG] [auth] Session cache skip (renewal window)", {
@@ -223,7 +253,8 @@ export async function validateSessionToken(token: string) {
 			return { session: null, user: null };
 		}
 
-		const { session, user } = result;
+		const { session, user: rawUser } = result;
+		const user = normalizeSessionUser(rawUser);
 
 		const sessionExpired = Date.now() >= session.expires_at.getTime();
 		if (sessionExpired) {
