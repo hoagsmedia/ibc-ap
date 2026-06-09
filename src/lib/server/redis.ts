@@ -8,7 +8,9 @@ export type SearchCacheNamespace =
 	| "admin-member-search"
 	| "prospect-search"
 	| "rollout-eligible-member-search"
-	| "session-validation";
+	| "session-validation"
+	| "dashboard-club-stats"
+	| "admin-stats-overview";
 
 type CacheBackend = "upstash-rest" | "redis-url" | "disabled";
 
