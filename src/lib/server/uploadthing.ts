@@ -1,9 +1,8 @@
 import { createUploadthing, UTApi, UTFiles } from "uploadthing/server";
 import type { FileRouter } from "uploadthing/server";
+import { eq } from "drizzle-orm";
 import { db } from "./db";
 import { users, events } from "./db/schema";
-import { eq } from "drizzle-orm";
-import { sessionCookieName, validateSessionToken } from "./auth";
 import { fileKeyFromUploadThingUrl } from "./uploadthing-files";
 
 const utapi = new UTApi();
@@ -86,37 +85,30 @@ const f = createUploadthing({
 	}
 });
 
-// Helper function to get user from session using our custom auth
-const getUserFromRequest = async (
-	req: Request
-): Promise<{
+type UploadAuthUser = {
 	id: string;
 	name: string;
 	mbr: number | null;
 	img: string | null;
 	role: string;
-} | null> => {
-	try {
-		const cookies = req.headers.get("cookie");
-		if (!cookies) return null;
-
-		// Extract session token from cookies
-		const cookieMatch = cookies.match(new RegExp(`${sessionCookieName}=([^;]+)`));
-		if (!cookieMatch) return null;
-
-		const sessionToken = cookieMatch[1];
-		if (!sessionToken) return null;
-
-		// Validate session using our auth system
-		const { session, user } = await validateSessionToken(sessionToken);
-		if (!session || !user) return null;
-
-		return { id: user.id, name: user.name, img: user.img, mbr: user.mbr, role: user.role };
-	} catch (error) {
-		console.error("Failed to get user from request:", error);
-		return null;
-	}
 };
+
+type UploadThingRequest = Request & {
+	locals?: App.Locals;
+	request?: Request;
+};
+
+function getReferer(req: Request): string | null {
+	const event = req as UploadThingRequest;
+	return req.headers.get("referer") ?? event.request?.headers.get("referer") ?? null;
+}
+
+/** UploadThing v7 on SvelteKit passes RequestEvent as `req` after hooks populate locals. */
+function getUserFromRequest(req: Request): UploadAuthUser | null {
+	const user = (req as UploadThingRequest).locals?.user;
+	if (!user) return null;
+	return { id: user.id, name: user.name, img: user.img, mbr: user.mbr, role: user.role };
+}
 
 // FileRouter for your app, can contain multiple FileRoutes
 export const ourFileRouter = {
@@ -129,7 +121,7 @@ export const ourFileRouter = {
 		}
 	})
 		.middleware(async ({ req, files }) => {
-			const user = await getUserFromRequest(req);
+			const user = getUserFromRequest(req);
 			if (!user) throw new Error("Unauthorized");
 
 			const currentImageKey = fileKeyFromUploadThingUrl(user.img);
@@ -182,10 +174,10 @@ export const ourFileRouter = {
 		}
 	})
 		.middleware(async ({ req, files }) => {
-			const user = await getUserFromRequest(req);
+			const user = getUserFromRequest(req);
 			if (!user) throw new Error("Unauthorized");
 
-			const referer = req.headers.get("referer") ?? "";
+			const referer = getReferer(req) ?? "";
 			const eventIdMatch = referer.match(/\/events\/([a-zA-Z0-9_-]+)/);
 			const eventId = eventIdMatch?.[1] ?? null;
 			const eventRecord = eventId
@@ -224,7 +216,7 @@ export const ourFileRouter = {
 		}
 	})
 		.middleware(async ({ req, files }) => {
-			const user = await getUserFromRequest(req);
+			const user = getUserFromRequest(req);
 			if (!user) throw new Error("Unauthorized");
 
 			// Check if user is admin
@@ -234,7 +226,7 @@ export const ourFileRouter = {
 				throw new Error("Exactly one file must be uploaded");
 			}
 
-			const referer = req.headers.get("referer");
+			const referer = getReferer(req);
 			const { getMemberById, parseMemberRecordIdFromMembersUrl } = await import(
 				"$lib/server/member-lookup"
 			);
@@ -298,7 +290,7 @@ export const ourFileRouter = {
 		}
 	})
 		.middleware(async ({ req, files }) => {
-			const user = await getUserFromRequest(req);
+			const user = getUserFromRequest(req);
 			if (!user) throw new Error("Unauthorized");
 			// Check if user is admin
 			if (user.role !== "admin") throw new Error("Admin access required");
@@ -306,7 +298,7 @@ export const ourFileRouter = {
 				throw new Error("Exactly one file must be uploaded");
 			}
 			// Extract the event ID from the referer URL
-			const referer = req.headers.get("referer");
+			const referer = getReferer(req);
 			const eventIdMatch = referer?.match(/\/events\/([a-zA-Z0-9_-]+)/);
 			if (!eventIdMatch || !eventIdMatch[1]) {
 				throw new Error("Event ID not found in referer URL");

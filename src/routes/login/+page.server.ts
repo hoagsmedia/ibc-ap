@@ -4,7 +4,6 @@ import { fail, redirect } from "@sveltejs/kit";
 import { eq, or } from "drizzle-orm";
 import * as auth from "$lib/server/auth";
 import { canAccessPlatform } from "$lib/server/account-access";
-import { ensureWebsiteAccessUserColumns } from "$lib/server/ensure-website-access-columns";
 import { db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
 import type { Actions, PageServerLoad } from "./$types";
@@ -29,8 +28,6 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
 	login: async (event) => {
-		await ensureWebsiteAccessUserColumns();
-
 		const formData = await event.request.formData();
 		const emailOrUsername = formData.get("email");
 		const password = formData.get("password");
@@ -92,8 +89,6 @@ export const actions: Actions = {
 		throw redirect(302, "/dashboard");
 	},
 	register: async (event) => {
-		await ensureWebsiteAccessUserColumns();
-
 		const formData = await event.request.formData();
 		const name = formData.get("name");
 		const email = formData.get("email");
