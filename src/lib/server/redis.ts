@@ -7,7 +7,8 @@ export type SearchCacheNamespace =
 	| "member-search"
 	| "admin-member-search"
 	| "prospect-search"
-	| "rollout-eligible-member-search";
+	| "rollout-eligible-member-search"
+	| "session-validation";
 
 type CacheBackend = "upstash-rest" | "redis-url" | "disabled";
 
@@ -87,7 +88,12 @@ async function getLocalRedisClient(): Promise<LocalRedisClient | null> {
 	if (localRedisDisabled || !localRedisUrl) return null;
 	if (!localRedisClientPromise) {
 		localRedisClientPromise = (async () => {
-			const client = createClient({ url: localRedisUrl });
+			const client = createClient({
+				url: localRedisUrl,
+				socket: {
+					reconnectStrategy: () => false
+				}
+			});
 			client.on("error", (error) => {
 				if (!localRedisDisabled) {
 					console.error("[IBC-LOG] [redis] Local Redis client error", error);
@@ -98,9 +104,12 @@ async function getLocalRedisClient(): Promise<LocalRedisClient | null> {
 				return client;
 			} catch (error) {
 				localRedisDisabled = true;
-				console.error("[IBC-LOG] [redis] Failed to connect to local Redis", error);
+				console.error(
+					"[IBC-LOG] [redis] Failed to connect to local Redis; caching disabled for this process",
+					error
+				);
 				try {
-					await client.quit();
+					client.destroy();
 				} catch {
 					// ignore cleanup failures after a failed connect attempt
 				}
@@ -179,4 +188,45 @@ export async function readThroughJson<T>(options: ReadThroughJsonOptions<T>): Pr
 	}
 
 	return fresh;
+}
+
+export async function deleteCachedJson(
+	namespace: SearchCacheNamespace,
+	keyParts: Record<string, KeyPart>
+): Promise<void> {
+	const backend = getBackend();
+	if (backend === "disabled") return;
+
+	const key = buildSearchCacheKey(namespace, keyParts);
+	try {
+		if (backend === "upstash-rest") {
+			const client = getUpstashClient();
+			if (client) await client.del(key);
+			return;
+		}
+		if (backend === "redis-url") {
+			const client = await getLocalRedisClient();
+			if (client) await client.del(key);
+		}
+	} catch (error) {
+		console.error(`[IBC-LOG] [redis] delete failed (${namespace})`, error);
+	}
+}
+
+export async function getCachedJson<T>(
+	namespace: SearchCacheNamespace,
+	keyParts: Record<string, KeyPart>
+): Promise<T | null> {
+	if (getBackend() === "disabled") return null;
+	return getJson<T>(buildSearchCacheKey(namespace, keyParts));
+}
+
+export async function setCachedJson<T>(
+	namespace: SearchCacheNamespace,
+	keyParts: Record<string, KeyPart>,
+	value: T,
+	ttlSeconds: number
+): Promise<void> {
+	if (getBackend() === "disabled") return;
+	await setJson(buildSearchCacheKey(namespace, keyParts), value, ttlSeconds);
 }
