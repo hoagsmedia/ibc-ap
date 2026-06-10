@@ -115,3 +115,87 @@ Use **Node 22** locally (see `.nvmrc`) to match the CI and Vercel runtime.
 ## Cleaning up duplicate Vercel env vars
 
 If you see multiple `DATABASE_URL` or `DATABASE_URL_UNPOOLED` rows (e.g. old git-branch overrides), trim them in **Vercel → Project → Settings → Environment Variables** so each target environment has a single clear source of truth for the Neon branch you want (e.g. production branch `DATABASE_URL` for Production and optionally Preview).
+
+## Preview deployment isolation (IBC-54 audit, June 2026)
+
+Vercel **Preview** deployments (PR branches, `preview` git branch) run `build:vercel`, which executes all `ensure-*` schema scripts against whatever `DATABASE_URL` is set for **Preview**. Preview traffic also reads/writes Postgres and Redis at runtime. If Preview points at **production** Neon, PR builds and bot crawls add compute load to the live member database.
+
+### Audit summary
+
+| Project | Vercel team | Role | Neon project |
+| ------- | ----------- | ---- | ------------ |
+| **ibc-ap** | Rob Crenshaw's projects | Stakeholder prod (`islandbeerclub.com`) | **Island Beer Club** (`dev-ops@islandbeerclub.com`) |
+| **ibc-app** | Clumsy Ninja's projects | Hoagsmedia staging (`new.islandbeerclub.com`) | Separate Neon URL in Vercel (see env audit below) |
+
+**Stakeholder Neon branches** (Island Beer Club):
+
+| Branch | Purpose | Compute signal (Jun 2026) |
+| ------ | ------- | ------------------------- |
+| **`production`** (default) | Live site | Active — all prod traffic |
+| **`vercel-dev`** | Intended Preview / non-prod | Idle — ~80 CPU seconds total; snapshot from May 2026 |
+
+Recent stakeholder Vercel deploys are **Production-only** (`target: production`). Preview is still worth configuring before the next PR preview or `preview` branch deploy.
+
+**Hoagsmedia `ibc-app` env audit** (`vercel env ls`, Jun 2026):
+
+| Variable | Environments | Notes |
+| -------- | ------------ | ----- |
+| `DATABASE_URL` | **Production** only | Prod Neon connection |
+| `DATABASE_URL` | **Preview**, **Development** | Separate row — may or may not match Production hostname |
+| `UPSTASH_REDIS_REST_*` | **Production**, **Preview** | Shared Redis — use prefix on Preview (below) |
+
+Sensitive values cannot be compared from the CLI. Use the hostname check (below) after pasting each value in Vercel **Edit**, or run `pnpm db:audit:url-host` locally with a pulled env file.
+
+### Recommended configuration
+
+**Stakeholder `ibc-ap` (islandbeerclub.com)**
+
+| Vercel environment | `DATABASE_URL` should point to | `IBC_CACHE_REDIS_PREFIX` |
+| ------------------ | ------------------------------ | ------------------------ |
+| **Production** | Neon **`production`** branch (pooled `-pooler` host) | *(unset — default `ibc-cache:v1`)* |
+| **Preview** | Neon **`vercel-dev`** branch (pooled URL from Neon console) | `ibc-preview` |
+| **Development** | Optional: `vercel-dev` or local; avoid prod unless intentional | `ibc-dev` |
+
+**Hoagsmedia `ibc-app` (`new.islandbeerclub.com`)**
+
+| Vercel environment | `DATABASE_URL` | `IBC_CACHE_REDIS_PREFIX` |
+| ------------------ | -------------- | ------------------------ |
+| **Production** | Your prod/stakeholder-mirror Neon URL | *(unset)* |
+| **Preview** | **Either** same as Production (small team, shared data) **or** a dedicated Neon branch | `ibc-preview` if sharing Redis with prod |
+| **Development** | Local Postgres or Neon dev branch — not production unless intentional | `ibc-dev` |
+
+Using **the same production DB for Preview** is acceptable for a small club site (documented choice). The cost risk is **extra Neon compute** from preview builds (`ensure-*` on every preview deploy) and accidental writes during testing — not data corruption if you treat Preview as read-only in practice.
+
+**Isolating Preview** (recommended if PR previews are frequent): point Preview `DATABASE_URL` at **`vercel-dev`** (stakeholder) or create a dedicated Neon branch; refresh `vercel-dev` from `production` periodically via Neon **Reset from parent** when you need fresh data.
+
+### Redis note
+
+`UPSTASH_REDIS_REST_*` on both **Production** and **Preview** means session and stats cache keys collide unless Preview sets:
+
+```bash
+IBC_CACHE_REDIS_PREFIX="ibc-preview"
+```
+
+Add that in Vercel → **Preview** only (not Production).
+
+### Verify hostnames without exposing secrets
+
+1. Vercel → project → **Environment Variables** → **Edit** `DATABASE_URL` for **Production** — note the hostname segment (`ep-….neon.tech` or `….azure.neon.tech`).
+2. Repeat for **Preview**.
+3. **Same hostname** → Preview uses production Neon. **Different hostname** → isolated branch.
+4. Or locally:
+
+   ```bash
+   pnpm db:audit:url-host   # uses DATABASE_URL from .env.local
+   ```
+
+   Compare after `vercel env pull` for each environment.
+
+### Operator checklist (copy/paste)
+
+- [ ] Stakeholder **Production** `DATABASE_URL` → Neon **production** branch (pooled).
+- [ ] Stakeholder **Preview** `DATABASE_URL` → **`vercel-dev`** pooled URL **or** documented intentional prod share.
+- [ ] Hoagsmedia **Preview** `DATABASE_URL` hostname verified against intent (prod share vs dev branch).
+- [ ] **Preview** has `IBC_CACHE_REDIS_PREFIX=ibc-preview` on both projects if Redis is shared with prod.
+- [ ] No duplicate / git-branch-scoped `DATABASE_URL` rows fighting the integration.
+- [ ] After changes: redeploy one Preview deployment and confirm Neon **`vercel-dev`** compute ticks (if isolated) while **`production`** stays flat.
