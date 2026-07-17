@@ -8,6 +8,14 @@ import {
 	isResendPasswordResetConfigured,
 	sendPasswordResetEmail
 } from "$lib/server/send-password-reset-email";
+import {
+	enforceRateLimits,
+	getClientIp,
+	normalizeIdentifier,
+	PASSWORD_RESET_IP_RULE,
+	PASSWORD_RESET_EMAIL_RULE,
+	RATE_LIMITED_MESSAGE
+} from "$lib/server/rate-limit";
 import type { Actions, PageServerLoad } from "./$types";
 
 const forgotSchema = z.object({
@@ -22,7 +30,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, url }) => {
+	default: async (event) => {
+		const { request, url } = event;
 		const formData = await request.formData();
 		const parsed = forgotSchema.safeParse({ email: formData.get("email") });
 		if (!parsed.success) {
@@ -32,6 +41,20 @@ export const actions: Actions = {
 		}
 
 		const emailNorm = parsed.data.email.trim().toLowerCase();
+
+		// Throttle reset requests per IP and per email to blunt inbox flooding
+		// and enumeration. The message stays generic and account-neutral.
+		const rate = await enforceRateLimits([
+			{ scope: "reset:ip", identifier: getClientIp(event), rule: PASSWORD_RESET_IP_RULE },
+			{
+				scope: "reset:email",
+				identifier: normalizeIdentifier(emailNorm),
+				rule: PASSWORD_RESET_EMAIL_RULE
+			}
+		]);
+		if (rate.limited) {
+			return fail(429, { emailError: RATE_LIMITED_MESSAGE });
+		}
 
 		const [user] = await db
 			.select({

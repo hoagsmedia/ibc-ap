@@ -6,6 +6,14 @@ import * as auth from "$lib/server/auth";
 import { canAccessPlatform } from "$lib/server/account-access";
 import { db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
+import {
+	enforceRateLimits,
+	getClientIp,
+	normalizeIdentifier,
+	LOGIN_IP_RULE,
+	LOGIN_IDENTIFIER_RULE,
+	RATE_LIMITED_MESSAGE
+} from "$lib/server/rate-limit";
 import type { Actions, PageServerLoad } from "./$types";
 
 export const load: PageServerLoad = async (event) => {
@@ -39,6 +47,20 @@ export const actions: Actions = {
 		}
 		if (!validatePassword(password)) {
 			return fail(400, { message: "Invalid password (min 6, max 255 characters)" });
+		}
+
+		// Brute-force guard: throttle per source IP and per credential before
+		// touching the DB. Fails open when Redis is not configured.
+		const rate = await enforceRateLimits([
+			{ scope: "login:ip", identifier: getClientIp(event), rule: LOGIN_IP_RULE },
+			{
+				scope: "login:id",
+				identifier: normalizeIdentifier(emailOrUsername as string),
+				rule: LOGIN_IDENTIFIER_RULE
+			}
+		]);
+		if (rate.limited) {
+			return fail(429, { message: RATE_LIMITED_MESSAGE });
 		}
 
 		const results = await db

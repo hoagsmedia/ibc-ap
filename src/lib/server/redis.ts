@@ -215,6 +215,39 @@ export async function deleteCachedJson(
 	}
 }
 
+/**
+ * Atomically increment a counter and set its TTL on first write. Used by the
+ * rate limiter. Returns the new count, or `null` when no Redis backend is
+ * configured (or the operation fails) so callers can fail open — matching the
+ * "silently no-op without Redis" behavior of the cache helpers above.
+ */
+export async function incrementWithExpiry(
+	key: string,
+	windowSeconds: number
+): Promise<number | null> {
+	const backend = getBackend();
+	try {
+		if (backend === "upstash-rest") {
+			const client = getUpstashClient();
+			if (!client) return null;
+			const count = await client.incr(key);
+			if (count === 1) await client.expire(key, windowSeconds);
+			return count;
+		}
+		if (backend === "redis-url") {
+			const client = await getLocalRedisClient();
+			if (!client) return null;
+			const count = await client.incr(key);
+			if (count === 1) await client.expire(key, windowSeconds);
+			return count;
+		}
+	} catch (error) {
+		console.error("[IBC-LOG] [redis] increment failed", error);
+		return null;
+	}
+	return null;
+}
+
 export async function getCachedJson<T>(
 	namespace: SearchCacheNamespace,
 	keyParts: Record<string, KeyPart>

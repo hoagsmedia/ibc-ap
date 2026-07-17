@@ -5,6 +5,14 @@ import {
 	completeMemberRolloutActivation,
 	validateMemberRolloutToken
 } from "$lib/server/member-rollout";
+import {
+	enforceRateLimits,
+	getClientIp,
+	hashIdentifier,
+	TOKEN_ACTIVATION_IP_RULE,
+	TOKEN_ACTIVATION_TOKEN_RULE,
+	RATE_LIMITED_MESSAGE
+} from "$lib/server/rate-limit";
 import type { Actions, PageServerLoad } from "./$types";
 
 const activateSchema = z
@@ -33,10 +41,28 @@ export const load: PageServerLoad = async ({ params }) => {
 };
 
 export const actions: Actions = {
-	default: async ({ request, params }) => {
+	default: async (event) => {
+		const { request, params } = event;
 		const token = params.token?.trim();
 		if (!token) {
 			return fail(400, { message: "Invalid link." });
+		}
+
+		// Throttle guesses/replays per IP and per token before hashing/DB work.
+		const rate = await enforceRateLimits([
+			{
+				scope: "rollout-activate:ip",
+				identifier: getClientIp(event),
+				rule: TOKEN_ACTIVATION_IP_RULE
+			},
+			{
+				scope: "rollout-activate:token",
+				identifier: hashIdentifier(token),
+				rule: TOKEN_ACTIVATION_TOKEN_RULE
+			}
+		]);
+		if (rate.limited) {
+			return fail(429, { message: RATE_LIMITED_MESSAGE });
 		}
 
 		const formData = await request.formData();
