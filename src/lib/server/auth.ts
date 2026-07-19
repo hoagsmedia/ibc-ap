@@ -152,7 +152,8 @@ async function invalidateSessionCache(sessionId: string) {
 	await deleteCachedJson(SESSION_CACHE_NAMESPACE, { sessionId });
 }
 
-function sessionNeedsRenewal(expires_at: Date): boolean {
+/** Sliding-window renewal: a 30-day session is refreshed once within 15 days of expiry. */
+export function sessionNeedsRenewal(expires_at: Date): boolean {
 	return Date.now() >= expires_at.getTime() - DAY_IN_MS * 15;
 }
 
