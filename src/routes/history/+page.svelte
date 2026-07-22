@@ -190,14 +190,7 @@
 				<p class="text-base leading-relaxed">
 					We lost Jeffery "Bones" Wilkens, Mbr#1, on 6 Jul 2019. On 7 Aug 2019, a huge turnout
 					joined together in Beer Belly Blvd to recognize Jeff, celebrate his life and salute his
-					passion for and contribution to the Island Beer Club. On 4 Sep 2019 IBC Headquarters, at
-					851 J Ave, was retired and on the same day, we celebrated the Grand Opening of the IBC
-					Clubhouse next door at 857 J Ave, Rod Neilson's (Mbr #169) house.
-				</p>
-				<p class="text-base leading-relaxed">
-					On March 18, 2020, because of COVID-19 precautions, Beer Club halted weekly in-person
-					meetings in the J Avenue alley. Zoom meetings continued until weekly meetings resumed at
-					125 G Avenue.
+					passion for and contribution to the Island Beer Club.
 				</p>
 			</div>
 		</div>
@@ -368,7 +361,9 @@
 					creating Coronado's favorite weekly alley beer gathering.
 				</p>
 				<p class="text-base leading-relaxed">
-					On the same day, we celebrated the Grand Opening of the IBC Clubhouse next door at
+					On <strong class="text-foreground">4 Sep 2019</strong>, the original IBC Headquarters at
+					<strong class="text-foreground">851 J Ave</strong> was retired, and we celebrated the Grand
+					Opening of the IBC Clubhouse next door at
 					<strong class="text-foreground">857 J Ave</strong>, Rod Neilson's (Mbr #169) house.
 				</p>
 				<p class="text-base leading-relaxed">
