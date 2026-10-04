@@ -248,8 +248,8 @@
 						</div>
 					</div>
 					<div>
-						<h3 class="text-foreground font-semibold">August 2006</h3>
-						<p class="text-muted-foreground text-sm">Alley officially named "Beer Belly Blvd"</p>
+						<h3 class="text-foreground font-semibold">July 2006</h3>
+						<p class="text-muted-foreground text-sm">IBC website officially published</p>
 					</div>
 				</div>
 
@@ -260,8 +260,8 @@
 						</div>
 					</div>
 					<div>
-						<h3 class="text-foreground font-semibold">July 2006</h3>
-						<p class="text-muted-foreground text-sm">IBC website officially published</p>
+						<h3 class="text-foreground font-semibold">August 2006</h3>
+						<p class="text-muted-foreground text-sm">Alley officially named "Beer Belly Blvd"</p>
 					</div>
 				</div>
 
@@ -331,6 +331,20 @@
 						<h3 class="text-foreground font-semibold">March 18, 2020</h3>
 						<p class="text-muted-foreground text-sm">
 							COVID-19 precautions halt weekly in-person meetings; Zoom meetings continue
+						</p>
+					</div>
+				</div>
+
+				<div class="flex gap-4">
+					<div class="flex-shrink-0">
+						<div class="bg-primary flex size-8 items-center justify-center rounded-full">
+							<div class="bg-primary-foreground size-2 rounded-full"></div>
+						</div>
+					</div>
+					<div>
+						<h3 class="text-foreground font-semibold">January 2023</h3>
+						<p class="text-muted-foreground text-sm">
+							Clubhouse moved to the Sexton's home at 125 G Avenue
 						</p>
 					</div>
 				</div>
