@@ -122,6 +122,36 @@ async function getLocalRedisClient(): Promise<LocalRedisClient | null> {
 	return localRedisClientPromise;
 }
 
+/**
+ * Upper bound on how long a request waits for any single cache read, write or delete, including
+ * connection setup. See "Cache timeouts" in DEPLOYMENT.md.
+ *
+ * Healthy Upstash REST round trips usually take tens of milliseconds; 1s leaves headroom for a cold
+ * TLS/DNS handshake while keeping a stuck or unreachable cache from holding a request until the
+ * platform's function timeout. A slow healthy call can also exceed it and is treated as a miss.
+ * The timeout stops the wait only: the underlying call is not cancelled and may still complete
+ * (a timed-out write can land later). On timeout the cache is skipped and data comes from the
+ * loader / database.
+ */
+export const CACHE_OPERATION_TIMEOUT_MS = 1000;
+
+class CacheTimeoutError extends Error {
+	constructor(operation: string) {
+		super(`[redis] ${operation} timed out after ${CACHE_OPERATION_TIMEOUT_MS}ms`);
+		this.name = "CacheTimeoutError";
+	}
+}
+
+function withCacheTimeout<T>(operation: Promise<T>, label: string): Promise<T> {
+	// If the timeout wins, the operation may still reject later; observe it so it is never unhandled.
+	operation.catch(() => {});
+	let timer: ReturnType<typeof setTimeout> | undefined;
+	const timeout = new Promise<never>((_, reject) => {
+		timer = setTimeout(() => reject(new CacheTimeoutError(label)), CACHE_OPERATION_TIMEOUT_MS);
+	});
+	return Promise.race([operation, timeout]).finally(() => clearTimeout(timer));
+}
+
 async function getJson<T>(key: string): Promise<T | null> {
 	const backend = getBackend();
 	if (backend === "upstash-rest") {
@@ -153,6 +183,19 @@ async function setJson<T>(key: string, value: T, ttlSeconds: number): Promise<vo
 	}
 }
 
+async function deleteJson(key: string): Promise<void> {
+	const backend = getBackend();
+	if (backend === "upstash-rest") {
+		const client = getUpstashClient();
+		if (client) await client.del(key);
+		return;
+	}
+	if (backend === "redis-url") {
+		const client = await getLocalRedisClient();
+		if (client) await client.del(key);
+	}
+}
+
 export async function readThroughJson<T>(options: ReadThroughJsonOptions<T>): Promise<T> {
 	const { namespace, keyParts, ttlSeconds, label, loader } = options;
 	const key = buildSearchCacheKey(namespace, keyParts);
@@ -166,7 +209,7 @@ export async function readThroughJson<T>(options: ReadThroughJsonOptions<T>): Pr
 	}
 
 	try {
-		const cached = await getJson<T>(key);
+		const cached = await withCacheTimeout(getJson<T>(key), `read (${label})`);
 		if (cached !== null) {
 			if (logEnabled) {
 				console.log(`[IBC-LOG] [redis] hit (${label})`, { namespace, backend, key });
@@ -184,7 +227,7 @@ export async function readThroughJson<T>(options: ReadThroughJsonOptions<T>): Pr
 	const fresh = await loader();
 
 	try {
-		await setJson(key, fresh, ttlSeconds);
+		await withCacheTimeout(setJson(key, fresh, ttlSeconds), `write (${label})`);
 	} catch (error) {
 		console.error(`[IBC-LOG] [redis] write failed (${label})`, error);
 	}
@@ -201,26 +244,27 @@ export async function deleteCachedJson(
 
 	const key = buildSearchCacheKey(namespace, keyParts);
 	try {
-		if (backend === "upstash-rest") {
-			const client = getUpstashClient();
-			if (client) await client.del(key);
-			return;
-		}
-		if (backend === "redis-url") {
-			const client = await getLocalRedisClient();
-			if (client) await client.del(key);
-		}
+		await withCacheTimeout(deleteJson(key), `delete (${namespace})`);
 	} catch (error) {
 		console.error(`[IBC-LOG] [redis] delete failed (${namespace})`, error);
 	}
 }
 
+/** Resolves `null` (a cache miss) when the cache errors or times out, so callers fall back to the database. */
 export async function getCachedJson<T>(
 	namespace: SearchCacheNamespace,
 	keyParts: Record<string, KeyPart>
 ): Promise<T | null> {
 	if (getBackend() === "disabled") return null;
-	return getJson<T>(buildSearchCacheKey(namespace, keyParts));
+	try {
+		return await withCacheTimeout(
+			getJson<T>(buildSearchCacheKey(namespace, keyParts)),
+			`read (${namespace})`
+		);
+	} catch (error) {
+		console.error(`[IBC-LOG] [redis] read failed (${namespace})`, error);
+		return null;
+	}
 }
 
 export async function setCachedJson<T>(
@@ -230,5 +274,12 @@ export async function setCachedJson<T>(
 	ttlSeconds: number
 ): Promise<void> {
 	if (getBackend() === "disabled") return;
-	await setJson(buildSearchCacheKey(namespace, keyParts), value, ttlSeconds);
+	try {
+		await withCacheTimeout(
+			setJson(buildSearchCacheKey(namespace, keyParts), value, ttlSeconds),
+			`write (${namespace})`
+		);
+	} catch (error) {
+		console.error(`[IBC-LOG] [redis] write failed (${namespace})`, error);
+	}
 }

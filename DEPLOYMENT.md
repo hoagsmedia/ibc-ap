@@ -178,6 +178,24 @@ IBC_CACHE_REDIS_PREFIX="ibc-preview"
 
 Add that in Vercel → **Preview** only (not Production).
 
+### Cache timeouts
+
+Every cache read, write and delete (`src/lib/server/redis.ts`, including the session-validation
+cache) waits at most `CACHE_OPERATION_TIMEOUT_MS` (1000 ms). On timeout or error the request stops
+waiting and skips the cache: reads count as a miss and the page or session is loaded from Postgres;
+failed writes and deletes are logged and ignored.
+
+- **Choice of 1 s.** Healthy Upstash calls usually take tens of milliseconds. 1 s keeps an
+  unreachable cache (for example a `REDIS_URL` whose host does not resolve) from holding requests
+  until the function timeout. A slow but otherwise healthy call can also exceed 1 s; it is then
+  treated as a miss or skipped write, never as a request failure.
+- **The bound limits waiting, not the operation.** A timed-out call is not cancelled. It may still
+  complete afterwards, so a write that timed out can still land in Redis later.
+- **Session invalidation.** Logout deletes the cached session, but a failed or timed-out delete — or
+  an earlier session-cache write that lands after the delete — can leave the session cached. It then
+  stays valid until its 90 s TTL expires, counted from when that write actually landed, which may be
+  later than the logout.
+
 ### Verify hostnames without exposing secrets
 
 1. Vercel → project → **Environment Variables** → **Edit** `DATABASE_URL` for **Production** — note the hostname segment (`ep-….neon.tech` or `….azure.neon.tech`).
