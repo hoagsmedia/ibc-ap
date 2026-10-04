@@ -190,14 +190,7 @@
 				<p class="text-base leading-relaxed">
 					We lost Jeffery "Bones" Wilkens, Mbr#1, on 6 Jul 2019. On 7 Aug 2019, a huge turnout
 					joined together in Beer Belly Blvd to recognize Jeff, celebrate his life and salute his
-					passion for and contribution to the Island Beer Club. On 4 Sep 2019 IBC Headquarters, at
-					851 J Ave, was retired and on the same day, we celebrated the Grand Opening of the IBC
-					Clubhouse next door at 857 J Ave, Rod Neilson's (Mbr #169) house.
-				</p>
-				<p class="text-base leading-relaxed">
-					On March 18, 2020, because of COVID-19 precautions, Beer Club halted weekly in-person
-					meetings in the J Avenue alley. Zoom meetings continued until weekly meetings resumed at
-					125 G Avenue.
+					passion for and contribution to the Island Beer Club.
 				</p>
 			</div>
 		</div>
@@ -255,8 +248,8 @@
 						</div>
 					</div>
 					<div>
-						<h3 class="text-foreground font-semibold">August 2006</h3>
-						<p class="text-muted-foreground text-sm">Alley officially named "Beer Belly Blvd"</p>
+						<h3 class="text-foreground font-semibold">July 2006</h3>
+						<p class="text-muted-foreground text-sm">IBC website officially published</p>
 					</div>
 				</div>
 
@@ -267,8 +260,8 @@
 						</div>
 					</div>
 					<div>
-						<h3 class="text-foreground font-semibold">July 2006</h3>
-						<p class="text-muted-foreground text-sm">IBC website officially published</p>
+						<h3 class="text-foreground font-semibold">August 2006</h3>
+						<p class="text-muted-foreground text-sm">Alley officially named "Beer Belly Blvd"</p>
 					</div>
 				</div>
 
@@ -349,6 +342,20 @@
 						</div>
 					</div>
 					<div>
+						<h3 class="text-foreground font-semibold">January 2023</h3>
+						<p class="text-muted-foreground text-sm">
+							Clubhouse moved to the Sexton's home at 125 G Avenue
+						</p>
+					</div>
+				</div>
+
+				<div class="flex gap-4">
+					<div class="flex-shrink-0">
+						<div class="bg-primary flex size-8 items-center justify-center rounded-full">
+							<div class="bg-primary-foreground size-2 rounded-full"></div>
+						</div>
+					</div>
+					<div>
 						<h3 class="text-foreground font-semibold">2025</h3>
 						<p class="text-muted-foreground text-sm">
 							Modern website launch and continued community building
@@ -368,18 +375,45 @@
 					creating Coronado's favorite weekly alley beer gathering.
 				</p>
 				<p class="text-base leading-relaxed">
-					The J Ave Clubhouse now hosts Beer Club sessions at least twice a month. Other Beer Club
-					sessions are at our local venues: VFW Coronado, The Little Club, Attitude Brewing Co, and
-					Feast and Fareway restaurant at the Coronado Golf Course.
+					On <strong class="text-foreground">4 Sep 2019</strong>, the original IBC Headquarters at
+					<strong class="text-foreground">851 J Ave</strong> was retired, and we celebrated the Grand
+					Opening of the IBC Clubhouse next door at
+					<strong class="text-foreground">857 J Ave</strong>, Rod Neilson's (Mbr #169) house.
 				</p>
 				<p class="text-base leading-relaxed">
-					The IBC meets every <strong class="text-foreground">Wednesday</strong> from
-					<strong class="text-foreground">4 PM to 6 PM (Standard Time)</strong>;
-					<strong class="text-foreground">4:30 PM to 6:30 PM (Daylight Savings Time)</strong> in the alley
-					(<strong class="text-foreground">Beer Belly Blvd</strong>) at
-					<strong class="text-foreground">125 G Avenue</strong> in Coronado, as well as our "satellite"
-					locations. Guests, especially ladies, are always welcome when accompanied by a Beer Club
-					member. Please join us.
+					The J Avenue Clubhouse at Rod Neilson's home hosted Beer Club sessions approximately twice
+					a month. Other Beer Club sessions were at our local venues such as the
+					<strong class="text-foreground">Coronado VFW</strong>,
+					<strong class="text-foreground">The Little Club</strong>,
+					<strong class="text-foreground">Attitude Brewing Company</strong>, and the
+					<strong class="text-foreground">Feast &amp; Fareway</strong> restaurant at the Coronado Golf
+					Course.
+				</p>
+				<p class="text-base leading-relaxed">
+					On <strong class="text-foreground">18 Mar 2020</strong>, due to COVID-19 precautions, Beer
+					Club halted its weekly face-to-face gatherings. A dozen or two members continued their
+					weekly gatherings via Zoom until we resumed gathering at the J Avenue Clubhouse.
+				</p>
+				<p class="text-base leading-relaxed">
+					In <strong class="text-foreground">January 2023</strong>, after the lease was up on Rod
+					Neilson's home, the Clubhouse moved to the Sexton's home at
+					<strong class="text-foreground">125 G Avenue</strong>. IBC meets nearly every
+					<strong class="text-foreground">Wednesday</strong> from
+					<strong class="text-foreground">4 PM to 6 PM (Standard Time)</strong> and
+					<strong class="text-foreground">4:30 PM to 6:30 PM (Daylight Savings Time)</strong> in the
+					alley behind 125 G Avenue. Lee Fox, who lives at 135 G Avenue, offered his garage to host
+					the 2nd of our large keg refrigerators. We do an 'off-campus' gathering about once a month
+					at the VFW.
+				</p>
+				<p class="text-base leading-relaxed">
+					IBC's Chief of Staff, Kitty Sexton, is ably assisted by her husband John (Mbr #172), who
+					writes the weekly 'Kitty-gram' and purchases the ever-popular snacks. Rob Crenshaw, Member
+					#5, is the purchaser of our beer. With 150 to 200 at our gatherings, we consume nearly 2
+					kegs per week.
+				</p>
+				<p class="text-base leading-relaxed">
+					Guests, especially ladies, are always welcome when accompanied by a Beer Club member.
+					Please join us.
 				</p>
 			</div>
 		</div>
