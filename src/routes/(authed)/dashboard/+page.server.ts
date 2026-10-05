@@ -19,11 +19,13 @@ import { getDashboardClubStats } from "$lib/server/dashboard-club-stats-cache";
 import { events, users, type Event } from "$lib/server/db/schema";
 import { ibcDebugEnabled } from "$lib/server/ibc-debug";
 import { canAccessPlatform } from "$lib/server/account-access";
+import type { RolloutProgress } from "$lib/member-rollout-progress";
 import {
 	canUserSendMemberRolloutInvites,
 	countMemberRolloutTokensCreatedInWindow,
 	createMemberRolloutToken,
 	deleteUnusedMemberRolloutTokenForOwner,
+	getMemberRolloutProgress,
 	getMemberRolloutTargetById,
 	getOldestMemberRolloutInWindow,
 	hasUnusedMemberRolloutTokenForPair,
@@ -265,6 +267,7 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 				nextSlotAt: string | null;
 				resendConfigured: boolean;
 				eligibleInviter: boolean;
+				progress: RolloutProgress;
 		  }
 		| undefined;
 
@@ -288,7 +291,8 @@ export const load: PageServerLoad = async ({ locals, url }) => {
 			windowDays: MEMBER_ROLLOUT_WINDOW_DAYS,
 			nextSlotAt,
 			resendConfigured: isMemberRolloutEmailConfigured(),
-			eligibleInviter
+			eligibleInviter,
+			progress: await getMemberRolloutProgress()
 		};
 	}
 

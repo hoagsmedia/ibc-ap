@@ -14,6 +14,7 @@
 	import * as Tooltip from "$lib/components/ui/tooltip/index.js";
 	import DatePickerField from "$lib/components/DatePickerField.svelte";
 	import InvitationRow from "$lib/components/dashboard/InvitationRow.svelte";
+	import MemberRolloutProgress from "$lib/components/dashboard/MemberRolloutProgress.svelte";
 	import QuickActionLink from "$lib/components/dashboard/QuickActionLink.svelte";
 	import {
 		BarChart3,
@@ -533,6 +534,10 @@
 							</Card.Description>
 						</Card.Header>
 						<Card.Content class="space-y-4 px-4 sm:px-6">
+							<MemberRolloutProgress
+								active={data.memberRollout.progress.active}
+								total={data.memberRollout.progress.total}
+							/>
 							{#if !data.memberRollout.eligibleInviter}
 								<Alert.Root>
 									<Alert.Description>

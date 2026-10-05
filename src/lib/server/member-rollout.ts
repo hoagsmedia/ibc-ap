@@ -3,7 +3,21 @@ import { db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
 import type { User } from "$lib/server/db/schema";
 import { generateInvitationToken } from "$lib/server/invitations";
-import { and, asc, count, eq, gte, isNotNull, isNull, min, ne, sql } from "drizzle-orm";
+import {
+	and,
+	asc,
+	count,
+	eq,
+	gt,
+	gte,
+	inArray,
+	isNotNull,
+	isNull,
+	min,
+	ne,
+	sql
+} from "drizzle-orm";
+import { aggregateRolloutProgress, type RolloutProgress } from "$lib/member-rollout-progress";
 
 const DAY_IN_MS = 1000 * 60 * 60 * 24;
 
@@ -32,6 +46,29 @@ export function isEligibleMemberRolloutRecipient(u: User): boolean {
 	if (u.website_first_login_at != null) return false;
 	if (!u.email?.trim()) return false;
 	return true;
+}
+
+/**
+ * Rollout progress population: numbered club members (members and admins), not deceased.
+ * Prospects/guests are excluded; members without an email are included. See
+ * `$lib/member-rollout-progress` for how rows are deduplicated and counted.
+ */
+export const memberRolloutPopulationWhere = () =>
+	and(
+		inArray(table.users.role, ["member", "admin"]),
+		isNotNull(table.users.mbr),
+		gt(table.users.mbr, 0),
+		eq(table.users.dops, false),
+		isNull(table.users.dops_date)
+	);
+
+/** One narrow read of the whole population (no links, search or pagination involved). */
+export async function getMemberRolloutProgress(): Promise<RolloutProgress> {
+	const rows = await db
+		.select({ mbr: table.users.mbr, account_active: table.users.account_active })
+		.from(table.users)
+		.where(memberRolloutPopulationWhere());
+	return aggregateRolloutProgress(rows);
 }
 
 export async function countMemberRolloutTokensCreatedInWindow(inviterId: string): Promise<number> {
