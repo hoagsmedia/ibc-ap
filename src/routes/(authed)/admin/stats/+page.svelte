@@ -5,7 +5,8 @@
 	import { ArrowLeft, ArrowRight } from "@lucide/svelte";
 	import Barrel from "@lucide/svelte/icons/barrel";
 	import Beer from "@lucide/svelte/icons/beer";
-	import { BarChart, Text } from "layerchart";
+	import MembersJoinedYearDialog from "$lib/components/admin/MembersJoinedYearDialog.svelte";
+	import { Bar, BarChart, Bars, Text } from "layerchart";
 	import type { ComponentProps } from "svelte";
 	import { cubicOut } from "svelte/easing";
 	import { scaleBand } from "d3-scale";
@@ -26,6 +27,44 @@
 	const totalChartMembers = $derived(newMembersBarData.reduce((sum, row) => sum + row.count, 0));
 
 	type LcTextProps = ComponentProps<typeof Text>;
+	type NewMembersBar = (typeof newMembersBarData)[number];
+
+	/** Selected year for the details dialog; its list is read from the same snapshot as the bar. */
+	let detailsYear = $state<number | null>(null);
+	let detailsOpen = $state(false);
+	/** Chart container; bars are looked up inside it only, never document-wide. */
+	let chartContainer = $state<HTMLElement | null>(null);
+	const detailsEntry = $derived(
+		detailsYear == null
+			? undefined
+			: data.membersJoinedByYear.find((row) => row.year === detailsYear)
+	);
+
+	function openYearDetails(yearLabel: unknown) {
+		const year = Number(yearLabel);
+		if (!Number.isInteger(year)) return;
+		detailsYear = year;
+		detailsOpen = true;
+	}
+
+	/**
+	 * Return focus to the bar that opened the dialog, whether it was opened by pointer (bar or
+	 * column) or keyboard. Falls back to the dialog's default if that bar is no longer rendered.
+	 */
+	function returnFocusToYearBar(event: Event) {
+		if (detailsYear == null || !chartContainer?.isConnected) return;
+		const bar = chartContainer.querySelector<SVGElement>(`[data-year-bar="${detailsYear}"]`);
+		if (!bar?.isConnected) return;
+		event.preventDefault();
+		bar.focus({ preventScroll: true });
+	}
+
+	function onBarKeydown(event: KeyboardEvent, bar: NewMembersBar) {
+		if (event.key === "Enter" || event.key === " ") {
+			event.preventDefault();
+			openYearDetails(bar.yearLabel);
+		}
+	}
 
 	/** LayerChart grows vertical bars from the baseline on first paint (see `Bar` + `Rect` motion). */
 	const newMembersBarMotion = { type: "tween" as const, duration: 700, easing: cubicOut };
@@ -111,9 +150,10 @@
 				/>
 			{/snippet}
 			<Chart.Container
+				bind:ref={chartContainer}
 				config={newMembersChartConfig}
-				role="img"
-				aria-label="Bar chart of new member and admin accounts per MSD calendar year"
+				role="group"
+				aria-label="Bar chart of new member and admin accounts per MSD calendar year. Select a year to list its members."
 				class="text-foreground min-h-[220px] w-full min-w-0 max-w-full px-0 pt-2 pb-6 sm:min-h-[260px]"
 			>
 				<BarChart
@@ -130,6 +170,11 @@
 							color: "var(--color-newMembers)"
 						}
 					]}
+					tooltipContext={{
+						onclick: (_event, { data: bar }) => {
+							if (bar) openYearDetails((bar as NewMembersBar).yearLabel);
+						}
+					}}
 					props={{
 						bars: { motion: newMembersBarMotion },
 						yAxis: { tickLabel: yMembersAxisTick },
@@ -139,6 +184,35 @@
 						}
 					}}
 				>
+					{#snippet marks()}
+						<!-- Same bars as the default marks, but each one is a keyboard-operable button. -->
+						<Bars seriesKey="newMembers">
+							{#each newMembersBarData as bar (bar.yearLabel)}
+								<Bar
+									data={bar}
+									seriesKey="newMembers"
+									fill="var(--color-newMembers)"
+									stroke="black"
+									strokeWidth={1}
+									radius={4}
+									rounded="edge"
+									motion={newMembersBarMotion}
+									role="button"
+									tabindex={0}
+									data-year-bar={bar.yearLabel}
+									aria-label="{bar.yearLabel}: {bar.count} {bar.count === 1
+										? 'member'
+										: 'members'}. Show list."
+									class="focus-visible:outline-ring cursor-pointer outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-solid"
+									onclick={(event: MouseEvent) => {
+										event.stopPropagation();
+										openYearDetails(bar.yearLabel);
+									}}
+									onkeydown={(event: KeyboardEvent) => onBarKeydown(event, bar)}
+								/>
+							{/each}
+						</Bars>
+					{/snippet}
 					{#snippet tooltip()}
 						<Chart.Tooltip
 							labelFormatter={(v) =>
@@ -153,6 +227,13 @@
 			</Chart.Container>
 		{/if}
 	</section>
+
+	<MembersJoinedYearDialog
+		bind:open={detailsOpen}
+		year={detailsYear}
+		entry={detailsEntry}
+		onCloseAutoFocus={returnFocusToYearBar}
+	/>
 
 	<div class="grid gap-6 lg:grid-cols-2 lg:items-stretch">
 		<article

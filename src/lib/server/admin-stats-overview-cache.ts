@@ -4,11 +4,14 @@ import { statsBeerConsumed, statsKegCredits, users } from "$lib/server/db/schema
 import type { StatsBeerConsumedRow } from "$lib/server/db/schema";
 import { readThroughJson } from "$lib/server/redis";
 import { beerTotalsFromGallonSum } from "$lib/stats-snapshot.js";
-import { and, count, desc, eq, inArray, isNotNull, sql, sum } from "drizzle-orm";
+import type { JoinedYearMember, MembersJoinedYear } from "$lib/admin-stats-members-joined";
+import { and, asc, count, desc, eq, inArray, isNotNull, sql, sum } from "drizzle-orm";
 
 type DB = typeof defaultDb;
 
 const TTL_SECONDS = 10 * 60;
+/** Bump when the cached shape changes so old entries are never read as the new shape. */
+const CACHE_VERSION = 2;
 
 export type AdminStatsOverview = {
 	kegWidget: {
@@ -21,7 +24,7 @@ export type AdminStatsOverview = {
 		totals: ReturnType<typeof beerTotalsFromGallonSum>;
 		latestKeg: StatsBeerConsumedRow | null;
 	};
-	membersJoinedByYear: { year: number; count: number }[];
+	membersJoinedByYear: MembersJoinedYear[];
 };
 
 function reviveDate(value: Date | string | null | undefined): Date | null {
@@ -54,8 +57,36 @@ function reviveAdminStatsOverview(data: AdminStatsOverview): AdminStatsOverview 
 	};
 }
 
+/** Same calendar-year extraction the bar chart has always used (database session timezone). */
+export const yearFromMsd = () => sql<number>`extract(year from ${users.msd})::int`.mapWith(Number);
+
+/** Rows counted by "Member growth by year": members and admins with an MSD, nothing else filtered. */
+export const membersJoinedWhere = () =>
+	and(inArray(users.role, ["member", "admin"]), isNotNull(users.msd));
+
+/**
+ * Buckets counted rows by year. Counts are derived from the same rows the modal lists, so a bar
+ * and its list always come from one query and one cached snapshot. Every row is kept, including
+ * duplicate names or member numbers.
+ */
+export function groupMembersJoinedByYear(
+	rows: readonly { year: number | string; name: string; mbr: number | null }[]
+): MembersJoinedYear[] {
+	const byYear = new Map<number, JoinedYearMember[]>();
+	for (const row of rows) {
+		const year = Number(row.year);
+		const bucket = byYear.get(year);
+		const member = { name: row.name, mbr: row.mbr };
+		if (bucket) bucket.push(member);
+		else byYear.set(year, [member]);
+	}
+	return [...byYear.entries()]
+		.sort(([a], [b]) => a - b)
+		.map(([year, members]) => ({ year, count: members.length, members }));
+}
+
 async function loadAdminStatsOverview(db: DB): Promise<AdminStatsOverview> {
-	const yearFromMsd = sql<number>`extract(year from ${users.msd})::int`.mapWith(Number);
+	const msdYear = yearFromMsd();
 
 	const [kegRows, beerCountRes, beerGallonsRes, deceasedRes, latestKegRes, membersByYearRows] =
 		await Promise.all([
@@ -74,14 +105,10 @@ async function loadAdminStatsOverview(db: DB): Promise<AdminStatsOverview> {
 			db.select({ mbr: users.mbr }).from(users).where(eq(users.dops, true)),
 			db.select().from(statsBeerConsumed).orderBy(desc(statsBeerConsumed.keg_number)).limit(1),
 			db
-				.select({
-					year: yearFromMsd,
-					n: count()
-				})
+				.select({ year: msdYear, name: users.name, mbr: users.mbr })
 				.from(users)
-				.where(and(inArray(users.role, ["member", "admin"]), isNotNull(users.msd)))
-				.groupBy(yearFromMsd)
-				.orderBy(yearFromMsd)
+				.where(membersJoinedWhere())
+				.orderBy(msdYear, sql`${users.mbr} asc nulls last`, asc(users.name))
 		]);
 
 	const kegTotal = kegRows.length;
@@ -113,10 +140,7 @@ async function loadAdminStatsOverview(db: DB): Promise<AdminStatsOverview> {
 			totals: beerTotalsFromGallonSum(beerGallonsRes[0]?.s),
 			latestKeg
 		},
-		membersJoinedByYear: membersByYearRows.map((r) => ({
-			year: Number(r.year),
-			count: Number(r.n)
-		}))
+		membersJoinedByYear: groupMembersJoinedByYear(membersByYearRows)
 	};
 }
 
@@ -124,7 +148,7 @@ async function loadAdminStatsOverview(db: DB): Promise<AdminStatsOverview> {
 export async function getAdminStatsOverview(db: DB = defaultDb): Promise<AdminStatsOverview> {
 	const data = await readThroughJson({
 		namespace: "admin-stats-overview",
-		keyParts: { scope: "global" },
+		keyParts: { scope: "global", version: CACHE_VERSION },
 		ttlSeconds: TTL_SECONDS,
 		label: "admin-stats-overview",
 		loader: () => loadAdminStatsOverview(db)
