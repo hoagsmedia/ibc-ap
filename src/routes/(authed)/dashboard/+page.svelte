@@ -431,10 +431,7 @@
 							<p
 								class="text-[0.95rem] leading-relaxed text-white/82 drop-shadow-[0_1px_4px_rgba(0,0,0,0.35)] sm:text-base"
 							>
-								Hello,
-								<strong class="font-semibold text-white">{data.user.name}</strong>
-								—<br />
-								here is your Island Beer Club home base.
+								Hello, <strong class="font-semibold text-white">{data.user.name}</strong>.
 							</p>
 						</div>
 					</div>
@@ -446,7 +443,7 @@
 							class="rounded-full border-amber-200/35 bg-black/40 px-6 text-amber-100/95 shadow-sm backdrop-blur-[2px] hover:bg-black/55 hover:text-amber-50"
 						>
 							<User class="size-4 opacity-90" aria-hidden="true" />
-							View Member Profile
+							My profile
 						</Button>
 					</div>
 				</div>
@@ -463,20 +460,15 @@
 								>
 									<TrendingUp class="size-3.5 sm:size-4" />
 								</span>
-								<Card.Title class="text-sm font-semibold sm:text-base">Engagement</Card.Title>
+								<Card.Title class="text-sm font-semibold sm:text-base">Member numbers</Card.Title>
 							</div>
 							<Card.Description class="text-[0.65rem] leading-snug sm:text-sm sm:leading-normal">
-								Members with numbers vs total roster
+								Share of roster with a member number
 							</Card.Description>
 						</Card.Header>
 						<Card.Content class="px-3 sm:px-6">
 							<p class="text-foreground text-2xl font-bold tabular-nums sm:text-4xl">
 								{engagementPct}%
-							</p>
-							<p
-								class="text-muted-foreground mt-1.5 line-clamp-3 text-[0.65rem] leading-snug sm:mt-2 sm:text-xs sm:leading-relaxed"
-							>
-								Higher means more of the club is fully onboarded with member numbers.
 							</p>
 						</Card.Content>
 					</Card.Root>
@@ -490,10 +482,10 @@
 								>
 									<Sparkles class="size-3.5 sm:size-4" />
 								</span>
-								<Card.Title class="text-sm font-semibold sm:text-base">Season pace</Card.Title>
+								<Card.Title class="text-sm font-semibold sm:text-base">Club activity</Card.Title>
 							</div>
 							<Card.Description class="text-[0.65rem] leading-snug sm:text-sm sm:leading-normal">
-								Events and kegs in the data snapshot
+								Events and kegs
 							</Card.Description>
 						</Card.Header>
 						<Card.Content class="px-3 sm:px-6">
@@ -506,7 +498,7 @@
 								events this year ·
 								<span class="text-foreground font-semibold tabular-nums sm:font-bold"
 									>{data.clubStats.kegsConsumed}</span
-								> kegs recorded — keep the island pouring.
+								> kegs recorded
 							</p>
 						</Card.Content>
 					</Card.Root>
@@ -517,62 +509,52 @@
 				<div class="col-span-1 min-w-0 lg:col-span-3" aria-labelledby="member-rollout-heading">
 					<Card.Root class="bg-card rounded-2xl border border-emerald-500/25 shadow-sm">
 						<Card.Header class="gap-1 px-4 pb-2 sm:px-6">
-							<div class="flex flex-wrap items-center gap-2">
-								<span
-									class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
-								>
-									<Mail class="size-4" aria-hidden="true" />
-								</span>
-								<Card.Title id="member-rollout-heading" class="text-base font-semibold sm:text-lg">
-									Existing member rollout
-								</Card.Title>
+							<div class="flex items-start justify-between gap-3">
+								<div class="flex min-w-0 items-center gap-2">
+									<span
+										class="flex size-8 shrink-0 items-center justify-center rounded-lg bg-emerald-500/15 text-emerald-700 dark:text-emerald-400"
+									>
+										<Mail class="size-4" aria-hidden="true" />
+									</span>
+									<Card.Title
+										id="member-rollout-heading"
+										class="min-w-0 text-base font-semibold sm:text-lg"
+									>
+										Existing member rollout
+									</Card.Title>
+								</div>
+								<MemberRolloutProgress
+									active={data.memberRollout.progress.active}
+									total={data.memberRollout.progress.total}
+								/>
 							</div>
 							<Card.Description class="text-sm">
-								Onboard <strong class="text-foreground font-medium">current members</strong> who
-								already have a member number onto this website. Separate from
-								<strong class="text-foreground font-medium">Prospect</strong> invitation links.
+								Email website activation links to current members. For prospects, use Invitation
+								links.
 							</Card.Description>
 						</Card.Header>
 						<Card.Content class="space-y-4 px-4 sm:px-6">
-							<MemberRolloutProgress
-								active={data.memberRollout.progress.active}
-								total={data.memberRollout.progress.total}
-							/>
 							{#if !data.memberRollout.eligibleInviter}
 								<Alert.Root>
 									<Alert.Description>
-										After your <strong>first website login</strong> (or use an admin account), you can
-										send rollout activation emails. This keeps the chain to members who are already on
-										the site.
+										You can send activation emails after your first website login.
 									</Alert.Description>
 								</Alert.Root>
 							{:else if !data.memberRollout.resendConfigured}
 								<Alert.Root variant="destructive">
 									<Alert.Description>
-										Configure <code class="text-xs">RESEND_API_KEY</code> and
-										<code class="text-xs">RESEND_FROM_EMAIL</code> to email activation links.
+										Email is unavailable. Please contact the site administrator.
 									</Alert.Description>
 								</Alert.Root>
 							{:else}
-								<div
-									class="text-muted-foreground flex flex-wrap items-baseline gap-x-3 gap-y-1 text-sm"
-								>
-									<span>
-										Member rollout sends this period:
-										<strong class="text-foreground"
-											>{data.memberRollout.usedInWindow} / {data.memberRollout.maxPerWindow}</strong
-										>
-										sent ·
-										<strong class="text-foreground">{data.memberRollout.remaining}</strong> remaining
-									</span>
-									<span class="text-xs">
-										(Rolling {data.memberRollout.windowDays}-day window · only member rollout emails
-										count · Prospect invites use their own limits.)
-									</span>
-								</div>
+								<p class="text-muted-foreground text-sm">
+									<strong class="text-foreground">{data.memberRollout.remaining}</strong>
+									of {data.memberRollout.maxPerWindow} sends left · {data.memberRollout
+										.windowDays}-day limit
+								</p>
 								{#if data.memberRollout.remaining === 0 && data.memberRollout.nextSlotAt}
 									<p class="text-sm text-amber-700 dark:text-amber-400/90">
-										Limit reached. Next rollout send available after {formatDate(
+										Limit reached. Next send after {formatDate(
 											new Date(data.memberRollout.nextSlotAt)
 										)}.
 									</p>
@@ -584,7 +566,7 @@
 										id="member-rollout-search"
 										type="search"
 										autocomplete="off"
-										placeholder="Start typing… (min. 2 characters)"
+										placeholder="Type at least 2 characters"
 										bind:value={memberRolloutQuery}
 										oninput={() => scheduleMemberRolloutSearch(memberRolloutQuery)}
 										disabled={data.memberRollout.remaining === 0}
@@ -638,22 +620,17 @@
 								<Dialog.Title>Send activation email?</Dialog.Title>
 								<Dialog.Description class="space-y-3 text-left">
 									{#if memberRolloutTarget}
-										<span>
-											Send a website activation link to <strong class="text-foreground"
+										<span class="block">
+											Email a website activation link to <strong class="text-foreground"
 												>{memberRolloutTarget.name}</strong
 											>
 											({memberRolloutTarget.email}).
 										</span>
 									{/if}
 									<span class="block">
-										Member rollout limit: <strong class="text-foreground"
-											>{data.memberRollout?.remaining ?? 0}</strong
-										>
-										send{data.memberRollout?.remaining === 1 ? "" : "s"} left in your rolling
-										<strong class="text-foreground"
-											>{data.memberRollout?.windowDays ?? 4}-day</strong
-										>
-										window (only rollout emails count toward this limit).
+										<strong class="text-foreground">{data.memberRollout?.remaining ?? 0}</strong>
+										send{data.memberRollout?.remaining === 1 ? "" : "s"} left in your
+										{data.memberRollout?.windowDays ?? 4}-day limit.
 									</span>
 								</Dialog.Description>
 							</Dialog.Header>
@@ -695,7 +672,7 @@
 											<Loader2 class="mr-2 size-4 animate-spin" aria-hidden="true" />
 											Sending…
 										{:else}
-											Confirm send
+											Send
 										{/if}
 									</Button>
 								</Dialog.Footer>
@@ -759,8 +736,7 @@
 								<Card.Description
 									class="dark:text-muted-foreground max-w-none leading-snug text-pretty text-white/88"
 								>
-									Prospects who passed the test but don’t have a member number yet. Manage them and
-									assign member numbers.
+									Passed the test and waiting for a member number.
 								</Card.Description>
 							</div>
 							<Card.Content class="relative z-10 flex flex-1 flex-col gap-4 pt-0">
@@ -794,8 +770,7 @@
 											</ul>
 											{#if (data.pendingMembersCount ?? 0) > data.pendingMembers.length}
 												<p class="dark:text-muted-foreground mt-2 text-xs text-white/72">
-													+{(data.pendingMembersCount ?? 0) - data.pendingMembers.length} more on the
-													full list.
+													+{(data.pendingMembersCount ?? 0) - data.pendingMembers.length} more
 												</p>
 											{/if}
 										{/if}
@@ -855,8 +830,7 @@
 											<Dialog.Header>
 												<Dialog.Title>Create invitation</Dialog.Title>
 												<Dialog.Description>
-													The signup link is sent by email to the prospect. Add their email and a
-													label for your records.
+													We'll email the prospect a one-time signup link.
 												</Dialog.Description>
 											</Dialog.Header>
 											<form
@@ -893,7 +867,7 @@
 												class="flex flex-col gap-4"
 											>
 												<div class="flex flex-col gap-2">
-													<Label for="dialog-invite-name">Who is this invite for?</Label>
+													<Label for="dialog-invite-name">Prospect name</Label>
 													<Input
 														id="dialog-invite-name"
 														name="inviteName"
@@ -931,9 +905,9 @@
 													<Button type="submit" disabled={creating} class="gap-1.5">
 														{#if creating}
 															<Loader2 class="size-4 shrink-0 animate-spin" aria-hidden="true" />
-															<span>Generating…</span>
+															<span>Sending…</span>
 														{:else}
-															<span>Create &amp; send</span>
+															<span>Send invite</span>
 														{/if}
 													</Button>
 												</Dialog.Footer>
@@ -944,8 +918,8 @@
 								<Card.Description
 									class="dark:text-muted-foreground max-w-none leading-snug text-pretty text-white/88"
 								>
-									Each invite emails a one-time signup link to the prospect. Use the mail icon on a
-									row to resend or reach a different address — copy is still available as a backup.
+									Each invite emails a one-time signup link. Use the mail icon to resend, or copy
+									the link.
 								</Card.Description>
 							</div>
 							<Card.Content class="relative z-10 flex flex-1 flex-col p-2 md:p-6">
@@ -980,17 +954,15 @@
 									{#if isProspectOnboarding && data.prospectGate && !data.prospectGate.canTakeTestNow}
 										<Alert.Root class="mb-4" variant="destructive">
 											<ClockIcon class="size-4" />
-											<Alert.Title>Three meeting dates required first</Alert.Title>
+											<Alert.Title>Log 3 meetings first</Alert.Title>
 											<Alert.Description>
-												Log all three beer club meetings on your dashboard before the IBC test
-												unlocks.
+												The IBC test unlocks after you log 3 club meetings.
 											</Alert.Description>
 										</Alert.Root>
 										<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 											<p class="dark:text-muted-foreground text-sm text-white/88">
-												You have {data.prospectGate.meetingCount} of {data.prospectGate
-													.meetingsRequired} meetings saved. Add the remaining {meetingsRemaining} on
-												this dashboard to continue.
+												{data.prospectGate.meetingCount} of {data.prospectGate.meetingsRequired} meetings
+												saved.
 											</p>
 											<Button
 												class="shrink-0 shadow-md"
@@ -1005,13 +977,12 @@
 											<ClockIcon class="size-4" />
 											<Alert.Title>Test required</Alert.Title>
 											<Alert.Description>
-												You must pass the official IBC test before you can create invitation links.
+												Pass the IBC test to create invitation links.
 											</Alert.Description>
 										</Alert.Root>
 										<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
 											<p class="dark:text-muted-foreground text-sm text-white/88">
-												Complete the IBC test to unlock invitations. An admin will review your
-												profile after you pass the test.
+												After you pass, an admin will review your profile.
 											</p>
 											<Button class="shrink-0 shadow-md">
 												<a href="/test">Take test</a>
@@ -1020,16 +991,15 @@
 									{:else if data.user?.role !== "admin" && (data.user?.role !== "member" || data.user?.mbr == null)}
 										<Alert.Root class="mb-4" variant="default">
 											<ClockIcon class="size-4" />
-											<Alert.Title>Prospect acceptance required</Alert.Title>
+											<Alert.Title>Member number needed</Alert.Title>
 											<Alert.Description>
-												You must be accepted as a member and assigned a member number before
-												creating invitation links.
+												You need club approval and a member number to create invitation links.
 											</Alert.Description>
 										</Alert.Root>
 										<p class="dark:text-muted-foreground text-sm text-white/88">
 											{#if data.user.test_passed != null}
-												You’ve passed the IBC test. An admin will review your profile and assign
-												your member number when you’re accepted.
+												You passed the IBC test. An admin will assign your member number once you
+												are accepted.
 											{:else}
 												An admin will assign your member number when your account is ready.
 											{/if}
@@ -1088,7 +1058,7 @@
 				<Dialog.Header>
 					<Dialog.Title>Prospect progress</Dialog.Title>
 					<Dialog.Description>
-						Attend and log three beer club meetings to unlock the IBC test and member-only tools.
+						Log 3 club meetings to unlock the IBC test and member tools.
 					</Dialog.Description>
 				</Dialog.Header>
 				<div class="space-y-4 md:space-y-5">
@@ -1123,10 +1093,9 @@
 					</div>
 					<p class="text-muted-foreground text-sm">
 						{#if data.prospectGate.canTakeTestNow}
-							Nice — all three meetings are logged. You can take the IBC test now.
+							All 3 meetings logged. You can take the IBC test now.
 						{:else}
-							You’re {meetingsRemaining} meeting{meetingsRemaining === 1 ? "" : "s"} away from unlocking
-							the test.
+							{meetingsRemaining} more meeting{meetingsRemaining === 1 ? "" : "s"} to unlock the test.
 						{/if}
 					</p>
 				</div>
@@ -1152,8 +1121,8 @@
 						<div class="space-y-1">
 							<Card.Title class="text-xl">Log your first 3 meetings</Card.Title>
 							<Card.Description>
-								Before you can take the IBC test or view exclusive member info, save the dates of
-								the three beer club meetings you attended.
+								Save the date of each club meeting you attend. All 3 unlock the IBC test and member
+								info.
 							</Card.Description>
 						</div>
 						<Badge variant="secondary" class="text-sm">
@@ -1164,17 +1133,16 @@
 						<ClockIcon class="size-4" />
 						<Alert.Title>
 							{#if data.prospectGate.canTakeTestNow}
-								Meetings complete — test unlocked
+								Test unlocked
 							{:else}
-								Member directory and stats stay locked until all 3 meetings are saved
+								Directory and stats unlock after 3 meetings
 							{/if}
 						</Alert.Title>
 						<Alert.Description>
 							{#if data.prospectGate.canTakeTestNow}
-								You can head straight to the IBC test now.
+								You can take the IBC test now.
 							{:else}
-								Save each meeting whenever you attend it — you do not need to fill all three at
-								once.
+								Save each meeting as you go.
 							{/if}
 						</Alert.Description>
 					</Alert.Root>
@@ -1203,7 +1171,7 @@
 							<div class="min-w-0">
 								<h3 class="text-base font-medium md:text-lg">{activeMeeting.label}</h3>
 								<p class="text-muted-foreground mt-1 text-xs sm:text-sm">
-									Choose a date, then click Save date.
+									Pick a Wednesday, then Save date.
 								</p>
 							</div>
 							{#if activeMeeting.saved && !activeMeeting.dirty}
@@ -1310,17 +1278,10 @@
 								View all
 							</a>
 						</div>
-						<Card.Description
-							class="dark:text-muted-foreground max-w-none leading-snug text-pretty text-white/88"
-						>
-							Next on the club calendar
-						</Card.Description>
 					</div>
 					<Card.Content class="relative z-10 flex flex-1 flex-col p-2 md:p-6">
 						{#if data.upcomingEvents.length === 0}
-							<p class="dark:text-muted-foreground text-sm text-white/78">
-								No upcoming published events.
-							</p>
+							<p class="dark:text-muted-foreground text-sm text-white/78">No upcoming events.</p>
 						{:else}
 							<ul
 								class="flex flex-col overflow-hidden"
@@ -1393,17 +1354,12 @@
 						>
 							<LayoutGrid class="text-primary size-5" />
 						</div>
-						<div class="min-w-0">
-							<Card.Title
-								id="actions-heading"
-								class="text-foreground text-lg font-semibold tracking-tight"
-							>
-								Quick actions
-							</Card.Title>
-							<Card.Description class="text-muted-foreground text-sm leading-snug">
-								Shortcuts to common member tools
-							</Card.Description>
-						</div>
+						<Card.Title
+							id="actions-heading"
+							class="text-foreground min-w-0 text-lg font-semibold tracking-tight"
+						>
+							Quick actions
+						</Card.Title>
 					</Card.Header>
 					<Card.Content class="flex flex-1 flex-col gap-2">
 						<QuickActionLink href="/dashboard/members">

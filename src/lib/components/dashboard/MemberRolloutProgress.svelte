@@ -1,38 +1,42 @@
 <script lang="ts">
 	/**
-	 * Existing member rollout: active website accounts among numbered club members.
+	 * Compact rollout metric badge: "65/546 active · 11.9%".
 	 * Counts only; see `$lib/member-rollout-progress` for the population and dedup rules.
 	 */
+	import { Badge } from "$lib/components/ui/badge";
 	import { formatRolloutPercent } from "$lib/member-rollout-progress";
 
 	let {
 		active,
-		total
+		total,
+		class: className = ""
 	}: {
 		/** Distinct member numbers with an active website account */
 		active: number;
 		/** Distinct member numbers in the population */
 		total: number;
+		class?: string;
 	} = $props();
 
 	const percent = $derived(formatRolloutPercent({ active, total }));
+	const spoken = $derived(
+		percent === null
+			? "No members to count yet"
+			: `${active} of ${total} members have an active website account, ${percent}`
+	);
 </script>
 
-<div class="bg-muted/40 rounded-lg px-3 py-2 text-sm" data-testid="member-rollout-progress">
-	<p class="text-muted-foreground text-xs font-medium tracking-wide uppercase">
-		Active website accounts
-	</p>
-	{#if percent === null}
-		<p class="text-foreground mt-1">No members in scope yet.</p>
-	{:else}
-		<p class="text-foreground mt-1">
-			<strong class="tabular-nums">{active}</strong> active of
-			<strong class="tabular-nums">{total}</strong> members ·
-			<strong class="tabular-nums">{percent}</strong>
-		</p>
-	{/if}
-	<p class="text-muted-foreground mt-1 text-xs">
-		Scope: numbered club members, admins included, excluding deceased members and prospects. Each
-		member number counts once; members without an email are included.
-	</p>
-</div>
+<Badge
+	variant="secondary"
+	class="shrink-0 rounded-full bg-emerald-500/15 px-2.5 py-1 text-xs font-semibold whitespace-nowrap text-emerald-800 tabular-nums dark:text-emerald-300 {className}"
+	data-testid="member-rollout-progress"
+>
+	<span aria-hidden="true">
+		{#if percent === null}
+			No members
+		{:else}
+			{active}/{total} active · {percent}
+		{/if}
+	</span>
+	<span class="sr-only">{spoken}</span>
+</Badge>

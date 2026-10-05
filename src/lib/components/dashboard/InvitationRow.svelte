@@ -143,7 +143,7 @@
 						<Dialog.Header>
 							<Dialog.Title>Email invitation</Dialog.Title>
 							<Dialog.Description>
-								Send the signup link to your prospect’s inbox ({prospectPhrase}).
+								Email the signup link for {prospectPhrase}.
 							</Dialog.Description>
 						</Dialog.Header>
 						<form
