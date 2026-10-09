@@ -317,11 +317,6 @@
 						</a>
 					</li>
 					<li>
-						<a href="/contact" class={linkClass}
-							>We care about your safety — get in touch anytime.</a
-						>
-					</li>
-					<li>
 						<a
 							href="http://www.bornagainamerican.org"
 							target="_blank"

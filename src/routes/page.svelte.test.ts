@@ -10,4 +10,9 @@ describe("Home page", () => {
 		expect(h1).toBeInTheDocument();
 		expect(h1).toHaveTextContent(/We have more time than money/i);
 	});
+
+	test("does not link to the removed public contact page", () => {
+		const { container } = render(Page);
+		expect(container.querySelector('a[href*="contact"]')).toBeNull();
+	});
 });

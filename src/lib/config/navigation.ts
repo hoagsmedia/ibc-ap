@@ -11,7 +11,6 @@ export const navLinks: NavLink[] = [
 	{ href: "/events", label: "Events", description: "Upcoming and past events." },
 	{ href: "/stats", label: "IBC Stats", description: "View club statistics and records." },
 	{ href: "/fun", label: "Fun", description: "Games, jokes, and more." },
-	{ href: "/contact", label: "Contact", description: "Get in touch with us." },
 	{ href: "/gallery", label: "Gallery", description: "Photo gallery of club events." }
 ];
 

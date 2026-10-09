@@ -2,6 +2,7 @@
 	import type { Snippet } from "svelte";
 	import { page } from "$app/state";
 	import { canAccessMemberDirectoryAndStats } from "$lib/ibc-test";
+	import { canUseMemberContactForm } from "$lib/account-access";
 	import { cn } from "$lib/utils.js";
 	import * as Sidebar from "$lib/components/ui/sidebar";
 	import { Button } from "$lib/components/ui/button";
@@ -31,6 +32,7 @@
 	import Home from "@lucide/svelte/icons/home";
 	import BarChart3 from "@lucide/svelte/icons/bar-chart-3";
 	import ClipboardList from "@lucide/svelte/icons/clipboard-list";
+	import Mail from "@lucide/svelte/icons/mail";
 
 	let { children }: { children: Snippet } = $props();
 
@@ -48,6 +50,7 @@
 		if (pathname.startsWith("/dashboard/members")) return "Member directory";
 		if (pathname.startsWith("/dashboard/stats")) return "Keg & beer stats";
 		if (pathname.startsWith("/dashboard/events")) return "Events";
+		if (pathname.startsWith("/dashboard/contact")) return "Contact the club";
 		if (pathname.startsWith("/dashboard")) return "Dashboard";
 		if (pathname.startsWith("/members")) return "Members";
 		if (pathname.startsWith("/settings")) return "Settings";
@@ -65,6 +68,8 @@
 	const canAccessExclusiveFeatures = $derived(
 		user ? canAccessMemberDirectoryAndStats(user) : false
 	);
+	/** Mirrors the server guard on /dashboard/contact; the server check is the real gate. */
+	const canUseContactForm = $derived(user ? canUseMemberContactForm(user) : false);
 </script>
 
 <Sidebar.Provider>
@@ -183,6 +188,21 @@
 								{/snippet}
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
+						{#if canUseContactForm}
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton
+									isActive={navActive("/dashboard/contact")}
+									tooltipContent="Contact the club"
+								>
+									{#snippet child({ props })}
+										<a href="/dashboard/contact" {...props}>
+											<Mail />
+											<span>Contact</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
+						{/if}
 						{#if user?.role !== "admin" && canAccessExclusiveFeatures}
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton

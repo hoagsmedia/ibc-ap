@@ -145,13 +145,5 @@
 				</Card.Root>
 			{/each}
 		</div>
-
-		<p class="text-muted-foreground mt-12 text-center text-sm leading-relaxed">
-			Found a broken link?
-			<a href="/contact" class="text-primary font-medium underline-offset-4 hover:underline">
-				Let us know
-			</a>
-			— we’ll fix it when we’re back from the bar.
-		</p>
 	</div>
 </div>

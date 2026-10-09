@@ -11,10 +11,17 @@ import {
 	isResendContactFormConfigured,
 	sendContactFormEmail
 } from "$lib/server/send-contact-form-email";
+import { requireMemberContactAccess } from "$lib/server/authz";
 import { contactSchema } from "./contact-schema";
 
-export const load: PageServerLoad = async () => {
-	const form = await superValidate(zod(contactSchema));
+export const load: PageServerLoad = async ({ locals }) => {
+	const user = requireMemberContactAccess(locals);
+	// Prefill from the signed-in member; both fields stay editable and are validated on submit.
+	const form = await superValidate(
+		{ name: user.name, email: user.email ?? "", message: "" },
+		zod(contactSchema),
+		{ errors: false }
+	);
 
 	return {
 		form
@@ -22,7 +29,9 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	default: async ({ request }) => {
+	default: async ({ request, locals }) => {
+		// Enforced on POST too: a direct submission must not rely on the page load or navigation.
+		requireMemberContactAccess(locals);
 		const formData = await request.formData();
 
 		if (isContactHoneypotTripped(formData)) {

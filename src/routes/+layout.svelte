@@ -27,9 +27,6 @@
 		);
 	});
 
-	/** Contact page includes its own footer to match the full-page design. */
-	const hidePublicFooter = $derived(page.url.pathname === "/contact");
-
 	// Skip in dev: avoids loading Vercel analytics/speed-insights scripts locally.
 	if (!dev) {
 		injectAnalytics();
@@ -49,17 +46,15 @@
 				{@render children()}
 			</div>
 		</main>
-		{#if !hidePublicFooter}
-			<footer class="py-6 md:px-8 md:py-0">
-				<div class="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
-					<p
-						class="text-muted-foreground text-center text-sm leading-loose text-balance md:text-left"
-					>
-						© {new Date().getFullYear()} Island Beer Club. All rights reserved.
-					</p>
-				</div>
-			</footer>
-		{/if}
+		<footer class="py-6 md:px-8 md:py-0">
+			<div class="container flex flex-col items-center justify-between gap-4 md:h-24 md:flex-row">
+				<p
+					class="text-muted-foreground text-center text-sm leading-loose text-balance md:text-left"
+				>
+					© {new Date().getFullYear()} Island Beer Club. All rights reserved.
+				</p>
+			</div>
+		</footer>
 	{/if}
 </div>
 

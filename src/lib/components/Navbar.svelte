@@ -19,7 +19,6 @@
 	import Calendar from "@lucide/svelte/icons/calendar";
 	import BarChart2 from "@lucide/svelte/icons/bar-chart-2";
 	import Sparkles from "@lucide/svelte/icons/sparkles";
-	import Mail from "@lucide/svelte/icons/mail";
 	import Images from "@lucide/svelte/icons/images";
 	import Award from "@lucide/svelte/icons/award";
 	import Link2 from "@lucide/svelte/icons/link-2";
@@ -73,7 +72,6 @@
 		"/events": Calendar,
 		"/stats": BarChart2,
 		"/fun": Sparkles,
-		"/contact": Mail,
 		"/gallery": Images,
 		"/founders-day": Award,
 		"/links": Link2,
