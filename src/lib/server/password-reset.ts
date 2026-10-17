@@ -4,6 +4,8 @@ import { db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
 
 const RESET_LINK_TTL_MS = 1000 * 60 * 60; // 1 hour
+/** Self-service resets: at most one email per account per window. */
+export const USER_RESET_COOLDOWN_MS = 1000 * 60 * 15; // 15 minutes
 
 export type PasswordResetSource = "user" | "admin";
 
@@ -28,6 +30,23 @@ export async function revokeUnusedPasswordResetsForUser(userId: string): Promise
 		.where(
 			and(eq(table.passwordResetTokens.user_id, userId), isNull(table.passwordResetTokens.used_at))
 		);
+}
+
+/** True if this user requested a self-service reset within the cooldown window. */
+export async function hasRecentUserPasswordReset(userId: string): Promise<boolean> {
+	const since = new Date(Date.now() - USER_RESET_COOLDOWN_MS);
+	const [row] = await db
+		.select({ id: table.passwordResetTokens.id })
+		.from(table.passwordResetTokens)
+		.where(
+			and(
+				eq(table.passwordResetTokens.user_id, userId),
+				eq(table.passwordResetTokens.source, "user"),
+				gt(table.passwordResetTokens.created_at, since)
+			)
+		)
+		.limit(1);
+	return Boolean(row);
 }
 
 export async function createPasswordResetToken(input: {

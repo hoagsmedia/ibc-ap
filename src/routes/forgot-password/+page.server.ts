@@ -1,9 +1,9 @@
 import { fail, redirect } from "@sveltejs/kit";
-import { and, ilike, isNotNull } from "drizzle-orm";
+import { and, isNotNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "$lib/server/db";
 import * as table from "$lib/server/db/schema";
-import { createPasswordResetToken } from "$lib/server/password-reset";
+import { createPasswordResetToken, hasRecentUserPasswordReset } from "$lib/server/password-reset";
 import {
 	isResendPasswordResetConfigured,
 	sendPasswordResetEmail
@@ -41,7 +41,10 @@ export const actions: Actions = {
 				password_hash: table.users.password_hash
 			})
 			.from(table.users)
-			.where(and(isNotNull(table.users.email), ilike(table.users.email, emailNorm)))
+			// Exact case-insensitive match: ilike would treat `_` and `%` in the input as wildcards.
+			.where(
+				and(isNotNull(table.users.email), sql`lower(trim(${table.users.email})) = ${emailNorm}`)
+			)
 			.limit(1);
 
 		const genericSuccess = {
@@ -65,6 +68,10 @@ export const actions: Actions = {
 		}
 
 		try {
+			// Same generic response either way, so the limit does not reveal whether the account exists.
+			if (await hasRecentUserPasswordReset(user.id)) {
+				return genericSuccess;
+			}
 			const { id: resetRequestId, token } = await createPasswordResetToken({
 				userId: user.id,
 				source: "user"
