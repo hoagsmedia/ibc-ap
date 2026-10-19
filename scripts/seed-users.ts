@@ -2,7 +2,7 @@ import { db } from "../src/lib/server/db";
 import { users } from "../src/lib/server/db/schema";
 import fs from "fs";
 import path from "path";
-const profilesPath = path.resolve("static/ibc-users.json");
+const profilesPath = path.resolve("data/seed/ibc-users.json");
 const profiles = JSON.parse(fs.readFileSync(profilesPath, "utf-8"));
 import readline from "readline";
 

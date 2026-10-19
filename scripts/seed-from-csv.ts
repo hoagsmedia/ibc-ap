@@ -14,7 +14,7 @@ import { users } from '../src/lib/server/db/schema';
 import { eq } from 'drizzle-orm';
 import { runSyncUploadthingImages } from './sync-uploadthing-images';
 
-const CSV_PATH = path.resolve('static/member_data_19feb26.csv');
+const CSV_PATH = path.resolve('data/seed/member_data_19feb26.csv');
 const DB_QUERY_TIMEOUT_MS = 30_000; // 30 seconds - fail fast if DB is unreachable
 
 const VALID_ROLES = ['guest', 'member', 'admin'] as const;

@@ -12,7 +12,7 @@ To repopulate with 30 users (with known passwords) from the bundled JSON:
 pnpm run db:seed
 ```
 
-Answer `y` when prompted. This will **clear** the `users` table and insert up to 30 users from `static/ibc-users.json`. Use this when the table is already empty and you need a working dev dataset.
+Answer `y` when prompted. This will **clear** the `users` table and insert up to 30 users from `data/seed/ibc-users.json`. Use this when the table is already empty and you need a working dev dataset.
 
 ### Restore from backup
 
