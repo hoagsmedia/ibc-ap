@@ -10,6 +10,7 @@
 	import Avatar from "$lib/components/Avatar.svelte";
 	import MemberHubPageHeader from "$lib/components/MemberHubPageHeader.svelte";
 	import { toast } from "svelte-sonner";
+	import { untrack } from "svelte";
 	import { cn } from "$lib/utils.js";
 	import Beer from "@lucide/svelte/icons/beer";
 	import Star from "@lucide/svelte/icons/star";
@@ -18,7 +19,13 @@
 
 	let { data, form }: { data: PageData; form: ActionData } = $props();
 
-	let rating = $state(0);
+	// The draft lives in local state so cheering or deleting (which replaces `form`) never clears it.
+	// Initial values cover a no-JS failed submit, where the page re-renders with `form.values`.
+	const initial = untrack(() => form?.values);
+	let beerName = $state(initial?.beer_name ?? "");
+	let brewery = $state(initial?.brewery ?? "");
+	let note = $state(initial?.note ?? "");
+	let rating = $state(Number(initial?.rating) || 0);
 	let posting = $state(false);
 
 	const RATING_LABELS = ["", "Meh", "Okay", "Good", "Great", "Outstanding"];
@@ -49,9 +56,12 @@
 		return async ({ result, update }) => {
 			posting = false;
 			if (result.type === "success") {
+				beerName = "";
+				brewery = "";
+				note = "";
 				rating = 0;
 				toast.success("Cheers! Your check-in is on the board.");
-				await update();
+				await update({ reset: false });
 			} else {
 				if (result.type === "failure" && typeof result.data?.error === "string") {
 					toast.error(result.data.error);
@@ -98,7 +108,7 @@
 									required
 									maxlength={80}
 									placeholder="e.g. Big Wave Golden Ale"
-									value={form?.values?.beer_name ?? ""}
+									bind:value={beerName}
 								/>
 							</div>
 							<div class="space-y-1.5">
@@ -110,7 +120,7 @@
 									name="brewery"
 									maxlength={80}
 									placeholder="e.g. Kona Brewing"
-									value={form?.values?.brewery ?? ""}
+									bind:value={brewery}
 								/>
 							</div>
 						</div>
@@ -153,7 +163,7 @@
 								rows={2}
 								class="resize-none"
 								placeholder="Where are you, what's it like?"
-								value={form?.values?.note ?? ""}
+								bind:value={note}
 							/>
 						</div>
 

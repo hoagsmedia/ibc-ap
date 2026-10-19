@@ -1,6 +1,6 @@
 import type { Actions, PageServerLoad } from "./$types";
 import { fail } from "@sveltejs/kit";
-import { and, count, desc, eq, gte, sql } from "drizzle-orm";
+import { and, count, desc, eq, gte, or, sql } from "drizzle-orm";
 import { db } from "$lib/server/db";
 import { beerCheckins, beerCheers, users } from "$lib/server/db/schema";
 import { isAdmin, requireActiveMemberAccess } from "$lib/server/authz";
@@ -8,9 +8,15 @@ import { FEED_LIMIT, MAX_CHECKINS_PER_DAY, checkinSchema } from "./beer-log-sche
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-function startOfMonthUtc(now = new Date()): Date {
-	return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
-}
+/** The club runs on Pacific time (same zone as the contact email), so the month rolls over at local midnight. */
+const CLUB_TIME_ZONE = "America/Los_Angeles";
+const startOfClubMonth = sql`(date_trunc('month', now() at time zone ${CLUB_TIME_ZONE}) at time zone ${CLUB_TIME_ZONE})`;
+
+/** Only people who can currently use the site show in the feed and leaderboard. */
+const activeAuthor = or(
+	eq(users.role, "admin"),
+	and(eq(users.role, "member"), eq(users.account_active, true))
+);
 
 export const load: PageServerLoad = async ({ locals }) => {
 	const user = requireActiveMemberAccess(locals);
@@ -36,13 +42,14 @@ export const load: PageServerLoad = async ({ locals }) => {
 			})
 			.from(beerCheckins)
 			.innerJoin(users, eq(beerCheckins.user_id, users.id))
+			.where(activeAuthor)
 			.orderBy(desc(beerCheckins.created_at))
 			.limit(FEED_LIMIT),
 		db
 			.select({ user_id: users.id, name: users.name, img: users.img, checkins: count() })
 			.from(beerCheckins)
 			.innerJoin(users, eq(beerCheckins.user_id, users.id))
-			.where(gte(beerCheckins.created_at, startOfMonthUtc()))
+			.where(and(activeAuthor, gte(beerCheckins.created_at, startOfClubMonth)))
 			.groupBy(users.id, users.name, users.img)
 			.orderBy(desc(count()), users.name)
 			.limit(5),

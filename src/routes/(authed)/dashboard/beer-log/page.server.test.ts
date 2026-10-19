@@ -15,6 +15,8 @@ const pat = { id: "synthetic-pat", name: "Pat Member", role: "member", account_a
 const admin = { id: "synthetic-admin", name: "Ada Admin", role: "admin", account_active: false };
 const guest = { ...sam, id: "synthetic-guest", role: "guest" };
 const inactiveMember = { ...sam, id: "synthetic-inactive", account_active: false };
+// Seeded in the test database as a deactivated member with an old post.
+const formerMember = { id: "synthetic-former" };
 
 const loadEvent = (user: unknown) => ({ locals: { user, session: null } }) as unknown as LoadEvent;
 
@@ -94,7 +96,7 @@ describe("beer log access", () => {
 
 // Real queries run only against a throwaway database you point at explicitly, e.g.
 // BEER_LOG_TEST_DATABASE_URL=postgres://localhost/scratch DATABASE_URL=$BEER_LOG_TEST_DATABASE_URL
-// with a `users` table holding the synthetic rows above and scripts/ensure-beer-log-schema.ts applied.
+// with a `users` table holding the synthetic rows above (synthetic-former: role member, account_active false) and scripts/ensure-beer-log-schema.ts applied.
 const testDb = process.env.BEER_LOG_TEST_DATABASE_URL;
 describe.skipIf(!testDb || testDb !== process.env.DATABASE_URL)(
 	"beer log against a test database",
@@ -148,6 +150,24 @@ describe.skipIf(!testDb || testDb !== process.env.DATABASE_URL)(
 			expect((await feedFor(sam)).myTotal).toBe(1);
 			expect(await act("delete", sam, { id: post.id })).toEqual({ deleted: true });
 			expect((await feedFor(sam)).feed.find((f) => f.id === post.id)).toBeUndefined();
+		});
+
+		it("hides check-ins from members who can no longer use the site", async () => {
+			await client`insert into beer_checkins (id, user_id, beer_name, rating) values ('synthetic-former-post', ${formerMember.id}, 'Old Ale', 3)`;
+			const feed = await feedFor(sam);
+			expect(feed.feed.find((f) => f.id === "synthetic-former-post")).toBeUndefined();
+			expect(feed.leaders.find((l) => l.user_id === formerMember.id)).toBeUndefined();
+		});
+
+		it("counts the leaderboard month from Pacific midnight", async () => {
+			await client`delete from beer_checkins where user_id = ${sam.id}`;
+			// One minute before and after the start of this month in Los Angeles.
+			await client`insert into beer_checkins (id, user_id, beer_name, rating, created_at) values
+			('synthetic-last-month', ${sam.id}, 'Late Ale', 3, (date_trunc('month', now() at time zone 'America/Los_Angeles') at time zone 'America/Los_Angeles') - interval '1 minute'),
+			('synthetic-this-month', ${sam.id}, 'Early Ale', 3, (date_trunc('month', now() at time zone 'America/Los_Angeles') at time zone 'America/Los_Angeles') + interval '1 minute')`;
+			const feed = await feedFor(sam);
+			expect(feed.leaders.find((l) => l.user_id === sam.id)).toMatchObject({ checkins: 1 });
+			expect(feed.myTotal).toBe(2);
 		});
 
 		it("caps check-ins per member per day", async () => {
