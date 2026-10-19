@@ -48,3 +48,11 @@ export function requireMemberContactAccess(
 	}
 	return user;
 }
+
+/** Active members and admins (same gate as the contact form): Beer Log feed and actions. */
+export function requireActiveMemberAccess(
+	locals: App.Locals,
+	options: { loginPath?: string; forbiddenPath?: string } = {}
+): SessionUser {
+	return requireMemberContactAccess(locals, options);
+}

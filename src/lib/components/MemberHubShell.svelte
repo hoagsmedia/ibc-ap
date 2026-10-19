@@ -51,6 +51,7 @@
 		if (pathname.startsWith("/dashboard/stats")) return "Keg & beer stats";
 		if (pathname.startsWith("/dashboard/events")) return "Events";
 		if (pathname.startsWith("/dashboard/contact")) return "Contact the club";
+		if (pathname.startsWith("/dashboard/beer-log")) return "Beer Log";
 		if (pathname.startsWith("/dashboard")) return "Dashboard";
 		if (pathname.startsWith("/members")) return "Members";
 		if (pathname.startsWith("/settings")) return "Settings";
@@ -188,6 +189,21 @@
 								{/snippet}
 							</Sidebar.MenuButton>
 						</Sidebar.MenuItem>
+						{#if canUseContactForm}
+							<Sidebar.MenuItem>
+								<Sidebar.MenuButton
+									isActive={navActive("/dashboard/beer-log")}
+									tooltipContent="Beer Log"
+								>
+									{#snippet child({ props })}
+										<a href="/dashboard/beer-log" {...props}>
+											<Beer />
+											<span>Beer Log</span>
+										</a>
+									{/snippet}
+								</Sidebar.MenuButton>
+							</Sidebar.MenuItem>
+						{/if}
 						{#if canUseContactForm}
 							<Sidebar.MenuItem>
 								<Sidebar.MenuButton

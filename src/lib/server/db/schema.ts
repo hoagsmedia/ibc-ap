@@ -5,7 +5,10 @@ import {
 	timestamp,
 	date,
 	boolean,
-	doublePrecision
+	doublePrecision,
+	smallint,
+	index,
+	primaryKey
 } from "drizzle-orm/pg-core";
 
 export const user = pgTable("user", {
@@ -178,3 +181,41 @@ export const statsBeerConsumed = pgTable("stats_beer_consumed", {
 
 export type StatsKegCredit = typeof statsKegCredits.$inferSelect;
 export type StatsBeerConsumedRow = typeof statsBeerConsumed.$inferSelect;
+
+/** Beer Log: a member's "what I'm drinking" check-in (members-only feed on /dashboard/beer-log). */
+export const beerCheckins = pgTable(
+	"beer_checkins",
+	{
+		id: text("id").primaryKey(),
+		user_id: text("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		beer_name: text("beer_name").notNull(),
+		brewery: text("brewery"),
+		/** 1–5 stars (CHECK constraint in scripts/ensure-beer-log-schema.ts). */
+		rating: smallint("rating").notNull(),
+		note: text("note"),
+		created_at: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow()
+	},
+	(t) => [
+		index("beer_checkins_created_at_idx").on(t.created_at),
+		index("beer_checkins_user_id_idx").on(t.user_id)
+	]
+);
+
+/** One 🍻 per member per check-in. */
+export const beerCheers = pgTable(
+	"beer_cheers",
+	{
+		checkin_id: text("checkin_id")
+			.notNull()
+			.references(() => beerCheckins.id, { onDelete: "cascade" }),
+		user_id: text("user_id")
+			.notNull()
+			.references(() => users.id, { onDelete: "cascade" }),
+		created_at: timestamp("created_at", { withTimezone: true, mode: "date" }).notNull().defaultNow()
+	},
+	(t) => [primaryKey({ columns: [t.checkin_id, t.user_id] })]
+);
+
+export type BeerCheckin = typeof beerCheckins.$inferSelect;
