@@ -29,12 +29,12 @@ export const MEMBER_ROLLOUT_WINDOW_MS = MEMBER_ROLLOUT_WINDOW_DAYS * DAY_IN_MS;
 
 const TOKEN_EXPIRATION_DAYS = 14;
 
-/** Admins always; members after their own first website login. */
+/** Admins always; members after their own first website login. Guests and prospects never. */
 export function canUserSendMemberRolloutInvites(
 	user: Pick<User, "role" | "website_first_login_at">
 ): boolean {
 	if (user.role === "admin") return true;
-	return user.website_first_login_at != null;
+	return user.role === "member" && user.website_first_login_at != null;
 }
 
 /** Eligible recipients: current members who need website onboarding only (not prospects, not deceased). */
@@ -132,7 +132,6 @@ export async function searchMemberRolloutRecipients(params: {
 }): Promise<Array<Pick<User, "id" | "name" | "email" | "mbr"> & { email: string }>> {
 	const q = params.query.trim();
 	if (q.length < 2) return [];
-
 
 	const needle = `%${q}%`;
 	const mbrDigits = q.replace(/\D/g, "");
@@ -264,7 +263,6 @@ export async function completeMemberRolloutActivation(
 			.update(table.memberRolloutTokens)
 			.set({ used_at: new Date() })
 			.where(eq(table.memberRolloutTokens.token, token));
-
 	});
 
 	await invalidateAllSessionsForUser(targetUser.id);

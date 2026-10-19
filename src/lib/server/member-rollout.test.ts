@@ -59,6 +59,15 @@ describe("canUserSendMemberRolloutInvites", () => {
 		).toBe(false);
 	});
 
+	it("denies guests and prospects even after a website login", () => {
+		expect(
+			canUserSendMemberRolloutInvites({
+				role: "guest",
+				website_first_login_at: new Date()
+			})
+		).toBe(false);
+	});
+
 	it("allows members after their first website login", () => {
 		expect(
 			canUserSendMemberRolloutInvites({

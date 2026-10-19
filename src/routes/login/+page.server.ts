@@ -1,5 +1,4 @@
-import { hash, verify } from "argon2";
-import { encodeBase32LowerCase } from "@oslojs/encoding";
+import { verify } from "argon2";
 import { fail, redirect } from "@sveltejs/kit";
 import { eq, or } from "drizzle-orm";
 import * as auth from "$lib/server/auth";
@@ -87,66 +86,8 @@ export const actions: Actions = {
 		auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
 
 		throw redirect(302, "/dashboard");
-	},
-	register: async (event) => {
-		const formData = await event.request.formData();
-		const name = formData.get("name");
-		const email = formData.get("email");
-		const password = formData.get("password");
-
-		if (!validateName(name)) {
-			return fail(400, { message: "Invalid name (min 2, max 100 characters)" });
-		}
-		if (!validateEmail(email)) {
-			return fail(400, { message: "Invalid email address" });
-		}
-		if (!validatePassword(password)) {
-			return fail(400, { message: "Invalid password (min 6, max 24 characters)" });
-		}
-
-		const userId = generateUserId();
-		const password_hash = await hash(password);
-
-		try {
-			await db.insert(table.users).values({
-				id: userId,
-				name: name as string,
-				email: email as string,
-				password_hash,
-				role: "guest",
-				/** Public self-registration is unrelated to member rollout (prospects path). */
-				account_active: true
-			});
-
-			const sessionToken = auth.generateSessionToken();
-			const session = await auth.createSession(sessionToken, userId);
-			auth.setSessionTokenCookie(event, sessionToken, session.expires_at);
-		} catch {
-			return fail(500, { message: "An error has occurred" });
-		}
-		return redirect(302, "/dashboard");
 	}
 };
-
-function generateUserId() {
-	// ID with 120 bits of entropy, or about the same as UUID v4.
-	const bytes = crypto.getRandomValues(new Uint8Array(15));
-	const id = encodeBase32LowerCase(bytes);
-	return id;
-}
-
-function validateName(name: unknown): name is string {
-	return typeof name === "string" && name.length >= 2 && name.length <= 100;
-}
-
-function validateEmail(email: unknown): email is string {
-	return (
-		typeof email === "string" &&
-		email.length >= 3 &&
-		email.length <= 255 &&
-		/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
-	);
-}
 
 function validateEmailOrUsername(input: unknown): input is string {
 	if (typeof input !== "string" || input.length < 1 || input.length > 255) return false;
