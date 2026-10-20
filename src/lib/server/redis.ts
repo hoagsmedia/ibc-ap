@@ -82,7 +82,9 @@ function getUpstashClient(): UpstashRedis | null {
 		upstashClient = null;
 		return upstashClient;
 	}
-	upstashClient = new UpstashRedis({ url: upstashRestUrl, token: upstashRestToken });
+	// No client-side retries: its default (5 retries with backoff, ~4s) cannot finish inside the
+	// 1s cache timeout, so it only hid the real error. A failure now surfaces and trips the cooldown.
+	upstashClient = new UpstashRedis({ url: upstashRestUrl, token: upstashRestToken, retry: false });
 	return upstashClient;
 }
 
@@ -166,11 +168,18 @@ class CacheTimeoutError extends Error {
 }
 
 function withCacheTimeout<T>(operation: Promise<T>, label: string): Promise<T> {
-	// If the timeout wins, the operation may still reject later; observe it so it is never unhandled.
-	operation.catch(() => {});
+	let timedOut = false;
+	// If the timeout wins, the operation may still reject later; observe it so it is never unhandled,
+	// and log it so the underlying cause (DNS, auth, network) is visible behind the timeout.
+	operation.catch((error: unknown) => {
+		if (timedOut) console.error(`[IBC-LOG] [redis] ${label} failed after its timeout`, error);
+	});
 	let timer: ReturnType<typeof setTimeout> | undefined;
 	const timeout = new Promise<never>((_, reject) => {
-		timer = setTimeout(() => reject(new CacheTimeoutError(label)), CACHE_OPERATION_TIMEOUT_MS);
+		timer = setTimeout(() => {
+			timedOut = true;
+			reject(new CacheTimeoutError(label));
+		}, CACHE_OPERATION_TIMEOUT_MS);
 	});
 	return Promise.race([operation, timeout]).finally(() => clearTimeout(timer));
 }
