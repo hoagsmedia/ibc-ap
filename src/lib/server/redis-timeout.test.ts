@@ -256,3 +256,61 @@ describe("session cache helpers (getCachedJson / setCachedJson / deleteCachedJso
 		expect(unhandled).toEqual([]);
 	});
 });
+
+describe("cache failure cooldown", () => {
+	it("skips the cache after a timeout, then retries once the cooldown passes", async () => {
+		const {
+			readThroughJson,
+			getCachedJson,
+			setCachedJson,
+			CACHE_OPERATION_TIMEOUT_MS,
+			CACHE_FAILURE_COOLDOWN_MS
+		} = await loadRedis();
+		upstash.get.mockImplementation(never);
+		const options = {
+			namespace: "dashboard-club-stats" as const,
+			keyParts: { v: 1 },
+			ttlSeconds: 60,
+			label: "test",
+			loader: async () => "fresh"
+		};
+
+		// First request pays one timeout and skips the write.
+		const first = readThroughJson(options);
+		expect(await settledWithin(first, CACHE_OPERATION_TIMEOUT_MS)).toEqual({
+			done: true,
+			value: "fresh"
+		});
+		expect(upstash.set).not.toHaveBeenCalled();
+
+		// During the cooldown nothing waits on the cache.
+		upstash.get.mockClear();
+		expect(await settledWithin(readThroughJson(options), 0)).toEqual({
+			done: true,
+			value: "fresh"
+		});
+		expect(await settledWithin(getCachedJson("session-validation", { sessionId: "s" }), 0)).toEqual(
+			{
+				done: true,
+				value: null
+			}
+		);
+		await setCachedJson("session-validation", { sessionId: "s" }, {}, 90);
+		expect(upstash.get).not.toHaveBeenCalled();
+		expect(upstash.set).not.toHaveBeenCalled();
+
+		// After the cooldown a healthy cache is used again.
+		await vi.advanceTimersByTimeAsync(CACHE_FAILURE_COOLDOWN_MS);
+		upstash.get.mockResolvedValue("cached");
+		await expect(readThroughJson(options)).resolves.toBe("cached");
+	});
+
+	it("still attempts deletes during the cooldown so sessions can be invalidated", async () => {
+		const { getCachedJson, deleteCachedJson } = await loadRedis();
+		upstash.get.mockRejectedValue(new Error("getaddrinfo ENOTFOUND"));
+		await getCachedJson("session-validation", { sessionId: "s" });
+
+		await deleteCachedJson("session-validation", { sessionId: "s" });
+		expect(upstash.del).toHaveBeenCalledTimes(1);
+	});
+});

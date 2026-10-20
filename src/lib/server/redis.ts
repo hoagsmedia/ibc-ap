@@ -135,6 +135,29 @@ async function getLocalRedisClient(): Promise<LocalRedisClient | null> {
  */
 export const CACHE_OPERATION_TIMEOUT_MS = 1000;
 
+/**
+ * After a cache read or write fails or times out, skip reads and writes in this process for this
+ * long and go straight to the loader / database. Without it, an unreachable cache costs every
+ * request a full timeout per operation (seconds per page). Deletes are still attempted so session
+ * invalidation is never skipped.
+ */
+export const CACHE_FAILURE_COOLDOWN_MS = 60_000;
+
+let cacheUnavailableUntil = 0;
+
+function cacheInCooldown(): boolean {
+	return Date.now() < cacheUnavailableUntil;
+}
+
+function markCacheFailure(): void {
+	if (!cacheInCooldown()) {
+		console.error(
+			`[IBC-LOG] [redis] cache failing; bypassing reads and writes for ${CACHE_FAILURE_COOLDOWN_MS / 1000}s`
+		);
+	}
+	cacheUnavailableUntil = Date.now() + CACHE_FAILURE_COOLDOWN_MS;
+}
+
 class CacheTimeoutError extends Error {
 	constructor(operation: string) {
 		super(`[redis] ${operation} timed out after ${CACHE_OPERATION_TIMEOUT_MS}ms`);
@@ -207,6 +230,7 @@ export async function readThroughJson<T>(options: ReadThroughJsonOptions<T>): Pr
 		}
 		return loader();
 	}
+	if (cacheInCooldown()) return loader();
 
 	try {
 		const cached = await withCacheTimeout(getJson<T>(key), `read (${label})`);
@@ -222,14 +246,17 @@ export async function readThroughJson<T>(options: ReadThroughJsonOptions<T>): Pr
 		}
 	} catch (error) {
 		console.error(`[IBC-LOG] [redis] read failed (${label})`, error);
+		markCacheFailure();
 	}
 
 	const fresh = await loader();
+	if (cacheInCooldown()) return fresh;
 
 	try {
 		await withCacheTimeout(setJson(key, fresh, ttlSeconds), `write (${label})`);
 	} catch (error) {
 		console.error(`[IBC-LOG] [redis] write failed (${label})`, error);
+		markCacheFailure();
 	}
 
 	return fresh;
@@ -247,6 +274,7 @@ export async function deleteCachedJson(
 		await withCacheTimeout(deleteJson(key), `delete (${namespace})`);
 	} catch (error) {
 		console.error(`[IBC-LOG] [redis] delete failed (${namespace})`, error);
+		markCacheFailure();
 	}
 }
 
@@ -255,7 +283,7 @@ export async function getCachedJson<T>(
 	namespace: SearchCacheNamespace,
 	keyParts: Record<string, KeyPart>
 ): Promise<T | null> {
-	if (getBackend() === "disabled") return null;
+	if (getBackend() === "disabled" || cacheInCooldown()) return null;
 	try {
 		return await withCacheTimeout(
 			getJson<T>(buildSearchCacheKey(namespace, keyParts)),
@@ -263,6 +291,7 @@ export async function getCachedJson<T>(
 		);
 	} catch (error) {
 		console.error(`[IBC-LOG] [redis] read failed (${namespace})`, error);
+		markCacheFailure();
 		return null;
 	}
 }
@@ -273,7 +302,7 @@ export async function setCachedJson<T>(
 	value: T,
 	ttlSeconds: number
 ): Promise<void> {
-	if (getBackend() === "disabled") return;
+	if (getBackend() === "disabled" || cacheInCooldown()) return;
 	try {
 		await withCacheTimeout(
 			setJson(buildSearchCacheKey(namespace, keyParts), value, ttlSeconds),
@@ -281,5 +310,6 @@ export async function setCachedJson<T>(
 		);
 	} catch (error) {
 		console.error(`[IBC-LOG] [redis] write failed (${namespace})`, error);
+		markCacheFailure();
 	}
 }
