@@ -39,3 +39,9 @@ and cache configuration.
 - [AGENTS.md](AGENTS.md) — notes for AI assistants, including the Svelte MCP setup.
 - [docs/profile-reconciliation.md](docs/profile-reconciliation.md) — offline, read-only profile
   reconciliation dry run.
+
+## License
+
+The source code is released under the [MIT License](LICENSE). The Island Beer Club name, logos,
+photos, and other club content in `static/` and `src/lib/data/` belong to the Island Beer Club and
+are not covered by that license.
